@@ -43,7 +43,7 @@ function updateFocusHint() {
   if (areaFocus.loading) hint.textContent = tr("Wczytywanie obszaru…", "Loading area…");
   else if (areaFocus.error) hint.textContent = tr("Nie udało się wczytać obrysu. Wybierz inny obszar lub spróbuj ponownie.", "Could not load the boundary. Choose another area or try again.");
   else if (areaFocus.selecting) hint.textContent = tr("Kliknij obszar, który chcesz wyodrębnić. Escape anuluje wybór.", "Click an area to focus on it. Escape cancels selection.");
-  else if (areaFocusActive()) { hint.textContent = ""; hint.hidden = true; }
+  else if (areaFocusActive()) { hint.textContent = zoomRequirementHint(); hint.hidden = !hint.textContent; }
   else return false;
   return true;
 }
@@ -221,9 +221,19 @@ function syncAreaFocusLayers() {
     const polygons = geometry.type === "MultiPolygon" ? geometry.coordinates : [geometry.coordinates];
     const world = [[-180,-85.05113],[180,-85.05113],[180,85.05113],[-180,85.05113],[-180,-85.05113]];
     cityMap.getSource("area-focus-boundary").setData(area.feature);
-    cityMap.getSource("area-focus-context").setData({ type: "FeatureCollection", features: area.outerContext });
     cityMap.getSource("area-focus-mask").setData({ type: "Feature", properties: {}, geometry: { type: "Polygon", coordinates: [world, ...polygons.map((rings) => rings[0])] } });
     areaFocus.rendered = area;
+  }
+  const details = densityState();
+  const contextLevel = `${details.cities}:${details.villages}`;
+  if (areaFocus.contextArea !== area || areaFocus.contextLevel !== contextLevel || areaFocus.contextRows !== savedRows) {
+    const features = area.outerContext.filter(({ properties }) => properties.kind !== "locality" ||
+      savedPlaces.has("miasto:" + properties.id) || (properties.id?.startsWith("simc:") ? details.villages : details.cities));
+    cityMap.getSource("area-focus-context").setData({ type: "FeatureCollection", features });
+    area.contextPaths = features.map((feature) => projectedPolygon(feature.geometry));
+    areaFocus.contextArea = area;
+    areaFocus.contextLevel = contextLevel;
+    areaFocus.contextRows = savedRows;
   }
   // Any subsequently loaded detail layers must stay beneath the isolation mask.
   for (const id of ["area-focus-mask", "area-focus-context", "area-focus-boundary"]) cityMap.moveLayer(id);

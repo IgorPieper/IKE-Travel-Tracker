@@ -151,6 +151,7 @@ const adminRegions = new Map();
 let regionData;
 let regionCatalogueRequest;
 let visitedOutlinesRequest;
+let visitedOutlinesKey = null;
 const hasInteractiveMap = () => Boolean(cityMap && cityContainer.classList.contains("ready"));
 const archiveBase = "https://overturemaps-extras-us-west-2.s3.us-west-2.amazonaws.com/tiles/";
 const fallbackRelease = "2026-10-21.0";
@@ -226,7 +227,9 @@ function paintVisits() {
   if (cityMap?.getLayer(majorCityLayer)) cityMap.setPaintProperty(majorCityLayer, "fill-color",
     statusColor("miasto", "division_id", "#ffffff", (id) => id.replace(/^overture:/, "")));
   if (cityMap?.getLayer(visitedPlaceLayer)) cityMap.setFilter(visitedPlaceLayer,
-    ["in", ["get", "division_id"], ["literal", savedRows.filter((row) => row.kategoria === "miasto" && rowInSavedPreset(row)).map((row) => row.id)]]);
+    ["in", ["get", "division_id"], ["literal", savedCityRows().map((row) => row.id)]]);
+  if (cityMap?.getLayer(visitedPinLayer)) cityMap.setFilter(visitedPinLayer,
+    ["in", ["get", "id"], ["literal", savedCityRows().map((row) => row.id)]]);
   for (const source of [villageSource, overviewVillages]) {
     const layer = markerLayer(source);
     if (cityMap?.getLayer(layer)) cityMap.setPaintProperty(layer, "circle-color", fill);
@@ -271,6 +274,7 @@ function getRegionCatalogue() {
 
 function loadRegions() {
   if (!basemapReady || !(activePreset === "regions" || isSavedPreset() || focusShowsRegions()) || regionData ||
+    (!(isSavedPreset() && !areaFocusActive()) && !densityState().regions && !savedRows.some((row) => row.kategoria === "rejon") && search.value.trim().length < 2) ||
     (isSavedPreset() && !areaFocusActive() && !savedRows.some((row) => row.kategoria === "rejon" && rowInSavedPreset(row)))) return;
   regionData = getRegionCatalogue().then((data) => {
     for (const { properties: props } of data.features) {
@@ -298,15 +302,19 @@ function loadRegions() {
 
 async function loadVisitedOutlines() {
   const source = cityMap?.getSource(visitedPlaceLayer);
-  if (!source || !isSavedPreset()) return;
+  if (!source || !(isSavedPreset() || wantsCityDetails())) return;
+  const outlineKey = savedRows.filter((row) => row.kategoria === "miasto").map((row) => row.id).sort().join("|");
+  if (visitedOutlinesKey === outlineKey) return;
+  visitedOutlinesKey = outlineKey;
   visitedOutlinesRequest?.abort();
+  if (!outlineKey) { source.setData(emptyFeatures()); return; }
   const controller = new AbortController();
   visitedOutlinesRequest = controller;
   try {
     const data = await request("/api/odwiedzone-obrysy", { signal: controller.signal });
     if (!controller.signal.aborted) source.setData(data);
   } catch (error) {
-    if (!controller.signal.aborted) console.error(error);
+    if (!controller.signal.aborted) { visitedOutlinesKey = null; console.error(error); }
   }
 }
 
@@ -403,7 +411,8 @@ const cityZoom = 9;
 const worldCitySource = "world-settlements";
 const polishCityZoom = 8;
 const majorCityZoom = 6;
-const villageZoom = 9;
+const villageZoom = 11;
+const regionZoom = 4;
 const worldWaterZoom = 8;
 const polishWaterZoom = 9;
 const villageSource = "polish-rural-settlements";
@@ -466,28 +475,54 @@ function placeInPreset(place) {
   return true;
 }
 
+function densityState() {
+  const zoom = cityMap?.getZoom() ?? Math.log2(view.zoom);
+  const fits = cityMap ? settlementViewportFits(visibleWorldBounds()) : false;
+  return { regions: zoom >= regionZoom, major: zoom >= majorCityZoom,
+    cities: zoom >= cityZoom && fits, villages: zoom >= villageZoom && fits };
+}
+
+function wantsCityDetails() {
+  return areaFocusActive() ? focusShowsCities() : ["major", "cities", "settlements"].includes(activePreset);
+}
+
+function savedCityRows() {
+  return savedRows.filter((row) => row.kategoria === "miasto" &&
+    (isSavedPreset() && !areaFocusActive() ? rowInSavedPreset(row)
+      : wantsCityDetails() && (activePreset !== "major" || areaFocusActive() || isMajorCity(row.id)) &&
+        (!row.id.startsWith("simc:") || (areaFocusActive() ? focusShowsVillages() : activePreset === "settlements"))));
+}
+
+function zoomRequirementHint() {
+  if (!cityMap || (isSavedPreset() && !areaFocusActive())) return "";
+  const details = densityState();
+  const villageView = areaFocusActive() ? focusShowsVillages() : activePreset === "settlements";
+  const cityView = areaFocusActive() ? focusShowsCities() : activePreset === "cities";
+  const regionView = areaFocusActive() ? focusShowsRegions() : activePreset === "regions";
+  if (villageView && !details.villages) return tr("Przybliż mapę, aby zobaczyć wsie.", "Zoom in to see villages.");
+  if (cityView && !details.cities) return tr("Przybliż mapę, aby zobaczyć miasta.", "Zoom in to see cities.");
+  if (regionView && !details.regions) return tr("Przybliż mapę, aby zobaczyć granice rejonów.", "Zoom in to see region boundaries.");
+  if (!areaFocusActive() && activePreset === "major" && !details.major) return tr("Przybliż mapę, aby zobaczyć duże miasta.", "Zoom in to see major cities.");
+  return "";
+}
+
 function syncPresetLayers() {
   const focused = areaFocusActive();
-  const onlyMajor = activePreset === "major" && !focused;
+  const details = densityState();
+  const onlyMajor = activePreset === "major" && !focused && details.major;
   const onlyCapitals = activePreset === "capital-cities" && !focused;
   const visited = isSavedPreset() && !focused;
-  const showRegions = focused ? focusShowsRegions() : activePreset === "regions";
-  const showVillages = focused ? focusShowsVillages() : activePreset === "settlements";
-  const showCities = focused ? focusShowsCities() : ["cities", "settlements"].includes(activePreset);
+  const wantedRegions = focused ? focusShowsRegions() : activePreset === "regions";
+  const showRegions = wantedRegions && details.regions;
+  const showVillages = (focused ? focusShowsVillages() : activePreset === "settlements") && details.villages;
+  const showCities = (focused ? focusShowsCities() : ["cities", "settlements"].includes(activePreset)) && details.cities;
+  const savedCities = visited || wantsCityDetails();
   const showWorld = showCities && !viewportInsidePoland();
   const viewBounds = visibleWorldBounds();
-  const [west, south, east, north] = viewBounds;
-  const villagesInView = east >= 14 && west <= 24.3 && north >= 48.9 && south <= 55.1;
   const villageDetailBounds = polishViewport(viewBounds, 0);
   const detailCities = containsBounds(worldCitiesView.bounds, viewBounds);
   const detailVillages = villageDetailBounds && containsBounds(loadedVillageBounds, villageDetailBounds);
   const zoom = cityMap.getZoom();
-  if (showWorld && (zoom < cityZoom || !settlementViewportFits(viewBounds))) {
-    addOverview(overviewCities, "/obrysy-miast.json");
-  }
-  if (showVillages && villagesInView && (zoom < villageZoom || !villageDetailBounds)) {
-    addOverview(overviewVillages, "/obrysy-wsi.json");
-  }
   const shown = {
     "land-mask": visibility.seas,
     [countryFillLayer]: focused ? focusShowsCountries() : (activePreset === "countries" || visited),
@@ -499,23 +534,23 @@ function syncPresetLayers() {
     "area-capital-fill": onlyCapitals || (focused && focusShowsRegions()),
     "area-capital-pins": onlyCapitals || (focused && focusShowsRegions()),
     [regionLayer]: showRegions,
-    [visitedRegionLayer]: visited,
+    [visitedRegionLayer]: visited || wantedRegions,
     [visitedCountryLayer]: visited,
-    [visitedPlaceLayer]: visited,
-    [visitedPinLayer]: visited,
+    [visitedPlaceLayer]: savedCities,
+    [visitedPinLayer]: savedCities,
     [polishMajorLayer]: onlyMajor,
     [majorCityLayer]: onlyMajor || showCities,
     [polishCityLayer]: showCities,
     [cityLayer]: showWorld && detailCities,
-    [overviewCities]: showWorld && !detailCities,
+    [overviewCities]: false,
     [villageLayer]: showVillages && Boolean(detailVillages),
-    [overviewVillages]: showVillages && !detailVillages,
+    [overviewVillages]: false,
     [markerLayer(villageSource)]: showVillages && Boolean(detailVillages),
-    [markerLayer(overviewVillages)]: showVillages && !detailVillages,
-    "visited-city-pins": showCities,
-    "visited-polish-city-pins": showCities,
-    "visited-major-city-pins": onlyMajor || showCities,
-    "visited-village-pins": showVillages,
+    [markerLayer(overviewVillages)]: false,
+    "visited-city-pins": false,
+    "visited-polish-city-pins": false,
+    "visited-major-city-pins": false,
+    "visited-village-pins": false,
     "polish-rivers": presetShowsWater() && visibility.rivers,
     "polish-lakes": presetShowsWater() && visibility.lakes,
   };
@@ -526,6 +561,14 @@ function syncPresetLayers() {
     cityMap.setFilter("area-capital-pins", null);
   }
   if (cityMap.getLayer(capitalLayer)) cityMap.setLayerZoomRange(capitalLayer, onlyCapitals ? 0 : 4, 24);
+  for (const [id, minimum] of [[regionLayer, regionZoom], [polishCityLayer, cityZoom], [cityLayer, cityZoom],
+    [polishMajorLayer, majorCityZoom], [majorCityLayer, activePreset === "major" && !focused ? majorCityZoom : cityZoom],
+    [villageLayer, villageZoom], [markerLayer(villageSource), villageZoom]]) {
+    if (cityMap.getLayer(id)) cityMap.setLayerZoomRange(id, minimum, 24);
+  }
+  if (cityMap.getLayer(visitedPinLayer)) cityMap.setLayerZoomRange(visitedPinLayer, 0,
+    visited ? 24 : activePreset === "settlements" || focusShowsVillages() ? villageZoom : activePreset === "major" ? majorCityZoom : cityZoom);
+
   for (const source of [villageSource, overviewVillages]) {
     const layer = markerLayer(source);
     if (shown[layer] && cityMap.getLayer(layer) && cityMap.getFilter(layer)?.[2]?.[2] !== zoom) cityMap.setFilter(layer, [
@@ -642,7 +685,11 @@ function updateWaterFallback() {
 
 async function loadVisibleVillages() {
   const source = cityMap?.getSource(villageSource);
-  if (!source || (areaFocusActive() ? !focusShowsVillages() : activePreset !== "settlements") || cityMap.getZoom() < villageZoom) return;
+  if (!source || (areaFocusActive() ? !focusShowsVillages() : activePreset !== "settlements") || !densityState().villages) {
+    villageBoundsRequest?.controller.abort();
+    villageBoundsRequest = undefined;
+    return;
+  }
   const bounds = visibleWorldBounds();
   const viewBounds = polishViewport(bounds, 0);
   if (!viewBounds) return;
@@ -750,6 +797,14 @@ async function loadMajorCities(dataRequest, capitalRequest) {
 function updateCityView(collect = false) {
   if (!cityMap) return;
   if (updateFocusHint()) { retryMap.hidden = true; updateControls(); return; }
+  const zoomHint = zoomRequirementHint();
+  if (zoomHint) {
+    retryMap.hidden = true;
+    byId("map-hint").hidden = false;
+    byId("map-hint").textContent = zoomHint;
+    updateControls();
+    return;
+  }
   if (activePreset === "continents") {
     retryMap.hidden = true;
     byId("map-hint").textContent = tr("Kliknij kontynent, aby otworzyć jego szczegóły.", "Click a continent to open its details.");
@@ -922,8 +977,11 @@ async function ensureWorldBasemap() {
 
 async function loadVisibleCities() {
   const source = cityMap?.getSource(worldCitySource);
-  if (!source || (areaFocusActive() ? !focusShowsCities() : !["cities", "settlements"].includes(activePreset)) || cityMap.getZoom() < cityZoom ||
-    viewportInsidePoland()) return;
+  if (!source || (areaFocusActive() ? !focusShowsCities() : !["cities", "settlements"].includes(activePreset)) || !densityState().cities || viewportInsidePoland()) {
+    worldCitiesView.pending?.controller.abort();
+    worldCitiesView.pending = undefined;
+    return;
+  }
   const [west, south, east, north] = mapBounds();
   const viewport = [Math.max(-180, west), Math.max(-90, south), Math.min(180, east), Math.min(90, north)];
   if (viewport[0] >= viewport[2] || viewport[1] >= viewport[3] ||
@@ -1658,7 +1716,7 @@ function updateSidebar(focusKey) {
         if (!center) return;
         const preset = presets[activePreset];
         const visitedZoom = { panstwo: 3, rejon: 6, miasto: 11 };
-        cityMap?.jumpTo({ center, zoom: isSavedPreset()
+        cityMap?.jumpTo({ center, zoom: areaFocusActive() ? visitedZoom[place.category] : isSavedPreset()
           ? clampZoom(visitedZoom[place.category], preset) : presetZoom(preset) });
         return;
       }

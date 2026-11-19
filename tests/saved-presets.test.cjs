@@ -29,7 +29,8 @@ function setup(preset, focusCategory = null, villages = false) {
     polishViewport: () => null, containsBounds: () => false, worldCitiesView: {}, loadedVillageBounds: null,
     setLayerVisible: (id, value) => shown[id] = value, loadRegions: () => {},
     presetShowsWater: () => false, mapColors: { lake: 'blue' },
-    cityZoom: 9, villageZoom: 9, settlementViewportFits: () => false, addOverview: () => {},
+    cityZoom: 9, villageZoom: 11, regionZoom:4, majorCityZoom:6,
+    settlementViewportFits: bounds => bounds[2]-bounds[0]<=2.5 && bounds[3]-bounds[1]<=2, addOverview: () => {},
   });
   for (const id of ['polishCityLayer', 'polishMajorLayer', 'cityLayer', 'overviewCities', 'villageLayer', 'overviewVillages',
     'visitedPlaceLayer', 'majorCityLayer', 'villageSource', 'visitedCountryLayer', 'countryFillLayer', 'continentFillLayer',
@@ -39,7 +40,7 @@ function setup(preset, focusCategory = null, villages = false) {
     + block('const isSavedPreset =', '// U.S. Department')
     + block('function statusColor(', 'function getRegionCatalogue(')
     + block('function paintCityPins(', 'function pinImage(')
-    + block('function syncPresetLayers(', 'function setLayerVisible('), context);
+    + block('function densityState(', 'function setLayerVisible('), context);
   return { context, filters, paints, sources, shown, zoomRanges };
 }
 
@@ -80,22 +81,23 @@ test('switching back to ordinary views restores both statuses and all capital ou
   assert.equal(vm.runInContext("isSavedPreset('countries')", c), false);
 });
 
-test('focus hierarchy keeps layers fixed at every zoom and villages require opt-in', () => {
+test('focus hierarchy respects density thresholds and villages still require opt-in', () => {
   for (const zoom of [2, 15]) for (const [category, villages, countries, regions, cities] of [
     ['kontynent', false, true, false, false], ['panstwo', false, false, true, false],
     ['rejon', false, false, false, true], ['rejon', true, false, false, true],
   ]) {
     const { context: c, shown } = setup('countries',category,villages);
     c.cityMap.getZoom=()=>zoom;
+    c.visibleWorldBounds=()=>zoom>=9?[18,52,19,53]:[-180,-80,180,80];
     c.syncPresetLayers();
     assert.equal(shown.countryFillLayer,countries);
-    assert.equal(shown.regionLayer,regions);
-    assert.equal(shown.polishCityLayer,cities);
+    assert.equal(shown.regionLayer,regions && zoom>=4);
+    assert.equal(shown.polishCityLayer,cities && zoom>=9);
     assert.equal(shown['area-capital-fill'],category==='panstwo');
     assert.equal(shown['area-capital-pins'],category==='panstwo');
-    assert.equal(shown.overviewVillages,category==='rejon' && villages);
-    assert.equal(shown['visited-village-pins'],category==='rejon' && villages);
-    assert.equal(shown.visitedPinLayer,false);
+    assert.equal(shown.overviewVillages,false);
+    assert.equal(shown['visited-village-pins'],false);
+    assert.equal(shown.visitedPinLayer,cities);
   }
 });
 
@@ -129,4 +131,17 @@ test('capital search includes boundary and fallback capitals and excludes other 
   assert.equal(context.placeInPreset({id:'capital-without-outline'}),true);
   assert.equal(context.placeInPreset({id:'krakow'}),false);
   assert.deepEqual(JSON.parse(JSON.stringify(context.capitalLocations().map(place=>place.id))),['warsaw','capital-without-outline']);
+});
+
+
+test('distant city and village views keep saved places while hiding bulk outlines',()=>{
+  for(const preset of ['cities','settlements','major']) {
+    const {context:c,shown,filters}=setup(preset);
+    c.paintVisits();c.syncPresetLayers();
+    for(const layer of ['polishCityLayer','polishMajorLayer','majorCityLayer','cityLayer','overviewCities','villageLayer','overviewVillages'])
+      assert.equal(shown[layer],false,layer);
+    assert.equal(shown.visitedPlaceLayer,true);
+    assert.equal(shown.visitedPinLayer,true);
+    assert.ok(filters.visitedPlaceLayer);
+  }
 });
