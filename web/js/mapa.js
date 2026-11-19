@@ -14,11 +14,11 @@ const defaultPresets = {
   regions: { label: "Rejony", english: "Regions", category: "miasto", min: 1, zoom: 4, max: 12 },
   major: { label: "Duże miasta", english: "Major cities", category: "miasto", min: 4, zoom: 7, max: 12 },
   "capital-cities": { label: "Stolice", english: "Capitals", category: "miasto", min: 0, zoom: 7, max: 16 },
-  cities: { label: "Wszystkie miasta", english: "All cities", category: "miasto", min: 6, zoom: 10.75, max: 15 },
-  settlements: { label: "Miasta i wsie", english: "Cities and villages", category: "miasto", min: 9, zoom: 11.25, max: 16 },
-  visited: { label: "Odwiedzone", english: "Visited", category: "miasto", min: 0, zoom: 0, max: 16 },
-  "visited-only": { label: "Tylko odwiedzone", english: "Visited only", category: "miasto", min: 0, zoom: 0, max: 16, savedStatus: "visited" },
-  "planned-only": { label: "Tylko zaplanowane", english: "Planned only", category: "miasto", min: 0, zoom: 0, max: 16, savedStatus: "planned" },
+  cities: { label: "Miasta", english: "Cities", category: "miasto", min: 6, zoom: 10.75, max: 15 },
+  settlements: { label: "Wsie", english: "Villages", category: "miasto", min: 9, zoom: 11.25, max: 16 },
+  visited: { label: "Zaznaczone", english: "Marked", category: "miasto", min: 0, zoom: 0, max: 16 },
+  "visited-only": { label: "Odwiedzone", english: "Visited", category: "miasto", min: 0, zoom: 0, max: 16, savedStatus: "visited" },
+  "planned-only": { label: "Zaplanowane", english: "Planned", category: "miasto", min: 0, zoom: 0, max: 16, savedStatus: "planned" },
 };
 const layerLabels = { forests: ["Lasy", "Forests"], lakes: ["Jeziora", "Lakes"], rivers: ["Rzeki", "Rivers"],
   seas: ["Morza i oceany", "Seas and oceans"],
@@ -49,18 +49,26 @@ const englishRegions = new Intl.DisplayNames(["en"], { type: "region", fallback:
 const englishRegion = (code) => /^[A-Z]{2}$/.test(code) ? englishRegions.of(code) : undefined;
 const normalize = (s) => s.toLocaleLowerCase("pl").normalize("NFD").replace(/\p{M}/gu, "").replaceAll("ł", "l");
 const key = (place) => place.category + ":" + place.id;
-const displayPlaceName = (place) => tr(place.name,
+const basePlaceName = (place) => tr(place.name,
   (place.category === "panstwo" ? englishRegion(place.code) : place.original) || place.name);
+const displayPlaceName = (place) => {
+  const name = basePlaceName(place);
+  const reading = areaFocusActive() ? placeReading(place) : "";
+  return reading ? `${name} (${reading})` : name;
+};
 let placeReadings = { byCountry: {}, byName: {} };
 function placeReading(place) {
-  if ((place.category || place.kategoria) !== "miasto") return "";
-  const name = (place.name !== undefined ? displayPlaceName(place) : place.nazwa)?.trim();
+  const name = (place.name !== undefined ? basePlaceName(place) : place.nazwa)?.trim();
   if (!name || !/(?!\p{Script=Latin})\p{L}/u.test(name)) return "";
   const saved = place.id && savedPlaces.get("miasto:" + place.id);
-  const country = place.country || places.panstwo.find((item) => item.id === (place.panstwo_id || saved?.panstwo_id))?.code || "";
-  return placeReadings.byCountry[country]?.[name] || placeReadings.byName[name] || "";
+  const country = place.country || place.code || places.panstwo.find((item) => item.id === (place.panstwo_id || saved?.panstwo_id))?.code || "";
+  const known = placeReadings.byCountry[country]?.[name] || placeReadings.byName[name];
+  if (known) return known;
+  if (place.original && !/(?!\p{Script=Latin})\p{L}/u.test(place.original)) return place.original;
+  return (place.category || place.kategoria) === "panstwo" ? englishRegion(country) || "" : "";
 }
 function appendPlaceReading(parent, place) {
+  if (areaFocusActive()) return;
   const reading = placeReading(place);
   if (!reading) return;
   const line = document.createElement("small");
@@ -327,7 +335,6 @@ function paintCityPins() {
       properties: { id: row.id, name: row.nazwa, pinLayer, planned: row.tryb === "plan" } });
   }
   source.setData({ type: "FeatureCollection", features });
-  if (cityMap.getLayer("area-capital-pins")) cityMap.setPaintProperty("area-capital-pins", "circle-color", statusColor("miasto", "id", "#fff"));
 }
 
 function pinImage(color) {
@@ -513,9 +520,8 @@ function syncPresetLayers() {
   cityMap.setPaintProperty("map-background", "background-color", visibility.seas ? mapColors.lake : "#fff");
   for (const [id, show] of Object.entries(shown)) setLayerVisible(id, show);
   if (cityMap.getLayer("area-capital-pins")) {
-    cityMap.setLayerZoomRange("area-capital-pins", 0, onlyCapitals ? 24 : cityZoom);
-    cityMap.setFilter("area-capital-pins", onlyCapitals && zoom >= cityZoom ? ["==", ["get", "hasOutline"], false] : null);
-    cityMap.setPaintProperty("area-capital-pins", "circle-stroke-color", visibility.capitals ? "#c33e4f" : "#797084");
+    cityMap.setLayerZoomRange("area-capital-pins", 0, cityZoom);
+    cityMap.setFilter("area-capital-pins", null);
   }
   if (cityMap.getLayer(capitalLayer)) cityMap.setLayerZoomRange(capitalLayer, onlyCapitals ? 0 : 4, 24);
   for (const source of [villageSource, overviewVillages]) {
@@ -1057,6 +1063,7 @@ function openCityMap() {
     });
     cityMap.addImage("visited-pin", pinImage("#8057b6"), { pixelRatio: 2 });
     cityMap.addImage("planned-pin", pinImage("#ba7428"), { pixelRatio: 2 });
+    cityMap.addImage("capital-pin", pinImage("#c33e4f"), { pixelRatio: 2 });
     const pinLayout = { "icon-image": ["case", ["get", "planned"], "planned-pin", "visited-pin"],
       "icon-anchor": "bottom", "icon-allow-overlap": true };
     Object.entries(pinZoom).forEach(([id, zoom]) => cityMap.addLayer({
@@ -1070,8 +1077,8 @@ function openCityMap() {
     cityMap.addLayer({ id: "area-capital-fill", type: "fill", source: capitalLayer, layout: { visibility: "none" },
       paint: { "fill-color": "#fff", "fill-outline-color": "#797084" } });
     cityMap.addSource("area-capital-points", { type: "geojson", data: capitalPointData() });
-    cityMap.addLayer({ id: "area-capital-pins", type: "circle", source: "area-capital-points", maxzoom: cityZoom,
-      layout: { visibility: "none" }, paint: { "circle-radius": 4, "circle-color": "#fff", "circle-stroke-color": "#c33e4f", "circle-stroke-width": 1.5 } });
+    cityMap.addLayer({ id: "area-capital-pins", type: "symbol", source: "area-capital-points", maxzoom: cityZoom,
+      layout: { visibility: "none", "icon-image": "capital-pin", "icon-anchor": "bottom", "icon-allow-overlap": true } });
     cityMap.addLayer({ id: capitalLayer, type: "line", source: capitalLayer, minzoom: 4,
       paint: { "line-color": "#c33e4f", "line-width": 1.4 } });
     syncCapitalOutlines();
@@ -1402,7 +1409,7 @@ function showHover(place, x, y) {
   const label = displayPlaceName(place) + (marked.has(key(place)) ? tr(" · odwiedzone", " · visited")
     : planned.has(key(place)) ? tr(" · w planach", " · planned") : "") +
     (warning ? tr(" · ostrzeżenie poziomu 4", " · Level 4 travel advisory") : "");
-  showMapTooltip(label, x, y, placeReading(place));
+  showMapTooltip(label, x, y, areaFocusActive() ? "" : placeReading(place));
 }
 
 function showMapTooltip(label, x, y, reading = "") {
@@ -1724,7 +1731,7 @@ function updatePlaceLabels() {
   if (!editedPlace) return;
   byId("place-details-title").textContent = displayPlaceName(editedPlace.place);
   const reading = byId("place-details-reading");
-  reading.textContent = placeReading(editedPlace.place);
+  reading.textContent = areaFocusActive() ? "" : placeReading(editedPlace.place);
   reading.hidden = !reading.textContent;
   byId("place-return-visits").hidden = placePlanned.checked;
   for (const label of placeVisitDates.querySelectorAll("label")) {
@@ -2314,7 +2321,15 @@ byId("brand-home").addEventListener("click", (event) => {
 const sidebar = byId("map-sidebar");
 const narrowLayout = matchMedia("(max-width: 640px)");
 const languageSelect = byId("atlas-language");
-let layout = { language: "en", sidebar: "auto", online_focus: "off" };
+let layout = { language: "en", sidebar: "auto", online_focus: "off", achievement_notifications: "on" };
+const achievementNotificationsEnabled = () => layout.achievement_notifications !== "off";
+const achievementNotificationInput = document.createElement("input");
+achievementNotificationInput.type = "checkbox";
+achievementNotificationInput.checked = true;
+achievementNotificationInput.addEventListener("change", () => {
+  saveLayout("achievement_notifications", achievementNotificationInput.checked ? "on" : "off");
+  document.dispatchEvent(new Event("atlas-achievement-notifications-change"));
+});
 const onlineLabels = {
   online_focus: ["Lupka — szczegółowa mapa", "Area focus Detailed Map"],
   online_water: ["Szczegółowe rzeki i jeziora", "Detailed rivers and lakes"],
@@ -2771,6 +2786,8 @@ function scheduleSettingsCategory() {
 window.addEventListener("scroll", scheduleSettingsCategory, { passive: true });
 window.addEventListener("resize", scheduleSettingsCategory);
 function syncMainSettings() {
+  achievementNotificationInput.checked = achievementNotificationsEnabled();
+  achievementNotificationInput.disabled = !ready;
   for (const [key, input] of onlineInputs) input.checked = onlineEnabled(key);
   for (const input of document.querySelectorAll("[data-online-setting], [data-visibility-setting]")) {
     const source = input.dataset.onlineSetting ? onlineInputs.get(input.dataset.onlineSetting) : visibilityInputs.get(input.dataset.visibilitySetting);
@@ -3004,6 +3021,7 @@ function renderMainSettings() {
     transfer: '<path d="M8 3v13m-4-4 4 4 4-4m4 9V8m-4 4 4-4 4 4"/>',
     internet: '<path d="M3 8a15 15 0 0 1 18 0M6 12a10 10 0 0 1 12 0M9 16a5 5 0 0 1 6 0"/><circle cx="12" cy="20" r="1"/>',
     developer: '<path d="m8 6-6 6 6 6m8-12 6 6-6 6M14 3l-4 18"/>',
+    notifications: '<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/>',
     journal: '<path d="M4 4h6a3 3 0 0 1 3 3v14a3 3 0 0 0-3-3H4V4Zm9 3a3 3 0 0 1 3-3h5v14h-5a3 3 0 0 0-3 3"/>',
   };
   function icon(id) {
@@ -3128,6 +3146,9 @@ function renderMainSettings() {
   for (const input of byId("diary-filter-options").querySelectorAll("input")) {
     mirror(journal, input, () => input.parentElement.querySelector("span").textContent);
   }
+  const notifications = category("notifications", "Powiadomienia", "Notifications", "", "");
+  mirror(notifications, achievementNotificationInput, () => tr("Powiadomienia o osiągnięciach", "Achievement notifications"),
+    tr("Pokazuj zdobyte osiągnięcia w prawym górnym rogu.", "Show newly unlocked achievements in the top-right corner."));
   const progress = category("progress", "Dane i postęp", "Data and progress", "Reset wymaga potwierdzenia.", "Reset requires confirmation.");
   const reset = document.createElement("button");
   reset.type = "button";

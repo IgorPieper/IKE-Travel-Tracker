@@ -6,7 +6,7 @@ const path = require('node:path');
 
 function setup(preset, focusCategory = null, villages = false) {
   const source = fs.readFileSync(path.join(__dirname, '../web/js/mapa.js'), 'utf8');
-  const filters = {}, paints = {}, sources = {}, shown = {};
+  const filters = {}, paints = {}, sources = {}, shown = {}, zoomRanges = {};
   const rows = ['panstwo', 'rejon', 'miasto', 'kontynent'].flatMap(category => [
     { kategoria: category, id: category + '-visited', nazwa: 'Visited', tryb: 'auto' },
     { kategoria: category, id: category + '-planned', nazwa: 'Planned', tryb: 'plan' },
@@ -19,7 +19,7 @@ function setup(preset, focusCategory = null, villages = false) {
     focusShowsCities: () => ['rejon','miasto'].includes(focusCategory),
     focusShowsVillages: () => focusCategory === 'rejon' && villages,
     cityMap: { getLayer: () => ({}), setFilter: (id, value) => filters[id] = value,
-      getFilter: id => filters[id], setLayerZoomRange:()=>{},
+      getFilter: id => filters[id], setLayerZoomRange:(id,min,max)=>zoomRanges[id]=[min,max],
       setPaintProperty: (id, property, value) => paints[id + ':' + property] = value,
       getSource: id => ({ setData: value => sources[id] = value }), getZoom: () => 2 },
     visibility: { capitals: true, warnings: true, seas: false, rivers: true, lakes: true },
@@ -40,7 +40,7 @@ function setup(preset, focusCategory = null, villages = false) {
     + block('function statusColor(', 'function getRegionCatalogue(')
     + block('function paintCityPins(', 'function pinImage(')
     + block('function syncPresetLayers(', 'function setLayerVisible('), context);
-  return { context, filters, paints, sources, shown };
+  return { context, filters, paints, sources, shown, zoomRanges };
 }
 
 test('saved-only presets retain the combined view and filter both statuses consistently', () => {
@@ -100,9 +100,9 @@ test('focus hierarchy keeps layers fixed at every zoom and villages require opt-
 });
 
 
-test('capitals view shows only capital boundaries and markers at every zoom', () => {
+test('capitals view keeps boundaries and limits red pins to distant zooms', () => {
   for (const zoom of [0, 7, 15]) {
-    const {context:c,shown,filters}=setup('capital-cities');
+    const {context:c,shown,filters,zoomRanges}=setup('capital-cities');
     c.cityMap.getZoom=()=>zoom;
     c.syncPresetLayers();
     assert.equal(shown['area-capital-fill'],true);
@@ -111,7 +111,8 @@ test('capitals view shows only capital boundaries and markers at every zoom', ()
     for (const layer of ['polishCityLayer','polishMajorLayer','majorCityLayer','cityLayer','villageLayer','overviewCities','overviewVillages','visited-major-city-pins'])
       assert.equal(shown[layer],false,layer);
     assert.equal(shown.countries,true);
-    assert.equal(filters['area-capital-pins']===null,zoom<9);
+    assert.equal(filters['area-capital-pins'],null);
+    assert.deepEqual(zoomRanges['area-capital-pins'],[0,9]);
   }
 });
 

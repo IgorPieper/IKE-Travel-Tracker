@@ -46,13 +46,14 @@ function setup() {
       { id: 'castle', rule: 'castle', title: ['Zamek', 'Castle'], icon: '🏰', levels: [{ target: 1, label: ['', ''], goal: ['Zamek', 'Visit a castle'], description: ['', ''] }] },
       { id: 'secret', rule: 'secret', secret: true, title: ['Sekret', 'Secret'], icon: '★', levels: [{ target: 1, label: ['', ''], goal: ['Sekret', 'Secret goal'], description: ['', ''] }] },
     ],
-    developerAllAchievements: false,
+    developerAllAchievements: false, notificationsEnabled:true,
     metrics: { countries: { count: 10 }, castle: { count: 0 }, secret: { count: 0 } },
     achievementMetric: (rule, metrics) => metrics[rule] || {},
     achievementTiersSeen: new Map(), collapsedAchievementGroups: new Set(),
     achievementToastQueue: [], achievementToastDuration: 6000,
     achievementsView: { hidden: false },
   });
+  context.achievementNotificationsEnabled = () => context.notificationsEnabled;
   context.achievementProgress = () => context.metrics;
   vm.runInContext(production, context);
   return { context, elements, timers };
@@ -114,4 +115,26 @@ test('unknown metrics never replay old unlocks; secret achievements notify on un
   assert.equal(elements['achievement-cards'].children[1].children[1].children[0].dataset.achievement, 'secret');
   elements['achievement-notifications'].children[0].children[2].events.click();
   assert.equal(elements['achievement-notifications'].children.length, 0);
+});
+
+
+test('notification preference suppresses toasts without hiding unlocks or replaying them later', () => {
+  const {context:c,elements}=setup();
+  c.renderAchievements();
+  c.notificationsEnabled=false;
+  c.metrics.countries.count=25;
+  c.metrics.secret.count=1;
+  c.renderAchievements();
+  assert.equal(elements['achievement-notifications'].children.length,0);
+  assert.ok(elements['achievement-cards'].children[1].children[1].children.some(card=>card.dataset.achievement==='secret'));
+  c.notificationsEnabled=true;
+  c.renderAchievements();
+  assert.equal(elements['achievement-notifications'].children.length,0);
+  c.metrics.castle.count=1;
+  c.renderAchievements();
+  assert.equal(elements['achievement-notifications'].children.length,1);
+  c.notificationsEnabled=false;
+  c.showAchievementToasts();
+  assert.equal(elements['achievement-notifications'].children.length,0);
+  assert.equal(c.achievementToastQueue.length,0);
 });

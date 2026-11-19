@@ -373,6 +373,11 @@
 
   function showAchievementToasts() {
     const container = byId("achievement-notifications");
+    if (!achievementNotificationsEnabled()) {
+      achievementToastQueue.length = 0;
+      container.replaceChildren();
+      return;
+    }
     while (achievementToastQueue.length && container.children.length < 3) {
       const { definition, tier } = achievementToastQueue.shift();
       const toast = document.createElement("article");
@@ -421,7 +426,7 @@
       if (!Number.isFinite(attained)) continue;
       const previous = achievementTiersSeen.get(definition.id);
       achievementTiersSeen.set(definition.id, tiersReached);
-      if (previous !== undefined && tiersReached > previous) {
+      if (achievementNotificationsEnabled() && previous !== undefined && tiersReached > previous) {
         achievementToastQueue.push({ definition, tier: definition.levels[tiersReached - 1] });
       }
     }
@@ -1603,6 +1608,7 @@
       }
     });
   }
+  document.addEventListener("atlas-achievement-notifications-change", showAchievementToasts);
   document.addEventListener("atlas-settings-loaded", ({ detail: settings }) => {
     cyprusOption.checked = settings.layout.cyprus !== "hide";
     for (const [tier, { checkbox }] of castleOptionsInputs) {

@@ -7,6 +7,14 @@ from src import atlas
 
 
 class SavedPresetSettingsTests(unittest.TestCase):
+    def test_achievement_notifications_default_on_and_save_off(self):
+        with tempfile.TemporaryDirectory() as folder, patch.object(atlas, 'SETTINGS', Path(folder)/'settings.csv'):
+            ranges, visibility, layout = atlas.read_settings()
+            self.assertEqual(layout['achievement_notifications'], 'on')
+            layout['achievement_notifications'] = 'off'
+            atlas.write_settings(ranges, visibility, layout)
+            self.assertEqual(atlas.read_settings()[2]['achievement_notifications'], 'off')
+
     def test_capitals_default_on_and_major_cities_default_off(self):
         with tempfile.TemporaryDirectory() as folder, patch.object(atlas, 'SETTINGS', Path(folder)/'settings.csv'):
             ranges, visibility, layout = atlas.read_settings()

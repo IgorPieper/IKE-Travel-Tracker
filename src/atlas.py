@@ -65,6 +65,8 @@ DEFAULT_VISIBILITY["visited-only"] = False
 DEFAULT_VISIBILITY["planned-only"] = False
 DEFAULT_LAYOUT = {"language": "en", "sidebar": "auto", "cyprus": "show"}
 LAYOUT_VALUES = {"language": ("pl", "en"), "sidebar": ("auto", "open", "closed"), "cyprus": ("show", "hide")}
+DEFAULT_LAYOUT["achievement_notifications"] = "on"
+LAYOUT_VALUES["achievement_notifications"] = ("off", "on")
 DEFAULT_LAYOUT["developer_panel"] = "off"
 LAYOUT_VALUES["developer_panel"] = ("off", "on")
 for feature in ("online_water", "online_hewelion", "online_castles"):
