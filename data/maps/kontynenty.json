@@ -1,0 +1,9 @@
+[
+  {"id":"europe","name":"Europa","english":"Europe","center":[16,52],"codes":"AD AL AT AX BA BE BG BY CH CZ DE DK EE ES FI FO FR GB GG GI GR HR HU IE IM IS IT JE LI LT LU LV MC MD ME MK MT NL NO PL PT RO RS SE SI SK SM UA VA XK"},
+  {"id":"asia","name":"Azja","english":"Asia","center":[94,43],"codes":"AF AE AM AZ BD BH BN BT CN CY GE HK ID IL IN IQ IR IO JO JP KG KH KP KR KW KZ LA LB LK MM MN MO MV MY NP OM PH PK PS QA RU SA SG SY TH TJ TL TM TR TW UZ VN YE 1159320531 1159320963"},
+  {"id":"africa","name":"Afryka","english":"Africa","center":[19,5],"codes":"AO BF BI BJ BW CD CF CG CI CM CV DJ DZ EG EH ER ET GA GH GM GN GQ GW KE KM LR LS LY MA MG ML MR MU MW MZ NA NE NG RW SC SD SH SL SN SO SS ST SZ TD TG TN TZ UG ZA ZM ZW 1159321259","territories":[["FR",40,-25,59,-10],["ES",-19,26,-12,30],["PT",-18,31,-15,34]]},
+  {"id":"north-america","name":"Ameryka Północna","english":"North America","center":[-102,43],"codes":"AG AI AW BB BL BM BS BZ CA CR CU CW DM DO GD GL GT HN HT JM KN KY LC MF MS MX NI PA PM PR SV SX TC TT US VC VG VI","territories":[["FR",-63,13,-59,17.5]]},
+  {"id":"south-america","name":"Ameryka Południowa","english":"South America","center":[-59,-16],"codes":"AR BO BR CL CO EC FK GY PE PY SR UY VE","territories":[["FR",-56,1,-50,7]]},
+  {"id":"oceania","name":"Oceania","english":"Oceania","center":[150,-23],"codes":"AS AU CK FJ FM GU KI MH MP NC NF NR NU NZ PF PG PN PW SB TO TV VU WF WS 1159320353 1159320363","territories":[["US",-180,18,-150,30]]},
+  {"id":"antarctica","name":"Antarktyda","english":"Antarctica","center":[0,-78],"codes":"AQ GS HM TF"}
+]

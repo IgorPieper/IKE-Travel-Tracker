@@ -1,0 +1,100 @@
+const { test } = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const vm = require('node:vm');
+const path = require('node:path');
+
+function setup(preset, focusCategory = null, villages = false) {
+  const source = fs.readFileSync(path.join(__dirname, '../web/js/mapa.js'), 'utf8');
+  const filters = {}, paints = {}, sources = {}, shown = {};
+  const rows = ['panstwo', 'rejon', 'miasto', 'kontynent'].flatMap(category => [
+    { kategoria: category, id: category + '-visited', nazwa: 'Visited', tryb: 'auto' },
+    { kategoria: category, id: category + '-planned', nazwa: 'Planned', tryb: 'plan' },
+  ]);
+  const context = vm.createContext({
+    activePreset: preset, savedRows: rows, visitColor: 'purple', planColor: 'orange',
+    areaFocusActive: () => Boolean(focusCategory), syncAreaFocusLayers: () => {},
+    focusShowsCountries: () => focusCategory === 'kontynent',
+    focusShowsRegions: () => focusCategory === 'panstwo',
+    focusShowsCities: () => ['rejon','miasto'].includes(focusCategory),
+    focusShowsVillages: () => focusCategory === 'rejon' && villages,
+    cityMap: { getLayer: () => ({}), setFilter: (id, value) => filters[id] = value,
+      getFilter: id => filters[id],
+      setPaintProperty: (id, property, value) => paints[id + ':' + property] = value,
+      getSource: id => ({ setData: value => sources[id] = value }), getZoom: () => 2 },
+    visibility: { capitals: true, warnings: true, seas: false, rivers: true, lakes: true },
+    savedCityPosition: () => [20, 50], isMajorCity: () => false,
+    markerLayer: source => source + '-markers',
+    viewportInsidePoland: () => false, visibleWorldBounds: () => [-180, -80, 180, 80],
+    polishViewport: () => null, containsBounds: () => false, worldCitiesView: {}, loadedVillageBounds: null,
+    setLayerVisible: (id, value) => shown[id] = value, loadRegions: () => {},
+    presetShowsWater: () => false, mapColors: { lake: 'blue' },
+    cityZoom: 9, villageZoom: 9, settlementViewportFits: () => false, addOverview: () => {},
+  });
+  for (const id of ['polishCityLayer', 'polishMajorLayer', 'cityLayer', 'overviewCities', 'villageLayer', 'overviewVillages',
+    'visitedPlaceLayer', 'majorCityLayer', 'villageSource', 'visitedCountryLayer', 'countryFillLayer', 'continentFillLayer',
+    'continentOutlineLayer', 'capitalLayer', 'regionLayer', 'visitedRegionLayer', 'visitedCitiesSource', 'warningLayer', 'visitedPinLayer']) context[id] = id;
+  const block = (start, end) => source.slice(source.indexOf(start), source.indexOf(end));
+  vm.runInContext(block('const defaultPresets =', 'const layerLabels =')
+    + block('const isSavedPreset =', '// U.S. Department')
+    + block('function statusColor(', 'function getRegionCatalogue(')
+    + block('function paintCityPins(', 'function pinImage(')
+    + block('function syncPresetLayers(', 'function setLayerVisible('), context);
+  return { context, filters, paints, sources, shown };
+}
+
+test('saved-only presets retain the combined view and filter both statuses consistently', () => {
+  for (const [preset, suffixes] of [['visited', ['visited', 'planned']], ['visited-only', ['visited']], ['planned-only', ['planned']]]) {
+    const { context: c, filters, paints, sources, shown } = setup(preset);
+    c.paintVisits(); c.syncVisitedCountries(); c.syncCapitalOutlines(); c.paintRegions(); c.paintCityPins(); c.syncPresetLayers();
+    const ids = category => suffixes.map(suffix => category + '-' + suffix);
+    const plain = value => JSON.parse(JSON.stringify(value));
+    assert.deepEqual(plain(filters.visitedPlaceLayer[2][1]), ids('miasto'));
+    assert.deepEqual(plain(filters.visitedCountryLayer[2][2][1]), ids('panstwo'));
+    assert.deepEqual(plain(filters.visitedRegionLayer[2][1]), ids('rejon'));
+    assert.deepEqual(plain(filters.capitalLayer[2][1]), ids('miasto'));
+    assert.deepEqual(plain(sources.visitedCitiesSource.features.map(feature => feature.properties.id)), ids('miasto'));
+    assert.equal(c.rowInSavedPreset({ kategoria: 'kontynent', tryb: '' }), false);
+    assert.equal(c.rowInSavedPreset({ kategoria: 'kontynent', tryb: 'plan' }), false);
+    assert.equal(shown.countries, true);
+    assert.equal(shown.visitedPlaceLayer, true);
+    assert.equal(shown.visitedRegionLayer, true);
+    assert.equal(shown.visitedPinLayer, true);
+    assert.equal(shown.cityLayer, false);
+    assert.equal(shown.warningLayer, false);
+    const fill = paints['visitedCountryLayer:fill-color'];
+    assert.deepEqual(plain(fill[1][2][1]), suffixes.includes('visited') ? ['panstwo-visited'] : []);
+    assert.deepEqual(plain(fill[3][2][1]), suffixes.includes('planned') ? ['panstwo-planned'] : []);
+  }
+});
+
+test('switching back to ordinary views restores both statuses and all capital outlines', () => {
+  const { context: c, filters, sources } = setup('planned-only');
+  c.paintCityPins(); c.syncCapitalOutlines();
+  c.activePreset = 'countries';
+  c.paintCityPins(); c.syncCapitalOutlines();
+  assert.equal(sources.visitedCitiesSource.features.length, 2);
+  assert.equal(filters.capitalLayer, null);
+  assert.equal(vm.runInContext("isSavedPreset('visited-only')", c), true);
+  assert.equal(vm.runInContext("isSavedPreset('planned-only')", c), true);
+  assert.equal(vm.runInContext("isSavedPreset('countries')", c), false);
+});
+
+test('focus hierarchy keeps layers fixed at every zoom and villages require opt-in', () => {
+  for (const zoom of [2, 15]) for (const [category, villages, countries, regions, cities] of [
+    ['kontynent', false, true, false, false], ['panstwo', false, false, true, false],
+    ['rejon', false, false, false, true], ['rejon', true, false, false, true],
+  ]) {
+    const { context: c, shown } = setup('countries',category,villages);
+    c.cityMap.getZoom=()=>zoom;
+    c.syncPresetLayers();
+    assert.equal(shown.countryFillLayer,countries);
+    assert.equal(shown.regionLayer,regions);
+    assert.equal(shown.polishCityLayer,cities);
+    assert.equal(shown['area-capital-fill'],category==='panstwo');
+    assert.equal(shown['area-capital-pins'],category==='panstwo');
+    assert.equal(shown.overviewVillages,category==='rejon' && villages);
+    assert.equal(shown['visited-village-pins'],category==='rejon' && villages);
+    assert.equal(shown.visitedPinLayer,false);
+  }
+});

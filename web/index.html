@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Zaznaczaj odwiedzone państwa i miasta na mapie świata.">
+  <title>IKE Travel Tracker</title>
+  <link rel="stylesheet" href="./mapa.css">
+  <link rel="stylesheet" href="./maplibre.css">
+  <script>
+    if (location.protocol === "file:") document.documentElement.classList.add("local-file");
+  </script>
+  <script src="./maplibre.js" defer></script>
+  <script src="./pmtiles.js" defer></script>
+  <script src="./jezyk.js" defer></script>
+  <script src="./obszar.js" defer></script>
+  <script src="./mapa.js" defer></script>
+  <script src="./wyzwania.js" defer></script>
+  <script src="./dziennik.js" defer></script>
+</head>
+<body>
+  <header class="top">
+    <div class="shell top-inner">
+      <a class="brand" id="brand-home" href="./">
+        <span class="logo" aria-hidden="true">🧭</span>
+        <h1>IKE Travel Tracker</h1>
+      </a>
+      <nav class="atlas-nav" aria-label="Zakładki atlasu" data-en-label="Atlas sections">
+        <button type="button" data-section="map-view" aria-controls="map-view" aria-current="page" data-en="Map">Mapa</button>
+        <button type="button" data-section="challenges-view" aria-controls="challenges-view" data-en="Challenges">Wyzwania</button>
+        <button type="button" data-section="diary-view" aria-controls="diary-view" data-en="Journal">Dziennik</button>
+        <button type="button" data-section="achievements-view" aria-controls="achievements-view" data-en="Achievements">Osiągnięcia</button>
+      </nav>
+    </div>
+  </header>
+  <section class="launch-guide card" aria-labelledby="launch-title">
+    <h2 id="launch-title" data-en="Launch IKE Travel Tracker">Uruchom IKE Travel Tracker</h2>
+    <p data-en="Double-click Uruchom mapę.cmd in the app folder to open the atlas in your browser.">W folderze aplikacji kliknij dwukrotnie plik Uruchom mapę.cmd. Windows otworzy atlas w przeglądarce.</p>
+    <a class="download" href="http://127.0.0.1:8765/" data-en="Open the running atlas">Otwórz mapę, jeśli atlas już działa</a>
+  </section>
+  <main id="map-view" class="shell workspace">
+    <aside id="map-sidebar" class="sidebar card" aria-label="Kategorie i miejsca" data-en-label="Views and places">
+      <section id="place-details" class="map-detail" aria-labelledby="place-details-title" hidden>
+        <div class="place-details-heading">
+          <div class="place-details-name">
+            <h2 id="place-details-title" tabindex="-1"></h2>
+            <p id="place-details-reading" class="place-reading" lang="und-Latn" hidden></p>
+          </div>
+          <button id="close-place-details" class="detail-close" type="button" aria-label="Zamknij szczegóły miejsca" data-en-label="Close place details">×</button>
+        </div>
+        <form id="place-form" class="detail-form">
+          <fieldset id="place-fields" class="detail-fields">
+            <label class="place-plan-option"><input id="place-planned" type="checkbox"><span data-en="Planned">Zaplanowane</span></label>
+            <label for="place-date" id="place-date-label"></label>
+            <input id="place-date" type="date" max="9999-12-31">
+            <label for="place-rating" id="place-rating-label"></label>
+            <input id="place-rating" type="text" inputmode="decimal" maxlength="32" autocomplete="off">
+            <label for="place-note" data-en="Note">Notatka</label>
+            <textarea id="place-note" rows="3" maxlength="2000"></textarea>
+            <div id="place-return-visits">
+              <div id="place-visit-dates"></div>
+              <button id="add-place-visit" type="button" data-en="Add another visit">Dodaj kolejną wizytę</button>
+            </div>
+          </fieldset>
+          <div class="place-detail-actions">
+            <button id="save-place" type="submit" data-en="Save">Zapisz</button>
+            <button id="remove-place" type="button" data-en="Remove place">Usuń miejsce</button>
+          </div>
+        </form>
+      </section>
+      <div id="map-places" class="places">
+        <label for="search" data-en="Find a place">Znajdź miejsce</label>
+        <input type="search" id="search" placeholder="Wpisz nazwę…" autocomplete="off" maxlength="100">
+        <h2 id="list-title" data-en="Search results" hidden>Wyniki wyszukiwania</h2>
+        <ul id="results"></ul>
+        <p id="empty" data-en="No results in this view." hidden>Brak wyników w tym widoku.</p>
+      </div>
+      <details class="map-views" open>
+      <summary><span data-en="Map views">Widoki mapy</span></summary>
+      <div class="categories" role="group" aria-label="Widok mapy" data-en-label="Map views">
+        <button type="button" data-preset="continents" aria-pressed="false"><span aria-hidden="true" class="category-icon">◉</span><span class="preset-label">Kontynenty</span><strong id="continent-count">0</strong></button>
+        <button type="button" data-preset="countries" aria-pressed="true"><span aria-hidden="true" class="category-icon">◎</span><span class="preset-label">Państwa</span><strong id="country-count">0</strong></button>
+        <button type="button" data-preset="regions" aria-pressed="false"><span aria-hidden="true" class="category-icon">◇</span><span class="preset-label">Rejony</span><strong id="region-count">0</strong></button>
+        <button type="button" data-preset="major" aria-pressed="false"><span aria-hidden="true" class="category-icon">▣</span><span class="preset-label">Duże miasta</span><strong id="major-count">–</strong></button>
+        <button type="button" data-preset="cities" aria-pressed="false"><span aria-hidden="true" class="category-icon">⌑</span><span class="preset-label">Wszystkie miasta</span><strong id="city-count">0</strong></button>
+        <button type="button" data-preset="settlements" aria-pressed="false"><span aria-hidden="true" class="category-icon">⌖</span><span class="preset-label">Miasta i wsie</span><strong id="settlement-count">0</strong></button>
+        <button type="button" data-preset="visited" aria-pressed="false"><span aria-hidden="true" class="category-icon">✓</span><span class="preset-label">Odwiedzone</span><strong id="visited-count">0</strong></button>
+        <button type="button" data-preset="visited-only" aria-pressed="false" hidden><span aria-hidden="true" class="category-icon">✓</span><span class="preset-label">Tylko odwiedzone</span><strong id="visited-only-count">0</strong></button>
+        <button type="button" data-preset="planned-only" aria-pressed="false" hidden><span aria-hidden="true" class="category-icon">◇</span><span class="preset-label">Tylko zaplanowane</span><strong id="planned-only-count">0</strong></button>
+      </div>
+      </details>
+      <section id="pin-details" class="map-detail" aria-labelledby="pin-details-title" hidden>
+        <div class="place-details-heading">
+          <h2 id="pin-details-title" tabindex="-1"></h2>
+          <button id="close-pin-details" class="detail-close" type="button" aria-label="Zamknij pinezkę" data-en-label="Close pin editor">×</button>
+        </div>
+        <form id="pin-form" class="detail-form">
+          <fieldset id="pin-fields" class="detail-fields">
+            <label for="pin-name" data-en="Name">Nazwa</label>
+            <input id="pin-name" type="text" maxlength="100" required>
+            <label for="pin-date" data-en="Visit date">Data wizyty</label>
+            <input id="pin-date" type="date" max="9999-12-31">
+            <div id="pin-return-visits">
+              <div id="pin-visit-dates"></div>
+              <button id="add-pin-visit" type="button" data-en="Add another visit">Dodaj kolejną wizytę</button>
+            </div>
+            <label for="pin-long" data-en="Description">Opis</label>
+            <textarea id="pin-long" rows="3" maxlength="3000"></textarea>
+            <label for="pin-color" data-en="Pin color">Kolor pinezki</label>
+            <input id="pin-color" type="color" value="#d62f45">
+          </fieldset>
+          <div class="place-detail-actions">
+            <button id="save-pin" type="submit" data-en="Save">Zapisz</button>
+            <button id="remove-pin" type="button" data-en="Remove pin" hidden>Usuń pinezkę</button>
+          </div>
+        </form>
+      </section>
+      <p id="status" role="status" data-en="Loading the map…">Wczytywanie mapy…</p>
+    </aside>
+    <section class="map card" aria-labelledby="map-title">
+      <div class="map-heading">
+        <h2 id="map-title" data-en="World map">Mapa świata</h2>
+        <div class="map-heading-tools">
+          <button id="focus-area" type="button" aria-pressed="false" aria-label="Wyodrębnij obszar" title="Wyodrębnij obszar" data-en-label="Focus on an area" data-en-title="Focus on an area" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="6.5"/><path d="m15 15 6 6"/></svg></button>
+          <button id="add-pin" type="button" aria-pressed="false" aria-label="Dodaj pinezkę" title="Dodaj pinezkę" data-en-label="Add pin" data-en-title="Add pin"><span class="pin-glyph" aria-hidden="true"></span></button>
+        </div>
+        <div id="area-focus-banner" hidden><label id="area-focus-villages-option" hidden><input id="area-focus-villages" type="checkbox"><span data-en="Villages">Wsie</span></label><label id="area-focus-detail-option" hidden title="Wymaga dostępu do internetu." data-en-title="Requires internet access."><input type="checkbox" data-online-setting="online_focus"><span data-en="Detailed map">Szczegółowa mapa</span></label><button id="leave-area-focus" type="button" data-en="Back to full map">Wróć do pełnej mapy</button></div>
+        <p id="map-hint">Kliknij państwo, aby otworzyć jego szczegóły.</p>
+        <button id="retry-map" type="button" data-en="Retry loading boundaries" hidden>Ponów pobieranie obrysów</button>
+      </div>
+      <div id="map-stage">
+        <canvas id="atlas" aria-label="Interaktywna mapa. Do obsługi klawiaturą użyj wyszukiwarki miejsc." data-en-label="Interactive map. Use the place search for keyboard access."></canvas>
+        <div id="city-map" hidden aria-label="Interaktywna mapa świata" data-en-label="Interactive world map"></div>
+        <div id="map-pins" role="group" aria-label="Własne pinezki" data-en-label="Custom pins">
+          <button id="pin-draft" class="map-pin" type="button" aria-label="Nowa pinezka" data-en-label="New pin" hidden><span class="pin-glyph" aria-hidden="true"></span></button>
+        </div>
+        <p id="pin-placement-hint" role="status" data-en="Click the map to place the pin." hidden>Kliknij mapę, aby umieścić pinezkę.</p>
+        <div class="controls" role="group" aria-label="Sterowanie mapą" data-en-label="Map controls">
+          <button id="zoom-in" type="button" aria-label="Przybliż" title="Przybliż" data-en-label="Zoom in" data-en-title="Zoom in">+</button>
+          <button id="zoom-out" type="button" aria-label="Oddal" title="Oddal" data-en-label="Zoom out" data-en-title="Zoom out">−</button>
+          <button id="reset" type="button" aria-label="Przywróć domyślne przybliżenie" title="Przywróć domyślne przybliżenie" data-en-label="Reset zoom" data-en-title="Reset zoom">⌂</button>
+        </div>
+      </div>
+      <div id="tooltip" hidden></div>
+      <footer class="map-footer" aria-label="Pasek mapy" data-en-label="Map toolbar">
+        <div class="tool-buttons">
+          <button id="toggle-sidebar" type="button" aria-expanded="true" aria-controls="map-sidebar"><span id="sidebar-icon" aria-hidden="true">«</span><span data-en="Sidebar">Panel boczny</span></button>
+          <button id="open-visibility-settings" type="button" aria-haspopup="dialog"><span aria-hidden="true">⚙</span><span data-en="Options">Opcje</span></button>
+          <button id="toggle-legend" type="button" aria-expanded="false" aria-controls="legend-panel"><span aria-hidden="true">▤</span><span data-en="Legend">Legenda</span></button>
+          <button id="toggle-shortcuts" type="button" aria-expanded="false" aria-controls="shortcuts-panel"><span aria-hidden="true">⌨</span><span data-en="Shortcuts">Skróty</span></button>
+          <button id="toggle-libraries" type="button" aria-expanded="false" aria-controls="libraries-panel"><span aria-hidden="true">▱</span><span data-en="Libraries">Biblioteki</span></button>
+          <button id="toggle-data-dates" type="button" aria-expanded="false" aria-controls="data-dates-panel"><span aria-hidden="true">◷</span><span data-en="Dates">Daty</span></button>
+        </div>
+        <div class="map-scale" aria-label="Skala mapy" data-en-label="Map scale">
+          <div id="scale-bar" class="scale-bar" aria-hidden="true"></div>
+          <span id="scale-distance" class="scale-distance"></span>
+        </div>
+        <section id="legend-panel" class="toolbar-panel card" aria-labelledby="legend-title" hidden>
+          <h2 id="legend-title" data-en="Legend">Legenda</h2>
+          <div class="legend">
+            <span><i></i><span data-en="Unvisited">Nieodwiedzone</span></span>
+            <span class="visited-key"><i></i><span data-en="Visited">Odwiedzone</span></span>
+            <span class="plan-key"><i></i><span data-en="Planned">W planach</span></span>
+            <span id="water-key" class="water-key" hidden><i></i><span id="water-key-label">Rzeki i jeziora</span></span>
+            <span id="forest-key" class="forest-key" hidden><i></i><span data-en="Forests">Lasy</span></span>
+            <span id="capital-key" class="capital-key" hidden><i></i><span data-en="Capitals">Stolice</span></span>
+            <span id="warning-key" class="warning-key" title="Departament Stanu USA · poziom 4 (nie podróżuj)" data-en-title="U.S. Department of State · Level 4 (Do Not Travel)" hidden><i aria-hidden="true"></i><span data-en="Dangerous Places">Miejsca Niebezpieczne</span></span>
+          </div>
+        </section>
+        <section id="shortcuts-panel" class="toolbar-panel card" aria-labelledby="shortcuts-title" hidden>
+          <h2 id="shortcuts-title" data-en="Shortcuts">Skróty</h2>
+          <dl class="map-shortcuts">
+            <dt><kbd>Shift</kbd> + <span data-en="click">kliknięcie</span></dt><dd data-en="Remove a saved place or pin">Usuń zapisane miejsce lub pinezkę</dd>
+            <dt><kbd>Ctrl</kbd> + <span data-en="click">kliknięcie</span></dt><dd data-en="Plan a new place">Dodaj nowe miejsce do planów</dd>
+            <dt><kbd>Alt</kbd> + <span data-en="click">kliknięcie</span></dt><dd data-en="Add a custom pin">Dodaj własną pinezkę</dd>
+            <dt data-en="Double-click">Podwójne kliknięcie</dt><dd data-en="Plan a new place">Dodaj nowe miejsce do planów</dd>
+            <dt><kbd>←</kbd> / <kbd>→</kbd></dt><dd data-en="Previous / next map view">Poprzedni / następny widok mapy</dd>
+            <dt><kbd>+</kbd> / <kbd>−</kbd></dt><dd data-en="Zoom in / out">Przybliż / oddal mapę</dd>
+            <dt><kbd>0</kbd></dt><dd data-en="Reset the map view">Przywróć domyślny widok</dd>
+            <dt><kbd>Esc</kbd></dt><dd data-en="Close the open panel">Zamknij otwarty panel</dd>
+          </dl>
+        </section>
+        <section id="libraries-panel" class="toolbar-panel card" aria-labelledby="libraries-title" hidden>
+          <h2 id="libraries-title" data-en="Libraries and data sources">Biblioteki i źródła danych</h2>
+          <div class="library-links">
+            <a href="https://maplibre.org/" target="_blank" rel="noopener">MapLibre GL JS</a>
+            <a href="https://docs.protomaps.com/pmtiles/" target="_blank" rel="noopener">PMTiles</a>
+            <a href="https://www.naturalearthdata.com/" target="_blank" rel="noopener">Natural Earth</a>
+            <a href="https://overturemaps.org/attribution/" target="_blank" rel="noopener">Overture Maps</a>
+            <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap</a>
+            <a href="https://www.geoportal.gov.pl/pl/dane/panstwowy-rejestr-granic-prg/" target="_blank" rel="noopener">PRG</a>
+            <a href="https://www.geoportal.gov.pl/pl/dane/baza-danych-obiektow-topograficznych-bdot10k/" target="_blank" rel="noopener">BDOT10k</a>
+          </div>
+        </section>
+        <section id="data-dates-panel" class="toolbar-panel card" aria-labelledby="data-dates-title" hidden>
+          <h2 id="data-dates-title" data-en="Data dates">Daty danych</h2>
+          <dl class="data-dates">
+            <div><dt data-en="Local basemap build">Przygotowanie lokalnego podkładu</dt><dd><time datetime="2026-11-17"></time></dd></div>
+            <div><dt data-en="Local world city data build">Przygotowanie lokalnych danych o miastach świata</dt><dd><time datetime="2026-11-18"></time></dd></div>
+            <div id="overture-data-date" hidden><dt data-en="Overture Maps release in use">Wczytane wydanie Overture Maps</dt><dd><time></time></dd></div>
+            <div><dt data-en="U.S. Department of State · Level 4 advisory snapshot">Departament Stanu USA · odczyt ostrzeżeń poziomu 4</dt><dd><time id="warning-data-date"></time></dd></div>
+          </dl>
+        </section>
+      </footer>
+    </section>
+  </main>
+  <main id="challenges-view" class="shell challenges-view" aria-label="Wyzwania" data-en-label="Challenges" hidden>
+    <section id="challenge-picker" class="card challenge-picker" aria-labelledby="challenges-title">
+      <h2 id="challenges-title" data-en="Choose a challenge">Wybierz wyzwanie</h2>
+      <p id="challenge-pins-status" role="status"></p>
+      <div class="challenge-cards">
+        <div class="challenge-card">
+          <button class="challenge-choice" type="button" data-challenge="parks">
+          <span class="challenge-choice-icon parks-icon" aria-hidden="true">♧</span>
+          <strong class="challenge-choice-name" data-en="Polish National Parks">Polskie Parki Narodowe</strong>
+          <span data-en="Explore 23 parks. Check any attraction to enable park completion.">Odkrywaj 23 parki. Zaznacz dowolną atrakcję, aby móc zaliczyć park.</span>
+          <span id="parks-card-progress" class="challenge-card-progress"></span>
+          </button>
+          <button class="challenge-pin" type="button" data-pin-challenge="parks" aria-pressed="false" disabled>☆</button>
+        </div>
+        <div class="challenge-card">
+          <button class="challenge-choice" type="button" data-challenge="bliza">
+          <span class="challenge-choice-icon bliza-icon" aria-hidden="true">◈</span>
+          <strong><span class="challenge-choice-name" data-en="Bliza Challenge">Wyzwanie Bliza</span> <span id="bliza-card-medal" class="bliza-medal" role="img" hidden></span></strong>
+          <span data-en="Track your lighthouse visits in Poland and around the world. Find out how to apply for the BLIZA badge.">Zapisuj wizyty w latarniach w Polsce i na świecie. Sprawdź, jak zdobyć odznakę BLIZA.</span>
+          <span id="bliza-card-progress" class="challenge-card-progress"></span>
+          </button>
+          <button class="challenge-pin" type="button" data-pin-challenge="bliza" aria-pressed="false" disabled>☆</button>
+        </div>
+        <div class="challenge-card">
+          <button class="challenge-choice" type="button" data-challenge="islands">
+          <span class="challenge-choice-icon islands-icon" aria-hidden="true">≈</span>
+          <strong class="challenge-choice-name" data-en="Greek Islands">Greckie wyspy</strong>
+          <span data-en="Visit any 72 Greek islands from the challenge list.">Odwiedź dowolne 72 greckie wyspy z listy wyzwania.</span>
+          <span id="islands-card-progress" class="challenge-card-progress"></span>
+          </button>
+          <button class="challenge-pin" type="button" data-pin-challenge="islands" aria-pressed="false" disabled>☆</button>
+        </div>
+        <div class="challenge-card">
+          <button class="challenge-choice" type="button" data-challenge="hewelion">
+          <span class="challenge-choice-icon" aria-hidden="true">🦁</span>
+          <strong class="challenge-choice-name">Hewelion</strong>
+          <span data-en="Find Gdańsk’s bronze lions and discover what they represent.">Odszukaj gdańskie lwy i odkryj, co symbolizują.</span>
+          <span id="hewelion-card-progress" class="challenge-card-progress"></span>
+          </button>
+          <button class="challenge-pin" type="button" data-pin-challenge="hewelion" aria-pressed="false" disabled>☆</button>
+        </div>
+        <div class="challenge-card">
+          <button class="challenge-choice" type="button" data-challenge="castles">
+          <span class="challenge-choice-icon" aria-hidden="true">♜</span>
+          <strong class="challenge-choice-name" data-en="Polish Castles">Polskie zamki</strong>
+          <span data-en="Visit all outstanding castles and at least 75% of the castles open to visitors.">Odwiedź wszystkie zamki wybitne i co najmniej 75% zamków dostępnych do zwiedzania.</span>
+          <span id="castles-card-progress" class="challenge-card-progress"></span>
+          </button>
+          <button class="challenge-pin" type="button" data-pin-challenge="castles" aria-pressed="false" disabled>☆</button>
+        </div>
+      </div>
+    </section>
+    <div id="challenge-detail" hidden>
+      <div class="challenge-workspace workspace">
+      <aside id="challenge-sidebar" class="card sidebar challenge-panel" aria-labelledby="challenge-panel-title">
+        <div id="challenge-extent" class="challenge-switch" role="group" aria-label="Zasięg mapy" data-en-label="Map coverage" hidden>
+          <button type="button" data-extent="poland" aria-pressed="true" data-en="Poland">Polska</button>
+          <button type="button" data-extent="world" aria-pressed="false" data-en="World">Świat</button>
+        </div>
+        <h3 id="challenge-panel-title"></h3>
+        <p id="challenge-progress" role="status"></p>
+        <div id="bliza-goal" hidden>
+          <p id="bliza-goal-label"></p>
+          <progress id="bliza-goal-progress" aria-labelledby="bliza-goal-label"></progress>
+        </div>
+        <div id="lighthouse-search" hidden>
+          <label class="challenge-search-label" for="challenge-search" data-en="Search the list">Przeszukaj listę</label>
+          <input type="search" id="challenge-search" autocomplete="off" maxlength="100">
+        </div>
+        <ul id="challenge-list"></ul>
+        <p id="challenge-list-note"></p>
+        <div id="challenge-selection"></div>
+        <p id="challenge-status" role="status"></p>
+      </aside>
+      <section class="card map challenge-map-card" aria-labelledby="challenge-map-title">
+        <div class="map-heading">
+          <h2 id="challenge-map-title" tabindex="-1"><span id="challenge-name"></span> <span id="bliza-medal" role="img" hidden></span></h2>
+          <p id="challenge-hint"></p>
+        </div>
+        <div id="challenge-map-stage">
+          <div id="challenge-map" aria-label="Interaktywna mapa wyzwania" data-en-label="Interactive challenge map"></div>
+          <a id="challenge-osm-credit" href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener" hidden>© OpenStreetMap</a>
+          <div class="controls">
+            <button type="button" id="challenge-zoom-in" aria-label="Przybliż mapę wyzwania" data-en-label="Zoom in on the challenge map">+</button>
+            <button type="button" id="challenge-zoom-out" aria-label="Oddal mapę wyzwania" data-en-label="Zoom out on the challenge map">−</button>
+            <button type="button" id="challenge-reset" aria-label="Przywróć widok wyzwania" data-en-label="Reset challenge map view">⌂</button>
+          </div>
+        </div>
+        <footer class="map-footer" aria-label="Pasek mapy wyzwania" data-en-label="Challenge map toolbar">
+          <div class="tool-buttons">
+            <button id="challenge-back" type="button"><span aria-hidden="true">‹</span><span data-en="All challenges">Wszystkie wyzwania</span></button>
+            <button id="challenge-toggle-sidebar" type="button" aria-controls="challenge-sidebar" aria-expanded="true"><span id="challenge-sidebar-icon" aria-hidden="true">«</span><span data-en="Sidebar">Panel boczny</span></button>
+            <button id="park-options-button" type="button" aria-haspopup="dialog" aria-controls="visibility-settings" hidden><span aria-hidden="true">⚙</span><span data-en="Options">Opcje</span></button>
+            <button id="island-options-button" type="button" aria-haspopup="dialog" aria-controls="island-options" hidden><span aria-hidden="true">⚙</span><span data-en="Options">Opcje</span></button>
+            <button id="hewelion-options-button" type="button" aria-haspopup="dialog" aria-controls="hewelion-options" hidden><span aria-hidden="true">⚙</span><span data-en="Options">Opcje</span></button>
+            <button id="castle-options-button" type="button" aria-haspopup="dialog" aria-controls="castle-options" hidden><span aria-hidden="true">⚙</span><span data-en="Settings">Ustawienia</span></button>
+            <button id="challenge-rules-button" type="button" aria-haspopup="dialog" aria-controls="bliza-rules" hidden><span aria-hidden="true">▤</span><span data-en="Rules">Zasady</span></button>
+            <button id="castle-legend-button" type="button" aria-controls="castle-legend" aria-expanded="false" hidden><span aria-hidden="true">◫</span><span data-en="Legend">Legenda</span></button>
+            <button id="challenge-source-button" type="button" aria-controls="challenge-sources" aria-expanded="false"><span aria-hidden="true">▱</span><span data-en="Sources">Źródła</span></button>
+          </div>
+          <section id="castle-legend" class="toolbar-panel card" aria-labelledby="castle-legend-title" hidden>
+            <h2 id="castle-legend-title" data-en="Legend">Legenda</h2>
+            <ul id="castle-legend-keys"></ul>
+          </section>
+          <section id="challenge-sources" class="toolbar-panel card" aria-labelledby="challenge-source-title" hidden>
+            <h2 id="challenge-source-title" data-en="Map sources">Źródła mapy</h2>
+            <div class="library-links">
+              <a id="park-credit" href="https://www.gov.pl/web/gdos/dostep-do-danych-geoprzestrzennych" target="_blank" rel="noopener">Geoserwis GDOŚ</a>
+              <a id="park-guide" href="https://ppn.gov.pl/lista-parkow-narodowych" target="_blank" rel="noopener" data-en="Official park guide">Przewodnik po parkach</a>
+              <a id="park-land-cover-credit" href="https://overturemaps.org/" target="_blank" rel="noopener" hidden>Overture Maps</a>
+              <a id="lighthouse-credit" href="https://aidb.si/d/lighthouses" target="_blank" rel="noopener" hidden>Wikidata · CC0</a>
+              <a id="island-credit" href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener" hidden>© OpenStreetMap · ODbL</a>
+              <a id="hewelion-credit" href="https://visitgdansk.com/pl/pl/lew-hewelion" target="_blank" rel="noopener" data-en="Official Hewelion Trail" hidden>Oficjalny szlak Heweliona</a>
+              <a id="gdansk-map-credit" href="https://ckan.multimediagdansk.pl/dataset/granice-dzielnic-w-gdansku" target="_blank" rel="noopener" data-en="City of Gdańsk · districts and coastline · CC BY" hidden>Urząd Miejski w Gdańsku · dzielnice i wybrzeże · CC BY</a>
+              <a id="castle-credit" href="https://github.com/Flightmussy/castlemap-dataset" target="_blank" rel="noopener" hidden>Wikidata · Castlemap</a>
+              <a id="castle-gps-credit" href="http://zamki.net.pl/gps.php" target="_blank" rel="noopener" hidden>Zamki.net.pl · GPS</a>
+              <a id="castle-pwr-credit" href="https://zamki.pwr.edu.pl/" target="_blank" rel="noopener" hidden>Politechnika Wrocławska</a>
+              <a href="https://www.naturalearthdata.com/" target="_blank" rel="noopener">Natural Earth</a>
+            </div>
+          </section>
+        </footer>
+      </section>
+      </div>
+    </div>
+    <dialog id="castle-options" class="card bliza-rules" aria-labelledby="castle-options-title">
+      <h2 id="castle-options-title" data-en="Castle settings">Ustawienia zamków</h2>
+      <label class="island-option" title="Wymaga dostępu do internetu." data-en-title="Requires internet access."><input type="checkbox" data-online-setting="online_castles"> <span data-en="Detailed map">Szczegółowa mapa</span></label>
+      <div id="castle-options-categories"></div>
+      <p id="castle-options-status" role="status"></p>
+      <form class="settings-actions" method="dialog">
+        <button type="button" class="main-settings-link" data-main-settings data-en="Main settings">Ustawienia główne</button>
+        <button type="submit" class="save-settings" data-en="Close">Zamknij</button>
+      </form>
+    </dialog>
+    <dialog id="hewelion-options" class="card bliza-rules" aria-labelledby="hewelion-options-title">
+      <h2 id="hewelion-options-title" data-en="Hewelion options">Opcje Heweliona</h2>
+      <label class="island-option" title="Wymaga dostępu do internetu." data-en-title="Requires internet access."><input type="checkbox" data-online-setting="online_hewelion"> <span data-en="Detailed map">Szczegółowa mapa</span></label>
+      <label class="island-option"><input type="checkbox" data-visibility-setting="seas"> <span data-en="Sea colour">Kolor morza</span></label>
+      <p id="hewelion-options-status" role="status"></p>
+      <form class="settings-actions" method="dialog">
+        <button type="button" class="main-settings-link" data-main-settings data-en="Main settings">Ustawienia główne</button>
+        <button type="submit" class="save-settings" data-en="Close">Zamknij</button>
+      </form>
+    </dialog>
+    <dialog id="island-options" class="card bliza-rules" aria-labelledby="island-options-title">
+      <h2 id="island-options-title" data-en="Options">Opcje</h2>
+      <label class="island-option"><input id="enable-cyprus" type="checkbox" checked> <span data-en="Cyprus">Cypr</span></label>
+      <p id="island-options-status" role="status"></p>
+      <form class="settings-actions" method="dialog">
+        <button type="button" class="main-settings-link" data-main-settings data-en="Main settings">Ustawienia główne</button>
+        <button type="submit" class="save-settings" data-en="Close">Zamknij</button>
+      </form>
+    </dialog>
+    <dialog id="bliza-rules" class="card bliza-rules" aria-labelledby="bliza-rules-title">
+      <h2 id="bliza-rules-title" data-en="How to earn the BLIZA badge">Zasady zdobycia odznaki BLIZA</h2>
+      <p data-en="Start by buying a BLIZA Passport at a participating Polish lighthouse ticket office in summer, or from the TP NMM online shop year-round.">Na początek kup Paszport BLIZY. Jest dostępny latem w kasach uczestniczących polskich latarni, a przez cały rok w sklepie internetowym TP NMM.</p>
+      <ol>
+        <li data-en="Bronze badge — visit any 5 Polish lighthouses from the list within 2 years.">Odznaka brązowa — odwiedź 5 dowolnych polskich latarni z wykazu w ciągu 2 lat.</li>
+        <li data-en="Silver badge — after bronze, visit the remaining Polish lighthouses from the list. No time limit.">Odznaka srebrna — po zdobyciu brązowej odwiedź pozostałe polskie latarnie z wykazu. Bez limitu czasu.</li>
+        <li data-en="Gold badge — after silver, visit 3 foreign lighthouses. No time limit.">Odznaka złota — po zdobyciu srebrnej odwiedź 3 zagraniczne latarnie. Bez limitu czasu.</li>
+      </ol>
+      <h3 data-en="Polish lighthouses in the BLIZA Passport">Polskie latarnie w Paszporcie BLIZY</h3>
+      <ul id="bliza-rules-lighthouses"></ul>
+      <h3 data-en="How to receive the badge">Jak otrzymać odznakę</h3>
+      <p data-en="Collect stamps or other proof of your visits. Send the completed application, passport and confirmations to TP NMM, ul. Ołowianka 9–13, 80-751 Gdańsk, Poland. The organizer verifies the application and sends the badge.">Zbierz pieczątki lub inne potwierdzenia wizyt. Wypełnij wniosek i wyślij go z paszportem oraz potwierdzeniami do TP NMM, ul. Ołowianka 9–13, 80-751 Gdańsk. Organizator zweryfikuje wniosek i wyśle odznakę.</p>
+      <p><a href="https://tpnmm.pl/zasady/" target="_blank" rel="noopener" data-en="Organizer’s website">Strona organizatora</a></p>
+      <form class="settings-actions" method="dialog">
+        <button type="submit" class="save-settings" data-en="Close">Zamknij</button>
+      </form>
+    </dialog>
+  </main>
+  <main id="diary-view" class="shell diary-view" aria-labelledby="diary-title" hidden>
+    <section class="card diary-panel">
+      <div class="diary-heading">
+        <h2 id="diary-title" data-en="Journal">Dziennik</h2>
+        <button id="diary-new-trip" type="button" data-en="Group visits" disabled>Połącz wizyty</button>
+      </div>
+      <p id="diary-status" role="status"></p>
+      <details class="diary-filters">
+        <summary data-en="Filters">Filtry</summary>
+        <div id="diary-filter-options" class="diary-filter-options" role="group" aria-label="Typy wpisów" data-en-label="Entry types"></div>
+        <button id="diary-show-all" type="button" data-en="Show all">Pokaż wszystkie</button>
+      </details>
+      <form id="diary-trip-form" hidden>
+        <fieldset id="diary-trip-fields">
+          <legend id="diary-form-title"></legend>
+          <div class="diary-input-grid">
+            <label class="diary-wide-field" for="diary-trip-name"><span data-en="Trip name">Nazwa wycieczki</span><input id="diary-trip-name" type="text" maxlength="100"></label>
+            <label for="diary-start"><span data-en="Start date">Data początku</span><input id="diary-start" type="date" max="9999-12-31"></label>
+            <label for="diary-end"><span data-en="End date">Data końca</span><input id="diary-end" type="date" max="9999-12-31"></label>
+            <label class="diary-wide-field" for="diary-notes"><span data-en="Trip notes">Notatki z wycieczki</span><textarea id="diary-notes" rows="3" maxlength="2000"></textarea></label>
+          </div>
+          <div class="diary-form-actions">
+            <button id="diary-save" type="submit" data-en="Save trip">Zapisz wycieczkę</button>
+            <button id="diary-cancel" type="button" data-en="Cancel">Anuluj</button>
+            <button id="diary-ungroup" type="button" data-en="Ungroup trip" hidden>Rozłącz wycieczkę</button>
+          </div>
+        </fieldset>
+      </form>
+      <p id="diary-selection-status" role="status" hidden></p>
+      <div id="diary-cards" class="diary-cards"></div>
+    </section>
+  </main>
+  <main id="achievements-view" class="shell achievements-view" aria-labelledby="achievements-title" hidden>
+    <section class="card achievements-panel">
+      <div class="achievements-heading">
+        <h2 id="achievements-title" data-en="Achievements">Osiągnięcia</h2>
+        <p id="achievement-summary"></p>
+      </div>
+      <p id="achievement-status" role="status"></p>
+      <div id="achievement-cards" class="achievement-groups"></div>
+    </section>
+  </main>
+  <main id="settings-view" class="shell main-settings-view" aria-labelledby="main-settings-title" hidden>
+    <section class="card main-settings-panel">
+      <header class="settings-heading">
+        <div>
+          <h2 id="main-settings-title" tabindex="-1" data-en="Main settings">Ustawienia główne</h2>
+          <p class="settings-intro" data-en="Adjust app settings.">Dostosuj ustawienia aplikacji.</p>
+        </div>
+        <span class="settings-local"><span aria-hidden="true">✓</span><span data-en="Saved automatically">Automatyczny zapis</span></span>
+      </header>
+      <div class="settings-layout">
+        <nav id="settings-category-nav" class="settings-category-nav" aria-label="Kategorie ustawień" data-en-label="Settings categories"></nav>
+        <div id="main-settings-categories" class="main-settings-categories"></div>
+      </div>
+      <p id="main-settings-status" role="status"></p>
+      <form id="settings-code-form" class="settings-code-form">
+        <label for="settings-code" data-en="Access code">Kod dostępu</label>
+        <div class="settings-code-entry">
+          <input id="settings-code" type="text" maxlength="100" autocomplete="off" spellcheck="false" aria-describedby="settings-code-message">
+          <button id="settings-code-unlock" type="submit" data-en="Unlock">Odblokuj</button>
+        </div>
+        <p id="settings-code-message" role="status"></p>
+      </form>
+    </section>
+  </main>
+  <dialog id="visibility-settings" class="card" aria-labelledby="visibility-title">
+    <h2 id="visibility-title" data-en="Map options">Opcje mapy</h2>
+    <div class="option-row">
+      <label for="atlas-language"><span data-en="Language">Język</span>
+        <select id="atlas-language"><option value="pl" lang="pl">Polski</option><option value="en" lang="en">English</option></select>
+      </label>
+    </div>
+    <fieldset id="visible-layers"><legend data-en="Map layers">Warstwy</legend></fieldset>
+    <fieldset id="visible-presets"><legend data-en="View buttons">Przyciski widoków</legend></fieldset>
+    <p id="visibility-message" role="status"></p>
+    <div class="settings-actions">
+      <button type="button" class="main-settings-link" data-main-settings data-en="Main settings">Ustawienia główne</button>
+      <button id="close-visibility-settings" class="save-settings" type="button" data-en="Close">Zamknij</button>
+    </div>
+  </dialog>
+  <dialog id="progress-import-dialog" class="card" aria-labelledby="progress-import-title" aria-describedby="progress-import-description">
+    <h2 id="progress-import-title" data-en="Replace all progress?">Zastąpić cały postęp?</h2>
+    <p id="progress-import-description" data-en="Visits, plans, pins, journal trips, challenges and achievements will be replaced by this backup. Device settings are kept.">Wizyty, plany, pinezki, wycieczki, wyzwania i osiągnięcia zostaną zastąpione tą kopią. Ustawienia urządzenia zostaną zachowane.</p>
+    <p id="progress-import-preview"></p>
+    <p id="progress-import-status" role="status"></p>
+    <form id="progress-import-form" class="settings-actions">
+      <button id="cancel-progress-import" type="button" data-en="Cancel" autofocus>Anuluj</button>
+      <button id="confirm-progress-import" class="save-settings" type="submit" data-en="Replace progress">Zastąp postęp</button>
+    </form>
+  </dialog>
+  <dialog id="progress-reset-dialog" class="card" aria-labelledby="progress-reset-title" aria-describedby="progress-reset-description">
+    <h2 id="progress-reset-title" data-en="Reset all progress?">Zresetować cały postęp?</h2>
+    <p id="progress-reset-description" data-en="This permanently deletes visited and planned places, visit details, pins, journal trips, and all challenge and achievement progress. App settings and pinned challenges are kept. The developer panel is hidden again.">Trwale usuniesz odwiedzone i zaplanowane miejsca, szczegóły wizyt, pinezki, wycieczki w Dzienniku oraz cały postęp wyzwań i osiągnięć. Ustawienia aplikacji i przypięte wyzwania zostaną zachowane. Panel developerski zostanie ponownie ukryty.</p>
+    <p id="progress-reset-status" role="status"></p>
+    <form id="progress-reset-form" class="settings-actions">
+      <button id="cancel-progress-reset" type="button" data-en="Cancel" autofocus>Anuluj</button>
+      <button id="confirm-progress-reset" class="reset-progress" type="submit" data-en="Delete progress">Usuń postęp</button>
+    </form>
+  </dialog>
+  <div id="achievement-notifications" class="achievement-notifications" role="status" aria-live="polite" aria-relevant="additions" aria-atomic="false"></div>
+</body>
+</html>
