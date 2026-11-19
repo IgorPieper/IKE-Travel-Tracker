@@ -1095,6 +1095,7 @@ function mapTileProtocol() {
 }
 
 function refreshPreset() {
+  syncMarkingsButton();
   updateLayerLegend();
   positionCustomPins();
   if (!basemapReady) return;
@@ -2636,6 +2637,8 @@ function canUseMapShortcuts(event) {
 
 function syncMarkingsButton() {
   const button = byId("toggle-marks");
+  button.hidden = isSavedPreset();
+  if (button.hidden) markingsHidden = false;
   const label = (markingsHidden ? tr("Pokaż zaznaczenia", "Show markings") : tr("Ukryj zaznaczenia", "Hide markings")) + " (H)";
   button.setAttribute("aria-pressed", String(markingsHidden));
   button.setAttribute("aria-label", label);
@@ -2649,6 +2652,7 @@ function syncMarkingsButton() {
 }
 
 function toggleMapMarkings() {
+  if (isSavedPreset()) return;
   markingsHidden = !markingsHidden;
   showHover(null);
   syncMarkingsButton();

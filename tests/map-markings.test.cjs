@@ -27,10 +27,23 @@ test('hiding markings removes saved-only overlays and status colours without cha
 
 test('eye toggles presentation only and repaints all map representations',()=>{
   const calls=[],button={addEventListener:()=>{}};
-  const c=vm.createContext({markingsHidden:false,byId:()=>button,showHover:()=>{},syncMarkingsButton:()=>{},
+  const c=vm.createContext({markingsHidden:false,isSavedPreset:()=>false,byId:()=>button,showHover:()=>{},syncMarkingsButton:()=>{},
     hasInteractiveMap:()=>true});
   for(const name of ['paintVisits','syncVisitedCountries','paintRegions','syncPresetLayers','positionCustomPins','scheduleDraw']) c[name]=()=>calls.push(name);
   vm.runInContext(block('function toggleMapMarkings(', '// Handle the view shortcut'),c);
   c.toggleMapMarkings();assert.equal(c.markingsHidden,true);assert.equal(calls.length,6);
   c.toggleMapMarkings();assert.equal(c.markingsHidden,false);assert.equal(calls.length,12);
+});
+
+test('saved presets hide the eye, restore markings and cannot toggle them with H',()=>{
+  const button={setAttribute:()=>{},getAttribute:()=>'',addEventListener:()=>{}};
+  const c=vm.createContext({activePreset:'countries',markingsHidden:true,byId:()=>button,tr:(pl,en)=>en,
+    isSavedPreset:()=>['visited','visited-only','planned-only'].includes(c.activePreset)});
+  vm.runInContext(block('function syncMarkingsButton(', '// Handle the view shortcut'),c);
+  for (const preset of ['visited','visited-only','planned-only']) {
+    c.activePreset=preset;c.markingsHidden=true;c.syncMarkingsButton();
+    assert.equal(button.hidden,true);assert.equal(c.markingsHidden,false);
+    c.toggleMapMarkings();assert.equal(c.markingsHidden,false);
+  }
+  c.activePreset='countries';c.syncMarkingsButton();assert.equal(button.hidden,false);
 });

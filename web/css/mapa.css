@@ -476,6 +476,7 @@ canvas.target { cursor: pointer; }
 #toggle-marks svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 #toggle-marks:hover, #toggle-marks[aria-pressed="true"] { background: var(--tint); color: var(--accent); }
 #toggle-marks[aria-pressed="true"] .eye-slash { display: none; }
+#toggle-marks[hidden] { display: none; }
 
 .visit-date-line { display: flex; align-items: center; flex-wrap: wrap; gap: 7px 10px; min-width: 0; }
 .visit-date-value { display: flex; align-items: center; gap: 4px; flex: 1 1 120px; min-width: 0; }
