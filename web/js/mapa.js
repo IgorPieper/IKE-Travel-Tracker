@@ -112,6 +112,8 @@ const pinLayerElement = byId("map-pins");
 const addPinButton = byId("add-pin");
 const pinName = byId("pin-name");
 const pinDate = byId("pin-date");
+const placeDateUncertain = byId("place-date-uncertain");
+const pinDateUncertain = byId("pin-date-uncertain");
 const pinVisitDates = byId("pin-visit-dates");
 const addPinVisit = byId("add-pin-visit");
 const pinLong = byId("pin-long");
@@ -1728,13 +1730,14 @@ function planPlace(place, focus = false) {
 }
 
 function updatePlaceLabels() {
+  updateUncertainDateLabels();
   if (!editedPlace) return;
   byId("place-details-title").textContent = displayPlaceName(editedPlace.place);
   const reading = byId("place-details-reading");
   reading.textContent = areaFocusActive() ? "" : placeReading(editedPlace.place);
   reading.hidden = !reading.textContent;
   byId("place-return-visits").hidden = placePlanned.checked;
-  for (const label of placeVisitDates.querySelectorAll("label")) {
+  for (const label of placeVisitDates.querySelectorAll(".visit-date-label")) {
     label.textContent = tr("Data kolejnej wizyty", "Date of return visit");
   }
   for (const button of placeVisitDates.querySelectorAll("button")) {
@@ -1747,7 +1750,37 @@ function updatePlaceLabels() {
     ? tr("Chęć odwiedzenia (1–10)", "How much you want to visit (1–10)") : tr("Ocena wizyty (1–10)", "Visit rating (1–10)");
 }
 
-function appendVisitDate({ id = crypto.randomUUID(), data = "" } = {}, container = placeVisitDates, addButton = addPlaceVisit) {
+function dateIsUncertain(row) {
+  return row?.data_niepewna === true || row?.data_niepewna === "1";
+}
+
+function uncertaintyPrefix(text, row) {
+  return text && dateIsUncertain(row) ? "~" + text : text;
+}
+
+function bindUncertainDate(date, checkbox, prefix) {
+  date.uncertaintyInput = checkbox;
+  date.syncUncertainty = () => { prefix.hidden = !(date.value && checkbox.checked); };
+  date.addEventListener("input", date.syncUncertainty);
+  checkbox.addEventListener("change", date.syncUncertainty);
+  date.syncUncertainty();
+}
+
+function updateUncertainDateLabels() {
+  for (const text of document.querySelectorAll("[data-uncertain-date-label]")) text.textContent = tr("Niepewna", "Uncertain");
+  for (const label of document.querySelectorAll(".uncertain-date-option")) label.title = tr("Data niepewna", "Uncertain date");
+}
+
+function readVisitDates(container) {
+  return [...container.querySelectorAll('input[type="date"]')].map((date) => ({
+    id: date.dataset.visitId, data: date.value, data_niepewna: date.uncertaintyInput.checked,
+  }));
+}
+
+bindUncertainDate(placeDate, placeDateUncertain, byId("place-date-approx"));
+bindUncertainDate(pinDate, pinDateUncertain, byId("pin-date-approx"));
+
+function appendVisitDate({ id = crypto.randomUUID(), data = "", data_niepewna = "" } = {}, container = placeVisitDates, addButton = addPlaceVisit) {
   const row = document.createElement("div");
   row.className = "place-return-visit";
   const label = document.createElement("label");
@@ -1759,6 +1792,7 @@ function appendVisitDate({ id = crypto.randomUUID(), data = "" } = {}, container
   date.required = true;
   date.value = data;
   label.htmlFor = date.id;
+  label.className = "visit-date-label";
   label.textContent = tr("Data kolejnej wizyty", "Date of return visit");
   const remove = document.createElement("button");
   remove.type = "button";
@@ -1768,7 +1802,27 @@ function appendVisitDate({ id = crypto.randomUUID(), data = "" } = {}, container
     addButton.disabled = false;
     addButton.focus();
   });
-  row.append(label, date, remove);
+  const line = document.createElement("div");
+  line.className = "visit-date-line";
+  const value = document.createElement("span");
+  value.className = "visit-date-value";
+  const prefix = document.createElement("span");
+  prefix.textContent = "~";
+  prefix.setAttribute("aria-hidden", "true");
+  const uncertainLabel = document.createElement("label");
+  uncertainLabel.className = "uncertain-date-option";
+  uncertainLabel.title = tr("Data niepewna", "Uncertain date");
+  const checkbox = document.createElement("input");
+  checkbox.type = "checkbox";
+  checkbox.checked = dateIsUncertain({ data_niepewna });
+  const text = document.createElement("span");
+  text.dataset.uncertainDateLabel = "";
+  text.textContent = tr("Niepewna", "Uncertain");
+  uncertainLabel.append(checkbox, text);
+  value.append(prefix, date);
+  line.append(value, uncertainLabel);
+  bindUncertainDate(date, checkbox, prefix);
+  row.append(label, line, remove);
   container.append(row);
   addButton.disabled = container.childElementCount >= 100;
   return date;
@@ -1777,6 +1831,8 @@ function appendVisitDate({ id = crypto.randomUUID(), data = "" } = {}, container
 function fillPlaceFields(row, planning = false) {
   placePlanned.checked = row ? row.tryb === "plan" : planning;
   placeDate.value = row?.data || "";
+  placeDateUncertain.checked = dateIsUncertain(row);
+  placeDate.syncUncertainty();
   const rating = String(row?.ocena ?? "");
   placeRating.value = tr(rating.replace(".", ","), rating.replace(",", "."));
   placeRating.setCustomValidity("");
@@ -1906,8 +1962,9 @@ function renderCustomPins(rows) {
 }
 
 function updatePinTitle() {
+  updateUncertainDateLabels();
   if (!editedPin) return;
-  for (const label of pinVisitDates.querySelectorAll("label")) label.textContent = tr("Data kolejnej wizyty", "Date of return visit");
+  for (const label of pinVisitDates.querySelectorAll(".visit-date-label")) label.textContent = tr("Data kolejnej wizyty", "Date of return visit");
   for (const button of pinVisitDates.querySelectorAll("button")) button.textContent = tr("Usuń wizytę", "Remove visit");
   byId("pin-details-title").textContent = editedPin.saved ? editedPin.pin.nazwa : tr("Nowa pinezka", "New pin");
 }
@@ -1921,6 +1978,8 @@ function openPinEditor(pin, saved) {
     pinName.setCustomValidity("");
     pinLong.value = pin.opis_dlugi || "";
     pinDate.value = pin.data || "";
+    pinDateUncertain.checked = dateIsUncertain(pin);
+    pinDate.syncUncertainty();
     pinVisitDates.replaceChildren();
     addPinVisit.disabled = false;
     for (const visit of pin.kolejne_wizyty || []) appendVisitDate(visit, pinVisitDates, addPinVisit);
@@ -2000,8 +2059,8 @@ byId("pin-form").addEventListener("submit", (event) => {
     return;
   }
   saveCustomPin({
-    nazwa: name, opis_dlugi: pinLong.value, kolor: pinColor.value, data: pinDate.value,
-    kolejne_wizyty: [...pinVisitDates.querySelectorAll("input")].map((input) => ({ id: input.dataset.visitId, data: input.value })),
+    nazwa: name, opis_dlugi: pinLong.value, kolor: pinColor.value, data: pinDate.value, data_niepewna: pinDateUncertain.checked,
+    kolejne_wizyty: readVisitDates(pinVisitDates),
   });
 });
 addPinVisit.addEventListener("click", () => appendVisitDate({}, pinVisitDates, addPinVisit).focus());
@@ -2058,11 +2117,9 @@ placeForm.addEventListener("submit", (event) => {
     }
   }
   commitPlace(editedPlace, {
-    odwiedzone: true, planowane: placePlanned.checked, data: placeDate.value,
+    odwiedzone: true, planowane: placePlanned.checked, data: placeDate.value, data_niepewna: placeDateUncertain.checked,
     ocena: rating, notatka: placeNote.value,
-    kolejne_wizyty: placePlanned.checked ? undefined : [...placeVisitDates.querySelectorAll("input")].map((date) => ({
-      id: date.dataset.visitId, data: date.value,
-    })),
+    kolejne_wizyty: placePlanned.checked ? undefined : readVisitDates(placeVisitDates),
   });
 });
 byId("close-place-details").addEventListener("click", () => closePlaceDetails(true));

@@ -37,7 +37,7 @@ def words(model, key):
     return WORDS[key][model["language"] == "en"]
 
 
-def day_label(value, language):
+def day_label(value, language, uncertain=False):
     if not value:
         return ""
     try:
@@ -45,7 +45,7 @@ def day_label(value, language):
     except ValueError:
         return clean(value)
     month = MONTHS[language][day.month - 1]
-    return f"{day.day} {month} {day.year}"
+    return ("~" if uncertain else "") + f"{day.day} {month} {day.year}"
 
 
 def date_label(entry, model):
@@ -53,7 +53,7 @@ def date_label(entry, model):
     if first and last:
         return day_label(first, model["language"]) + (" - " + day_label(last, model["language"]) if last != first else "")
     if first:
-        return (words(model, "from") + " " if entry.get("kind") == "trip" else "") + day_label(first, model["language"])
+        return (words(model, "from") + " " if entry.get("kind") == "trip" else "") + day_label(first, model["language"], entry.get("uncertain", False))
     if last:
         return words(model, "until") + " " + day_label(last, model["language"])
     return words(model, "undated")

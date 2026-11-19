@@ -212,7 +212,7 @@
     }
     appendPlaceReading(card, visit);
     appendCountry(card, visit);
-    const date = appendText(card, "p", visit.data ? dayLabel(visit.data) : tr("Bez daty", "Undated"), "diary-date");
+    const date = appendText(card, "p", visit.data ? uncertaintyPrefix(dayLabel(visit.data), visit) : tr("Bez daty", "Undated"), "diary-date");
     if (visit.ocena !== "" && visit.ocena != null) {
       const rating = String(visit.ocena);
       appendText(date, "span", " · " + tr(rating.replace(".", ","), rating) + " / 10");
@@ -241,7 +241,7 @@
       list.className = "diary-members";
       for (const visit of members) {
         const item = appendText(list, "li", placeName(visit), "diary-member");
-        if (visit.data) appendText(item, "time", " · " + dayLabel(visit.data)).dateTime = visit.data;
+        if (visit.data) appendText(item, "time", " · " + uncertaintyPrefix(dayLabel(visit.data), visit)).dateTime = visit.data;
         appendPlaceReading(item, visit);
         appendCountry(item, visit);
       }

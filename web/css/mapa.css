@@ -472,3 +472,18 @@ canvas.target { cursor: pointer; }
 
 .brand { color: inherit; text-decoration: none; }
 #focus-area[hidden] { display: none; }
+
+.visit-date-line { display: flex; align-items: center; flex-wrap: wrap; gap: 7px 10px; min-width: 0; }
+.visit-date-value { display: flex; align-items: center; gap: 4px; flex: 1 1 120px; min-width: 0; }
+.visit-date-value input[type="date"] { min-width: 0; width: 100%; margin: 0; }
+.uncertain-date-option, .place-return-visit .uncertain-date-option { display: inline-flex; align-items: center; gap: 5px; grid-column: auto; margin: 0; font-size: 11px; white-space: nowrap; }
+.uncertain-date-option input[type="checkbox"] { width: auto; margin: 0; accent-color: var(--accent); }
+
+.visit-date-line { flex-wrap: nowrap; gap: 6px; }
+.visit-date-value { flex: 1 1 0; }
+.uncertain-date-option, .place-return-visit .uncertain-date-option { gap: 4px; font-size: 10px; }
+.place-return-visit .visit-date-line { grid-column: 1 / -1; }
+.place-return-visit > button { grid-column: 2; justify-self: end; }
+
+.visit-date-value input[type="date"] { font-size: 11px; padding: 6px 3px; }
+.visit-date-value input[type="date"]::-webkit-calendar-picker-indicator { margin-left: 0; padding: 0; width: 13px; }

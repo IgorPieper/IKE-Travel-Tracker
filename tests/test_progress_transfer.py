@@ -20,9 +20,9 @@ class ProgressTransferTests(unittest.TestCase):
         country = {"kategoria": "panstwo", "id": "pl", "nazwa": "Polska", "lon": "19", "lat": "52"}
         self.server = SimpleNamespace(places={("panstwo", "pl"): country}, countries={"pl": country})
         self.rows = [
-            {**country, "data": "2020-02-29", "ocena": "8.5", "notatka": "=Not a formula\nŁódź, 東京"},
+            {**country, "data": "2020-02-29", "data_niepewna": "1", "ocena": "8.5", "notatka": "=Not a formula\nŁódź, 東京"},
             {"kategoria": "miasto", "id": "osm:123", "nazwa": "Test", "panstwo_id": "pl", "lon": "19", "lat": "52", "tryb": "plan", "data": "2027-06-01"},
-            {"kategoria": "pinezka", "id": "11111111-1111-4111-8111-111111111111", "nazwa": "'Pinezka", "lon": "0", "lat": "0", "kolor": "#ff0000", "opis_dlugi": "+Opis", "data": "2025-01-01", "kolejne_wizyty": '[{"id":"22222222-2222-4222-8222-222222222222","data":"2026-01-01"}]'},
+            {"kategoria": "pinezka", "id": "11111111-1111-4111-8111-111111111111", "nazwa": "'Pinezka", "lon": "0", "lat": "0", "kolor": "#ff0000", "opis_dlugi": "+Opis", "data": "2025-01-01", "kolejne_wizyty": '[{"id":"22222222-2222-4222-8222-222222222222","data":"2026-01-01","data_niepewna":true}]'},
             {"kategoria": "wycieczka", "id": "33333333-3333-4333-8333-333333333333", "nazwa": "Wyjazd", "data": "2025-01-01", "data_konca": "2026-01-02", "miejsca": '["panstwo:pl","pinezka:11111111-1111-4111-8111-111111111111:visit:22222222-2222-4222-8222-222222222222"]'},
             {"kategoria": "osiagniecie", "id": "developer_all", "tryb": "unlock"},
         ]

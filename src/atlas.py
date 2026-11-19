@@ -39,7 +39,7 @@ ACHIEVEMENTS = ROOT / "config" / "osiagniecia.csv"
 SETTLEMENTS = MAP_DATA / "miejscowosci.sqlite3"
 WORLD_CITIES = MAP_DATA / "miasta-swiat.sqlite3"
 HYDROGRAPHY = MAP_DATA / "hydrografia.sqlite3"
-VISIT_DETAILS = ("data", "ocena", "notatka")
+VISIT_DETAILS = ("data", "ocena", "notatka", "data_niepewna")
 PIN_DETAILS = ("opis_krotki", "opis_dlugi", "kolor")
 FIELDS = ("kategoria", "id", "nazwa", "lon", "lat", "panstwo_id", "tryb", *VISIT_DETAILS, *PIN_DETAILS,
           "data_konca", "miejsca", "kolejne_wizyty")
@@ -263,7 +263,7 @@ def pin_record(change, place_id):
         raise ValueError
     return {"kategoria": "pinezka", "id": place_id, "lon": round(lon, 6), "lat": round(lat, 6),
             **text, "kolor": color.lower(),
-            **visit_details({key: change[key] for key in ("data", "kolejne_wizyty") if key in change})}
+            **visit_details({key: change[key] for key in ("data", "data_niepewna", "kolejne_wizyty") if key in change})}
 
 
 def validate_date(value):
@@ -272,10 +272,20 @@ def validate_date(value):
     return value
 
 
+def uncertain_date(value):
+    if type(value) is bool:
+        return value
+    if isinstance(value, str) and value in ("", "0", "1"):
+        return value == "1"
+    raise ValueError
+
+
 def visit_details(change):
     details = {}
     if "data" in change:
         details["data"] = validate_date(change["data"])
+    if "data_niepewna" in change:
+        details["data_niepewna"] = "1" if uncertain_date(change["data_niepewna"]) else ""
     if "ocena" in change:
         value = change["ocena"]
         if type(value) not in (str, int, float):
@@ -296,12 +306,14 @@ def visit_details(change):
             raise ValueError
         seen = set()
         for visit in visits:
-            if not isinstance(visit, dict) or set(visit) != {"id", "data"}:
+            if not isinstance(visit, dict) or not {"id", "data"}.issubset(visit) or set(visit) - {"id", "data", "data_niepewna"}:
                 raise ValueError
             visit_id = visit["id"]
             if (not isinstance(visit_id, str) or not re.fullmatch(r"[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}", visit_id)
                     or visit_id in seen or not validate_date(visit["data"])):
                 raise ValueError
+            if "data_niepewna" in visit:
+                uncertain_date(visit["data_niepewna"])
             seen.add(visit_id)
         details["kolejne_wizyty"] = json.dumps(visits, separators=(",", ":")) if visits else ""
     return details
@@ -324,7 +336,7 @@ def diary_visits(rows):
         key = row["kategoria"] + ":" + row["id"]
         visits[key] = row
         for visit in additional_visits(row):
-            visits[key + ":visit:" + visit["id"]] = {**row, "data": visit["data"], "ocena": "", "notatka": ""}
+            visits[key + ":visit:" + visit["id"]] = {**row, "data": visit["data"], "data_niepewna": "1" if uncertain_date(visit.get("data_niepewna", "")) else "", "ocena": "", "notatka": ""}
     return visits
 
 
@@ -377,7 +389,7 @@ def journal_model(rows, server, language="en", title=""):
         reading = ""
         if category == "miasto":
             reading = readings.get("byCountry", {}).get(code, {}).get(name, "") or readings.get("byName", {}).get(name, "")
-        visits[key] = {"kind": "visit", "title": name, "date": row.get("data") or "", "rating": row.get("ocena") or "",
+        visits[key] = {"kind": "visit", "title": name, "date": row.get("data") or "", "uncertain": uncertain_date(row.get("data_niepewna", "")), "rating": row.get("ocena") or "",
                        "note": (row.get("opis_dlugi") if category == "pinezka" else row.get("notatka")) or "",
                        "reading": reading, "country": names.get(code, "") if category in ("miasto", "rejon") else ""}
     trips, claimed = [], set()
@@ -398,9 +410,13 @@ def journal_model(rows, server, language="en", title=""):
         years.setdefault(year, []).append(entry)
     dates = sorted({entry["date"] for entry in visits.values() if entry["date"]}
                    | {trip[field] for trip in trips for field in ("date", "end") if trip[field]})
-    span = day_label(dates[0], language) if dates else ""
+    approximate = {entry["date"] for entry in visits.values() if entry["date"] and entry["uncertain"]}
+    exact = {entry["date"] for entry in visits.values() if entry["date"] and not entry["uncertain"]}
+    exact.update(trip[field] for trip in trips for field in ("date", "end") if trip[field])
+    approximate -= exact
+    span = day_label(dates[0], language, dates[0] in approximate) if dates else ""
     if len(dates) > 1:
-        span += " - " + day_label(dates[-1], language)
+        span += " - " + day_label(dates[-1], language, dates[-1] in approximate)
     return {"language": language, "title": title or WORDS["title"][language == "en"], "years": list(years.items()),
             "range": span, "trips": len(trips), "visits": len(visits), "countries": len(visited_countries), "country_ids": visited_countries}
 
@@ -504,11 +520,11 @@ def import_progress(content, format, server):
         raise ValueError
     if format == "csv":
         reader = csv.DictReader(io.StringIO(content.lstrip("\ufeff"), newline=""), strict=True)
-        if not reader.fieldnames or len(set(reader.fieldnames)) != len(reader.fieldnames) or set(reader.fieldnames) != set(FIELDS):
+        if not reader.fieldnames or len(set(reader.fieldnames)) != len(reader.fieldnames) or set(reader.fieldnames) not in (set(FIELDS), set(FIELDS) - {"data_niepewna"}):
             raise ValueError
         rows = list(reader)
         for row in rows:
-            if set(row) != set(FIELDS) or any(not isinstance(value, str) for value in row.values()):
+            if set(row) != set(reader.fieldnames) or any(not isinstance(value, str) for value in row.values()):
                 raise ValueError
             for field in csv_text_fields(row):
                 value = row.get(field) or ""
@@ -673,7 +689,7 @@ def export_progress(rows, format, server):
         if row["kategoria"] == "pinezka" and re.fullmatch(r"#[0-9a-fA-F]{6}", row.get("kolor", "")):
             color = row["kolor"]
             node(node(node(placemark, "Style"), "IconStyle"), "color", "ff" + color[5:7] + color[3:5] + color[1:3])
-        node(placemark, "description", "\n".join(str(row.get(field)) for field in ("data", "notatka", "opis_dlugi") if row.get(field)))
+        node(placemark, "description", "\n".join(("~" if field == "data" and uncertain_date(row.get("data_niepewna", "")) else "") + str(row.get(field)) for field in ("data", "notatka", "opis_dlugi") if row.get(field)))
         extra = node(placemark, "ExtendedData")
         for field in FIELDS:
             if row.get(field):

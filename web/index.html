@@ -52,7 +52,7 @@
           <fieldset id="place-fields" class="detail-fields">
             <label class="place-plan-option"><input id="place-planned" type="checkbox"><span data-en="Planned">Zaplanowane</span></label>
             <label for="place-date" id="place-date-label"></label>
-            <input id="place-date" type="date" max="9999-12-31">
+            <div class="visit-date-line"><span class="visit-date-value"><span id="place-date-approx" hidden aria-hidden="true">~</span><input id="place-date" type="date" max="9999-12-31"></span><label class="uncertain-date-option" title="Data niepewna" data-en-title="Uncertain date"><input id="place-date-uncertain" type="checkbox"><span data-en="Uncertain">Niepewna</span></label></div>
             <label for="place-rating" id="place-rating-label"></label>
             <input id="place-rating" type="text" inputmode="decimal" maxlength="32" autocomplete="off">
             <label for="place-note" data-en="Note">Notatka</label>
@@ -100,7 +100,7 @@
             <label for="pin-name" data-en="Name">Nazwa</label>
             <input id="pin-name" type="text" maxlength="100" required>
             <label for="pin-date" data-en="Visit date">Data wizyty</label>
-            <input id="pin-date" type="date" max="9999-12-31">
+            <div class="visit-date-line"><span class="visit-date-value"><span id="pin-date-approx" hidden aria-hidden="true">~</span><input id="pin-date" type="date" max="9999-12-31"></span><label class="uncertain-date-option" title="Data niepewna" data-en-title="Uncertain date"><input id="pin-date-uncertain" type="checkbox"><span data-en="Uncertain">Niepewna</span></label></div>
             <div id="pin-return-visits">
               <div id="pin-visit-dates"></div>
               <button id="add-pin-visit" type="button" data-en="Add another visit">Dodaj kolejną wizytę</button>
