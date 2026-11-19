@@ -881,13 +881,13 @@ function updateCityView(collect = false) {
   }
   if (activePreset === "continents") {
     retryMap.hidden = true;
-    byId("map-hint").textContent = tr("Kliknij prawym przyciskiem kontynent, aby otworzyć jego szczegóły.", "Right-click a continent to open its details.");
+    byId("map-hint").textContent = tr("Kliknij lewym przyciskiem kontynent, aby otworzyć jego szczegóły.", "Left-click a continent to open its details.");
     updateControls();
     return;
   }
   if (activePreset === "countries") {
     retryMap.hidden = true;
-    byId("map-hint").textContent = tr("Kliknij prawym przyciskiem państwo, aby otworzyć jego szczegóły.", "Right-click a country to open its details.");
+    byId("map-hint").textContent = tr("Kliknij lewym przyciskiem państwo, aby otworzyć jego szczegóły.", "Left-click a country to open its details.");
     updateControls();
     return;
   }
@@ -903,7 +903,7 @@ function updateCityView(collect = false) {
       ? activePreset === "visited-only" ? tr("Wyświetlane są tylko odwiedzone miejsca.", "Only visited places are shown.")
         : activePreset === "planned-only" ? tr("Wyświetlane są tylko zaplanowane miejsca.", "Only planned places are shown.")
           : tr("Fioletowe miejsca są odwiedzone, pomarańczowe są w planach.", "Purple places are visited. Orange places are planned.")
-      : adminRegions.size ? tr("Kliknij prawym przyciskiem rejon, aby otworzyć jego szczegóły.", "Right-click a region to open its details.")
+      : adminRegions.size ? tr("Kliknij lewym przyciskiem rejon, aby otworzyć jego szczegóły.", "Left-click a region to open its details.")
         : tr("Wczytywanie granic rejonów…", "Loading region boundaries…");
     updateControls();
     return;
@@ -925,7 +925,7 @@ function updateCityView(collect = false) {
   retryMap.hidden = !needsWorld || !cityProblem;
   byId("map-hint").textContent = !basemapReady
     ? tr("Wczytywanie podkładu mapy…", "Loading the basemap…")
-    : cityPlaces.size ? tr("Kliknij prawym przyciskiem miejscowość, aby otworzyć jej szczegóły.", "Click a place to open its details.")
+    : cityPlaces.size ? tr("Kliknij lewym przyciskiem miejscowość, aby otworzyć jej szczegóły.", "Click a place to open its details.")
       : activePreset === "major" ? tr("Przesuń mapę lub wyszukaj duże miasto.", "Pan the map or search for a major city.")
       : needsWorld && cityProblem ? tr("Część obrysów chwilowo niedostępna. Podkład mapy jest nadal widoczny.", "Some boundaries are temporarily unavailable.")
         : needsWorld && worldCitiesView.pending ? tr("Wczytywanie obrysów miast…", "Loading city boundaries…")
@@ -1329,7 +1329,7 @@ function openCityMap() {
     if (!focusContains(event.lngLat.wrap().toArray())) return {};
     const layers = [...cityLayers, ...pinLayers, ...regionLayers, ...landLayers]
       .filter((layer) => cityMap.getLayer(layer) && cityMap.getLayoutProperty(layer, "visibility") !== "none");
-    const features = cityMap.queryRenderedFeatures(event.point, { layers });
+    const features = cityMap.queryRenderedFeatures(mapQueryPoint(event.point), { layers });
     const city = features.find((feature) => cityLayers.includes(feature.layer.id) && eligibleCityFeature(feature));
     if (city) {
       const place = cityFromFeature(city);
@@ -1345,12 +1345,10 @@ function openCityMap() {
     if (region) return { place: adminRegions.get(region.properties.id) };
     return { place: landPlace(features) };
   }
-  bindMapPointerNavigation(cityMap.getCanvas(), (dx, dy) => cityMap.panBy([-dx, -dy], { duration: 0 }), (event) => {
-    const bounds = cityMap.getCanvas().getBoundingClientRect();
-    const point = { x: event.clientX - bounds.left, y: event.clientY - bounds.top };
-    const lngLat = cityMap.unproject(point);
-    selectMapPlace(event, placeAt({ point, lngLat }).place, lngLat.wrap().toArray());
+  cityMap.on("click", (event) => {
+    selectMapPlace(event.originalEvent, placeAt(event).place, event.lngLat.wrap().toArray());
   });
+  bindMapPointerNavigation(cityMap.getCanvas(), (dx, dy) => cityMap.panBy([-dx, -dy], { duration: 0 }), () => {});
   updateCityView();
 }
 
@@ -1628,8 +1626,12 @@ canvas.addEventListener("pointerup", endPointer);
 canvas.addEventListener("pointercancel", endPointer);
 canvas.addEventListener("lostpointercapture", endPointer);
 canvas.addEventListener("pointerleave", () => showHover(null));
+function mapQueryPoint(point) {
+  // Plain {x, y} is treated as options by MapLibre, querying the entire viewport.
+  return Array.isArray(point) ? point : [point.x, point.y];
+}
 function selectMapPlace(event, place, position) {
-  if (event.button !== 2) return;
+  if (event.button !== 0) return;
   if (placePinAt(event, position)) return;
   if (!place) return;
   if (event.shiftKey) { lastRightMapClick = undefined; quicklyRemovePlace(place); }
@@ -1670,7 +1672,7 @@ function bindMapPointerNavigation(element, pan, select, bothButtons = false) {
     if (!gesture || gesture.id !== event.pointerId) return;
     const click = !gesture.dragged && Math.hypot(event.clientX - gesture.startX, event.clientY - gesture.startY) <= 5;
     gesture = undefined;
-    if (click && event.button === 2) select(event);
+    if (click && bothButtons && event.button === 0) select(event);
   });
   for (const name of ["pointercancel", "lostpointercapture"]) element.addEventListener(name, () => { gesture = undefined; });
 }
@@ -2640,7 +2642,7 @@ function syncMarkingsButton() {
   button.title = label;
   for (const [id, shortcut] of [["add-pin", "P"], ["focus-area", "F"]]) {
     const tool = byId(id);
-    tool.title = tool.getAttribute("aria-label") + ` (${shortcut}) — ` + tr("wybierz miejsce prawym przyciskiem", "right-click a place");
+    tool.title = tool.getAttribute("aria-label") + ` (${shortcut}) — ` + tr("wybierz miejsce lewym przyciskiem", "left-click a place");
     tool.setAttribute("aria-keyshortcuts", shortcut);
   }
   button.setAttribute("aria-keyshortcuts", "H");

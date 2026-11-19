@@ -127,7 +127,7 @@
           <button id="toggle-marks" type="button" aria-pressed="false" aria-label="Ukryj zaznaczenia (H)" title="Ukryj zaznaczenia (H)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/><path class="eye-slash" d="m3 3 18 18"/></svg></button>
         </div>
         <div id="area-focus-banner" hidden><label id="area-focus-villages-option" hidden><input id="area-focus-villages" type="checkbox"><span data-en="Villages">Wsie</span></label><label id="area-focus-detail-option" hidden title="Wymaga dostępu do internetu." data-en-title="Requires internet access."><input type="checkbox" data-online-setting="online_focus"><span data-en="Detailed map">Szczegółowa mapa</span></label><button id="leave-area-focus" type="button" data-en="Back to full map">Wróć do pełnej mapy</button></div>
-        <p id="map-hint">Kliknij prawym przyciskiem państwo, aby otworzyć jego szczegóły.</p>
+        <p id="map-hint">Kliknij lewym przyciskiem państwo, aby otworzyć jego szczegóły.</p>
         <button id="retry-map" type="button" data-en="Retry loading boundaries" hidden>Ponów pobieranie obrysów</button>
       </div>
       <div id="map-stage">
@@ -136,7 +136,7 @@
         <div id="map-pins" role="group" aria-label="Własne pinezki" data-en-label="Custom pins">
           <button id="pin-draft" class="map-pin" type="button" aria-label="Nowa pinezka" data-en-label="New pin" hidden><span class="pin-glyph" aria-hidden="true"></span></button>
         </div>
-        <p id="pin-placement-hint" role="status" data-en="Right-click the map to place the pin." hidden>Kliknij mapę prawym przyciskiem, aby umieścić pinezkę.</p>
+        <p id="pin-placement-hint" role="status" data-en="Left-click the map to place the pin." hidden>Kliknij mapę lewym przyciskiem, aby umieścić pinezkę.</p>
         <div class="controls" role="group" aria-label="Sterowanie mapą" data-en-label="Map controls">
           <button id="zoom-in" type="button" aria-label="Przybliż" title="Przybliż" data-en-label="Zoom in" data-en-title="Zoom in">+</button>
           <button id="zoom-out" type="button" aria-label="Oddal" title="Oddal" data-en-label="Zoom out" data-en-title="Zoom out">−</button>
@@ -173,14 +173,14 @@
           <h2 id="shortcuts-title" data-en="Shortcuts">Skróty</h2>
           <dl class="map-shortcuts">
             <dt data-en="Drag either mouse button">Przeciąganie lewym lub prawym</dt><dd data-en="Move the map without marking places">Przesuń mapę bez zaznaczania miejsc</dd>
-            <dt data-en="Right-click">Kliknięcie prawym</dt><dd data-en="Select a place or use the active pin / magnifier tool">Wybierz miejsce lub użyj włączonej pinezki / lupy</dd>
+            <dt data-en="Left-click">Kliknięcie lewym</dt><dd data-en="Select a place or use the active pin / magnifier tool">Wybierz miejsce lub użyj włączonej pinezki / lupy</dd>
             <dt><kbd>P</kbd></dt><dd data-en="Toggle pin placement">Włącz / wyłącz dodawanie pinezki</dd>
             <dt><kbd>F</kbd></dt><dd data-en="Toggle area selection (magnifier)">Włącz / wyłącz wybór obszaru lupą</dd>
             <dt><kbd>H</kbd></dt><dd data-en="Hide / show your map markings">Ukryj / pokaż swoje zaznaczenia na mapie</dd>
-            <dt><kbd>Shift</kbd> + <span data-en="right-click">prawy przycisk</span></dt><dd data-en="Remove a saved place or pin">Usuń zapisane miejsce lub pinezkę</dd>
-            <dt><kbd>Ctrl</kbd> + <span data-en="right-click">prawy przycisk</span></dt><dd data-en="Plan a new place">Dodaj nowe miejsce do planów</dd>
-            <dt><kbd>Alt</kbd> + <span data-en="right-click">prawy przycisk</span></dt><dd data-en="Add a custom pin">Dodaj własną pinezkę</dd>
-            <dt data-en="Double right-click">Podwójne kliknięcie prawym</dt><dd data-en="Plan a new place">Dodaj nowe miejsce do planów</dd>
+            <dt><kbd>Shift</kbd> + <span data-en="left-click">lewy przycisk</span></dt><dd data-en="Remove a saved place or pin">Usuń zapisane miejsce lub pinezkę</dd>
+            <dt><kbd>Ctrl</kbd> + <span data-en="left-click">lewy przycisk</span></dt><dd data-en="Plan a new place">Dodaj nowe miejsce do planów</dd>
+            <dt><kbd>Alt</kbd> + <span data-en="left-click">lewy przycisk</span></dt><dd data-en="Add a custom pin">Dodaj własną pinezkę</dd>
+            <dt data-en="Double left-click">Podwójne kliknięcie lewym</dt><dd data-en="Plan a new place">Dodaj nowe miejsce do planów</dd>
             <dt><kbd>←</kbd> / <kbd>→</kbd></dt><dd data-en="Previous / next map view">Poprzedni / następny widok mapy</dd>
             <dt><kbd>+</kbd> / <kbd>−</kbd></dt><dd data-en="Zoom in / out">Przybliż / oddal mapę</dd>
             <dt><kbd>0</kbd></dt><dd data-en="Reset the map view">Przywróć domyślny widok</dd>
