@@ -51,6 +51,7 @@ DEFAULT_ZOOMS = {
     "countries": {"min": 0, "max": 4},
     "regions": {"min": 1, "max": 12},
     "major": {"min": 4, "max": 12},
+    "capital-cities": {"min": 0, "max": 16},
     "cities": {"min": 6, "max": 15},
     "settlements": {"min": 9, "max": 16},
     "visited": {"min": 0, "max": 16},
@@ -58,6 +59,7 @@ DEFAULT_ZOOMS = {
     "planned-only": {"min": 0, "max": 16},
 }
 DEFAULT_VISIBILITY = dict.fromkeys((*DEFAULT_ZOOMS, "forests", "lakes", "rivers", "capitals", "warnings"), True)
+DEFAULT_VISIBILITY["major"] = False
 DEFAULT_VISIBILITY["seas"] = False
 DEFAULT_VISIBILITY["visited-only"] = False
 DEFAULT_VISIBILITY["planned-only"] = False
@@ -935,7 +937,7 @@ def add_linked_visits(rows, server):
     return visits + list(linked.values())
 
 
-FILL_PRESETS = {"continents", "countries", "regions", "major", "cities", "settlements"}
+FILL_PRESETS = {"continents", "countries", "regions", "major", "capital-cities", "cities", "settlements"}
 
 
 def developer_candidates(server, preset):
@@ -969,14 +971,21 @@ def developer_candidates(server, preset):
                 lat = (min(point[1] for point in points) + max(point[1] for point in points)) / 2
             add(id, props.get("@name") or props.get("name"), props.get("country", ""), lon, lat)
 
-        for feature in server.static_cities.values():
+        for feature in (() if preset == "capital-cities" else server.static_cities.values()):
             if preset != "major" or feature["properties"].get("major") or not feature["properties"]["division_id"].startswith("prg:"):
                 add_feature(feature)
+        def capital_name(value):
+            return "".join(character for character in unicodedata.normalize("NFD", value.casefold().replace("ł", "l"))
+                           if not unicodedata.combining(character))
+
+        capital_names = set()
         for feature in json.loads(gzip.decompress(static_bytes("stolice.json.gz")))["features"]:
             add_feature(feature)
+            props = feature["properties"]
+            capital_names.add((props.get("country"), capital_name(props.get("@name") or props.get("name", ""))))
         # The overview map also contains capital markers with legacy IDs.
-        for id, name, x, y, _, code, _, _, capital in json.loads(static_bytes("mapa.json"))["miasto"]:
-            if not capital:
+        for id, name, x, y, _, code, _, original, capital in json.loads(static_bytes("mapa.json"))["miasto"]:
+            if not capital or (preset == "capital-cities" and any((code, capital_name(alias)) in capital_names for alias in (name, original) if alias)):
                 continue
             south, north = -85, 85
             for _ in range(24):

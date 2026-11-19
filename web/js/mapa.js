@@ -13,6 +13,7 @@ const defaultPresets = {
   countries: { label: "Państwa", english: "Countries", category: "panstwo", min: 0, zoom: 0, max: 4 },
   regions: { label: "Rejony", english: "Regions", category: "miasto", min: 1, zoom: 4, max: 12 },
   major: { label: "Duże miasta", english: "Major cities", category: "miasto", min: 4, zoom: 7, max: 12 },
+  "capital-cities": { label: "Stolice", english: "Capitals", category: "miasto", min: 0, zoom: 7, max: 16 },
   cities: { label: "Wszystkie miasta", english: "All cities", category: "miasto", min: 6, zoom: 10.75, max: 15 },
   settlements: { label: "Miasta i wsie", english: "Cities and villages", category: "miasto", min: 9, zoom: 11.25, max: 16 },
   visited: { label: "Odwiedzone", english: "Visited", category: "miasto", min: 0, zoom: 0, max: 16 },
@@ -25,6 +26,7 @@ const layerLabels = { forests: ["Lasy", "Forests"], lakes: ["Jeziora", "Lakes"],
 const presetLabel = (preset) => tr(preset.label, preset.english);
 const visibilityKeys = [...Object.keys(defaultPresets), ...Object.keys(layerLabels)];
 let visibility = Object.fromEntries(visibilityKeys.map((key) => [key, true]));
+visibility.major = false;
 visibility.seas = false;
 visibility["visited-only"] = false;
 visibility["planned-only"] = false;
@@ -417,6 +419,7 @@ let collectCityView = false;
 const legacyCities = new Map();
 const capitalAliases = new Map();
 const capitalRecords = new Map();
+const capitalOutlines = new Map();
 const capitalOutlineNames = new Set();
 const polishCities = new Map();
 const majorCities = new Map();
@@ -430,9 +433,26 @@ function isMajorCity(id) {
   return Boolean(polishCities.get(id)?.major || majorCities.has(id) || capitalRecords.has(id));
 }
 
+function isCapitalCity(id) {
+  return capitalOutlines.has(id) || capitalRecords.has(id);
+}
+
+function capitalLocations() {
+  return [...capitalOutlines.values(), ...[...capitalRecords.values()].filter((place) =>
+    ![place.name, place.original].filter(Boolean).some((name) => capitalOutlineNames.has(normalize(name + " " + place.region))))];
+}
+
+function capitalPointData() {
+  return { type: "FeatureCollection", features: capitalLocations().map((place) => ({
+    type: "Feature", properties: { id: place.id, name: place.name, hasOutline: capitalOutlines.has(place.id) },
+    geometry: { type: "Point", coordinates: place.getPosition() },
+  })) };
+}
+
 function placeInPreset(place) {
   if (areaFocusActive()) return focusPlaceAllowed(place);
   if (activePreset === "major") return isMajorCity(place.id);
+  if (activePreset === "capital-cities") return isCapitalCity(place.id);
   if (activePreset === "cities") return !place.id.startsWith("simc:");
   return true;
 }
@@ -440,6 +460,7 @@ function placeInPreset(place) {
 function syncPresetLayers() {
   const focused = areaFocusActive();
   const onlyMajor = activePreset === "major" && !focused;
+  const onlyCapitals = activePreset === "capital-cities" && !focused;
   const visited = isSavedPreset() && !focused;
   const showRegions = focused ? focusShowsRegions() : activePreset === "regions";
   const showVillages = focused ? focusShowsVillages() : activePreset === "settlements";
@@ -465,9 +486,9 @@ function syncPresetLayers() {
     [continentFillLayer]: activePreset === "continents" && !focused,
     [continentOutlineLayer]: activePreset === "continents" && !focused,
     [warningLayer]: !focused && visibility.warnings && !visited && activePreset !== "continents",
-    [capitalLayer]: visibility.capitals && (onlyMajor || showCities || visited || focusShowsRegions()),
-    "area-capital-fill": focused && focusShowsRegions(),
-    "area-capital-pins": focused && focusShowsRegions(),
+    [capitalLayer]: visibility.capitals && (onlyMajor || onlyCapitals || showCities || visited || focusShowsRegions()),
+    "area-capital-fill": onlyCapitals || (focused && focusShowsRegions()),
+    "area-capital-pins": onlyCapitals || (focused && focusShowsRegions()),
     [regionLayer]: showRegions,
     [visitedRegionLayer]: visited,
     [visitedCountryLayer]: visited,
@@ -491,7 +512,12 @@ function syncPresetLayers() {
   };
   cityMap.setPaintProperty("map-background", "background-color", visibility.seas ? mapColors.lake : "#fff");
   for (const [id, show] of Object.entries(shown)) setLayerVisible(id, show);
-  if (cityMap.getLayer("area-capital-pins")) cityMap.setPaintProperty("area-capital-pins", "circle-stroke-color", visibility.capitals ? "#c33e4f" : "#797084");
+  if (cityMap.getLayer("area-capital-pins")) {
+    cityMap.setLayerZoomRange("area-capital-pins", 0, onlyCapitals ? 24 : cityZoom);
+    cityMap.setFilter("area-capital-pins", onlyCapitals && zoom >= cityZoom ? ["==", ["get", "hasOutline"], false] : null);
+    cityMap.setPaintProperty("area-capital-pins", "circle-stroke-color", visibility.capitals ? "#c33e4f" : "#797084");
+  }
+  if (cityMap.getLayer(capitalLayer)) cityMap.setLayerZoomRange(capitalLayer, onlyCapitals ? 0 : 4, 24);
   for (const source of [villageSource, overviewVillages]) {
     const layer = markerLayer(source);
     if (shown[layer] && cityMap.getLayer(layer) && cityMap.getFilter(layer)?.[2]?.[2] !== zoom) cityMap.setFilter(layer, [
@@ -689,6 +715,9 @@ async function loadMajorCities(dataRequest, capitalRequest) {
     for (const feature of capitals.features) {
       const place = cityFromFeature(feature);
       if (!place) continue;
+      place.capital = true;
+      feature.properties.capital = true;
+      capitalOutlines.set(place.id, place);
       capitalOutlineNames.add(normalize(place.name + " " + place.region));
       if (majorCities.has(place.id) || place.id.startsWith("prg:")) continue;
       majorCities.set(place.id, place);
@@ -697,6 +726,7 @@ async function loadMajorCities(dataRequest, capitalRequest) {
     }
     data.features.push(...extra);
     cityMap.getSource(capitalLayer).setData(capitals);
+    cityMap.getSource("area-capital-points").setData(capitalPointData());
     cityMap.addSource("major-settlements", { type: "geojson", data, maxzoom: 10, tolerance: 0 });
     cityMap.addLayer({ id: majorCityLayer, type: "fill", source: "major-settlements",
       paint: { "fill-color": "#ffffff", "fill-outline-color": "#797084" } }, "river-2");
@@ -721,6 +751,12 @@ function updateCityView(collect = false) {
   if (activePreset === "countries") {
     retryMap.hidden = true;
     byId("map-hint").textContent = tr("Kliknij państwo, aby otworzyć jego szczegóły.", "Click a country to open its details.");
+    updateControls();
+    return;
+  }
+  if (activePreset === "capital-cities") {
+    retryMap.hidden = true;
+    byId("map-hint").textContent = tr("Kliknij stolicę, aby otworzyć jej szczegóły.", "Click a capital to open its details.");
     updateControls();
     return;
   }
@@ -1033,9 +1069,7 @@ function openCityMap() {
     cityMap.addSource(capitalLayer, { type: "geojson", data: emptyFeatures(), maxzoom: 13, tolerance: 0 });
     cityMap.addLayer({ id: "area-capital-fill", type: "fill", source: capitalLayer, layout: { visibility: "none" },
       paint: { "fill-color": "#fff", "fill-outline-color": "#797084" } });
-    cityMap.addSource("area-capital-points", { type: "geojson", data: { type: "FeatureCollection", features: [...capitalRecords.values()].map((place) => ({
-      type: "Feature", properties: { id: place.id, name: place.name }, geometry: { type: "Point", coordinates: place.getPosition() },
-    })) } });
+    cityMap.addSource("area-capital-points", { type: "geojson", data: capitalPointData() });
     cityMap.addLayer({ id: "area-capital-pins", type: "circle", source: "area-capital-points", maxzoom: cityZoom,
       layout: { visibility: "none" }, paint: { "circle-radius": 4, "circle-color": "#fff", "circle-stroke-color": "#c33e4f", "circle-stroke-width": 1.5 } });
     cityMap.addLayer({ id: capitalLayer, type: "line", source: capitalLayer, minzoom: 4,
@@ -1142,7 +1176,7 @@ function openCityMap() {
   });
   cityMap.on("mousemove", pinLayers, (event) => {
     const { id, name } = event.features[0].properties;
-    showHover(capitalRecords.get(id) || { id, category: "miasto", name }, event.point.x, event.point.y);
+    showHover(capitalOutlines.get(id) || capitalRecords.get(id) || { id, category: "miasto", name }, event.point.x, event.point.y);
     cityMap.getCanvas().style.cursor = "pointer";
   });
   cityMap.on("mouseleave", pinLayers, () => {
@@ -1163,7 +1197,7 @@ function openCityMap() {
     const pin = features.find((feature) => pinLayers.includes(feature.layer.id));
     if (pin) {
       const { id, name } = pin.properties;
-      return { place: capitalRecords.get(id) || { id, name, category: "miasto", getPosition: () => pin.geometry.coordinates } };
+      return { place: capitalOutlines.get(id) || capitalRecords.get(id) || { id, name, category: "miasto", getPosition: () => pin.geometry.coordinates } };
     }
     const region = features.find((feature) => regionLayers.includes(feature.layer.id));
     if (region) return { place: adminRegions.get(region.properties.id) };
@@ -1523,6 +1557,7 @@ function updateSidebar(focusKey) {
   const cityVisits = visits.filter((row) => row.kategoria === "miasto");
   byId("major-count").textContent = polishCities.size && majorCities.size
     ? cityVisits.filter((row) => isMajorCity(row.id)).length : "–";
+  byId("capital-city-count").textContent = new Set(cityVisits.filter((row) => isCapitalCity(row.id)).map((row) => row.id)).size;
   byId("city-count").textContent = cityVisits.filter((row) => !row.id.startsWith("simc:")).length;
   byId("settlement-count").textContent = cityVisits.length;
   byId("region-count").textContent = visits.filter((row) => row.kategoria === "rejon").length;
@@ -1556,6 +1591,9 @@ function updateSidebar(focusKey) {
           : region ? region.getPosition() : savedCityPosition(row) };
     }).filter((place) => place &&
       normalize([place.name, displayPlaceName(place), place.region, displayRegionName(place)].filter(Boolean).join(" ")).includes(query));
+  } else if (activePreset === "capital-cities" && !areaFocusActive()) {
+    matches = capitalLocations().filter((place) => place.searchText.includes(query))
+      .map((place) => ({ ...place, navigateOnly: true }));
   } else if (activePreset === "regions" && !areaFocusActive()) {
     matches = [...adminRegions.values()].filter((place) => place.searchText.includes(query));
   } else if (category === "panstwo" || category === "kontynent") {
@@ -2091,6 +2129,7 @@ function updateSearchPrompt() {
     : activePreset === "planned-only" ? tr("Szukaj w zaplanowanych…", "Search planned places…")
       : tr("Szukaj zapisanych miejsc…", "Search saved places…")
     : activePreset === "regions" ? tr("Szukaj rejonu…", "Search for a region…")
+    : activePreset === "capital-cities" ? tr("Szukaj stolicy…", "Search for a capital…")
     : activePreset === "continents" ? tr("Wpisz nazwę kontynentu…", "Enter a continent name…")
     : category === "miasto" ? tr("Szukaj miasta na świecie…", "Search for a city…")
     : tr("Wpisz nazwę państwa…", "Enter a country name…");

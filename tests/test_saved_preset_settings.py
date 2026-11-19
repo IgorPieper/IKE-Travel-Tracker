@@ -7,6 +7,20 @@ from src import atlas
 
 
 class SavedPresetSettingsTests(unittest.TestCase):
+    def test_capitals_default_on_and_major_cities_default_off(self):
+        with tempfile.TemporaryDirectory() as folder, patch.object(atlas, 'SETTINGS', Path(folder)/'settings.csv'):
+            ranges, visibility, layout = atlas.read_settings()
+            self.assertFalse(visibility['major'])
+            self.assertTrue(visibility['capital-cities'])
+            self.assertEqual(list(ranges).index('capital-cities'), list(ranges).index('major') + 1)
+            # Explicit choices are preserved when updating an existing installation.
+            visibility['major'] = True
+            visibility['capital-cities'] = False
+            atlas.write_settings(ranges, visibility, layout)
+            _, saved, _ = atlas.read_settings()
+            self.assertTrue(saved['major'])
+            self.assertFalse(saved['capital-cities'])
+
     def test_new_presets_default_off_and_keep_explicit_saved_choices(self):
         with tempfile.TemporaryDirectory() as folder, patch.object(atlas, 'SETTINGS', Path(folder)/'settings.csv'):
             # An older installation has no rows for either new preset.

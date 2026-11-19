@@ -5,6 +5,7 @@ import threading
 import unittest
 from datetime import date
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch
 from urllib.request import Request, urlopen
 
@@ -15,6 +16,18 @@ class DeveloperFillTests(unittest.TestCase):
     def setUp(self):
         self.candidates = [{"kategoria": "panstwo", "id": str(index), "nazwa": f"Country {index}"} for index in range(10)]
         self.today = date(2026, 11, 19)
+
+    def test_capitals_catalogue_excludes_other_cities(self):
+        server = SimpleNamespace(static_cities={"not-capital": {"properties": {"division_id": "not-capital"}}},
+                                 country_codes={"PL":"poland"})
+        candidates = atlas.developer_candidates(server, "capital-cities")
+        ids = {item['id'] for item in candidates}
+        self.assertIn('prg:146501_1', ids)
+        self.assertNotIn('not-capital', ids)
+        # Warsaw's older point ID is represented by its precise outline.
+        self.assertNotIn('1159151299', ids)
+        self.assertGreater(len(candidates), 190)
+        self.assertTrue(all(item['kategoria'] == 'miasto' for item in candidates))
 
     def fill(self, rows, percentage, status):
         return atlas.fill_map_progress(rows, self.candidates, percentage, status,

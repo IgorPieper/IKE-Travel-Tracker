@@ -19,7 +19,7 @@ function setup(preset, focusCategory = null, villages = false) {
     focusShowsCities: () => ['rejon','miasto'].includes(focusCategory),
     focusShowsVillages: () => focusCategory === 'rejon' && villages,
     cityMap: { getLayer: () => ({}), setFilter: (id, value) => filters[id] = value,
-      getFilter: id => filters[id],
+      getFilter: id => filters[id], setLayerZoomRange:()=>{},
       setPaintProperty: (id, property, value) => paints[id + ':' + property] = value,
       getSource: id => ({ setData: value => sources[id] = value }), getZoom: () => 2 },
     visibility: { capitals: true, warnings: true, seas: false, rivers: true, lakes: true },
@@ -97,4 +97,35 @@ test('focus hierarchy keeps layers fixed at every zoom and villages require opt-
     assert.equal(shown['visited-village-pins'],category==='rejon' && villages);
     assert.equal(shown.visitedPinLayer,false);
   }
+});
+
+
+test('capitals view shows only capital boundaries and markers at every zoom', () => {
+  for (const zoom of [0, 7, 15]) {
+    const {context:c,shown,filters}=setup('capital-cities');
+    c.cityMap.getZoom=()=>zoom;
+    c.syncPresetLayers();
+    assert.equal(shown['area-capital-fill'],true);
+    assert.equal(shown['area-capital-pins'],true);
+    assert.equal(shown.capitalLayer,true);
+    for (const layer of ['polishCityLayer','polishMajorLayer','majorCityLayer','cityLayer','villageLayer','overviewCities','overviewVillages','visited-major-city-pins'])
+      assert.equal(shown[layer],false,layer);
+    assert.equal(shown.countries,true);
+    assert.equal(filters['area-capital-pins']===null,zoom<9);
+  }
+});
+
+
+test('capital search includes boundary and fallback capitals and excludes other towns', () => {
+  const source=fs.readFileSync(path.join(__dirname,'../web/js/mapa.js'),'utf8');
+  const outline={id:'warsaw',name:'Warsaw',region:'Poland'};
+  const fallback={id:'capital-without-outline',name:'Fallback capital',region:'Country'};
+  const context=vm.createContext({activePreset:'capital-cities',areaFocusActive:()=>false,
+    capitalOutlines:new Map([['warsaw',outline]]),capitalRecords:new Map([['old-warsaw',{id:'old-warsaw',name:'Warsaw',region:'Poland'}],['capital-without-outline',fallback]]),
+    capitalOutlineNames:new Set(['warsaw poland']),normalize:text=>text.toLowerCase()});
+  vm.runInContext(source.slice(source.indexOf('function isCapitalCity('),source.indexOf('function syncPresetLayers(')),context);
+  assert.equal(context.placeInPreset({id:'warsaw'}),true);
+  assert.equal(context.placeInPreset({id:'capital-without-outline'}),true);
+  assert.equal(context.placeInPreset({id:'krakow'}),false);
+  assert.deepEqual(JSON.parse(JSON.stringify(context.capitalLocations().map(place=>place.id))),['warsaw','capital-without-outline']);
 });
