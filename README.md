@@ -4,7 +4,13 @@ A local application for marking visited and planned places on a world map. Inclu
 
 ## Running on Windows
 
-Extract the entire folder from `Tracker-Wyjazdow-Windows.zip` and open `Tracker Wyjazdow.exe`. The application opens the map in your default browser.
+1. [Download the Windows application](https://github.com/IgorPieper/IKE-Travel-Tracker/releases/latest/download/Tracker-Wyjazdow-Windows.zip).
+2. Extract the entire ZIP archive to a folder on your computer.
+3. Open `Tracker Wyjazdow.exe` inside the extracted folder.
+
+No Python installation is required. The application opens the map in your default browser.
+
+The EXE is included in the Windows ZIP under [Releases](https://github.com/IgorPieper/IKE-Travel-Tracker/releases). GitHub's **Code → Download ZIP** downloads the source code and does not include the EXE.
 
 ## Notes
 
