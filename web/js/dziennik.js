@@ -10,6 +10,10 @@
   const name = byId("diary-trip-name");
   const start = byId("diary-start");
   const end = byId("diary-end");
+  const startUncertain = byId("diary-start-uncertain");
+  const endUncertain = byId("diary-end-uncertain");
+  bindUncertainDate(start, startUncertain, byId("diary-start-approx"));
+  bindUncertainDate(end, endUncertain, byId("diary-end-approx"));
   const notes = byId("diary-notes");
   const save = byId("diary-save");
   const ungroup = byId("diary-ungroup");
@@ -127,9 +131,11 @@
   function tripDateLabel(trip) {
     const first = trip.data;
     const last = trip.data_konca;
-    if (first && last) return first === last ? dayLabel(first) : dayLabel(first) + " – " + dayLabel(last);
-    if (first) return tr("Od ", "From ") + dayLabel(first);
-    if (last) return tr("Do ", "Until ") + dayLabel(last);
+    const firstLabel = uncertaintyPrefix(first ? dayLabel(first) : "", trip);
+    const lastLabel = uncertaintyPrefix(last ? dayLabel(last) : "", { data_niepewna: trip.data_konca_niepewna });
+    if (first && last) return firstLabel === lastLabel ? firstLabel : firstLabel + " – " + lastLabel;
+    if (first) return tr("Od ", "From ") + firstLabel;
+    if (last) return tr("Do ", "Until ") + lastLabel;
     return tr("Bez daty", "Undated");
   }
 
@@ -177,12 +183,13 @@
     if (!draft) return;
     const count = draft.members.size;
     selectionStatus.textContent = tr(`Wybrane wizyty · ${count}`, `Selected visits · ${count}`)
-      + (!draft.existing && count < 2 ? tr(" · wybierz co najmniej dwie wizyty", " · choose at least two visits") : "");
-    save.disabled = saving || (!draft.existing && count < 2);
+      + (!draft.existing && count < 1 ? tr(" · wybierz co najmniej jedną wizytę", " · choose at least one visit") : "");
+    save.disabled = saving || (!draft.existing && count < 1);
     if (draft.existing) return;
     const dates = [...draft.members].map((key) => visits[key]?.data).filter(Boolean).sort();
     if (!draft.startEdited) start.value = dates[0] || "";
     if (!draft.endEdited) end.value = dates.at(-1) || "";
+    start.syncUncertainty(); end.syncUncertainty();
   }
 
   function visitCard(key, visit) {
@@ -261,7 +268,7 @@
     const claimed = claimedVisits(draft?.id);
     const available = Object.entries(visits).filter(([key, visit]) => !claimed.has(key) && visitVisible(visit));
     newTrip.hidden = Boolean(draft);
-    newTrip.disabled = available.length < 2;
+    newTrip.disabled = available.length < 1;
     updateSelection();
     const ordered = orderCards([...available, ...(draft ? [] : trips.filter(tripVisible).map((trip) => [trip.id, trip]))]);
     grid.replaceChildren();
@@ -324,6 +331,9 @@
     name.value = trip?.nazwa || "";
     start.value = trip?.data || "";
     end.value = trip?.data_konca || "";
+    startUncertain.checked = dateIsUncertain(trip);
+    endUncertain.checked = dateIsUncertain({ data_niepewna: trip?.data_konca_niepewna });
+    start.syncUncertainty(); end.syncUncertainty();
     end.setCustomValidity("");
     notes.value = trip?.notatka || "";
     form.hidden = false;
@@ -404,6 +414,7 @@
     }
     commit({
       nazwa: name.value, data: start.value, data_konca: end.value,
+      data_niepewna: startUncertain.checked, data_konca_niepewna: endUncertain.checked,
       notatka: notes.value, miejsca: [...draft.members],
     });
   });

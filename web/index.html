@@ -386,7 +386,7 @@
     <section class="card diary-panel">
       <div class="diary-heading">
         <h2 id="diary-title" data-en="Journal">Dziennik</h2>
-        <button id="diary-new-trip" type="button" data-en="Group visits" disabled>Połącz wizyty</button>
+        <button id="diary-new-trip" type="button" data-en="Add trip" disabled>Dodaj wycieczkę</button>
       </div>
       <p id="diary-status" role="status"></p>
       <details class="diary-filters">
@@ -399,8 +399,8 @@
           <legend id="diary-form-title"></legend>
           <div class="diary-input-grid">
             <label class="diary-wide-field" for="diary-trip-name"><span data-en="Trip name">Nazwa wycieczki</span><input id="diary-trip-name" type="text" maxlength="100"></label>
-            <label for="diary-start"><span data-en="Start date">Data początku</span><input id="diary-start" type="date" max="9999-12-31"></label>
-            <label for="diary-end"><span data-en="End date">Data końca</span><input id="diary-end" type="date" max="9999-12-31"></label>
+            <div><label for="diary-start" data-en="Start date">Data początku</label><div class="visit-date-line"><span class="visit-date-value"><span id="diary-start-approx" hidden aria-hidden="true">~</span><input id="diary-start" type="date" max="9999-12-31"></span><label class="uncertain-date-option"><input id="diary-start-uncertain" type="checkbox"><span data-en="Uncertain">Niepewna</span></label></div></div>
+            <div><label for="diary-end" data-en="End date">Data końca</label><div class="visit-date-line"><span class="visit-date-value"><span id="diary-end-approx" hidden aria-hidden="true">~</span><input id="diary-end" type="date" max="9999-12-31"></span><label class="uncertain-date-option"><input id="diary-end-uncertain" type="checkbox"><span data-en="Uncertain">Niepewna</span></label></div></div>
             <label class="diary-wide-field" for="diary-notes"><span data-en="Trip notes">Notatki z wycieczki</span><textarea id="diary-notes" rows="3" maxlength="2000"></textarea></label>
           </div>
           <div class="diary-form-actions">

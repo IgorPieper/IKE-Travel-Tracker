@@ -42,7 +42,7 @@ HYDROGRAPHY = MAP_DATA / "hydrografia.sqlite3"
 VISIT_DETAILS = ("data", "ocena", "notatka", "data_niepewna")
 PIN_DETAILS = ("opis_krotki", "opis_dlugi", "kolor")
 FIELDS = ("kategoria", "id", "nazwa", "lon", "lat", "panstwo_id", "tryb", *VISIT_DETAILS, *PIN_DETAILS,
-          "data_konca", "miejsca", "kolejne_wizyty")
+          "data_konca", "data_konca_niepewna", "miejsca", "kolejne_wizyty")
 MAP_CATEGORIES = ("kontynent", "panstwo", "rejon", "miasto")
 SKIP_LINKED = "pomin_auto"
 SETTINGS_FIELDS = ("widok", "min_zoom", "maks_zoom", "widoczny", "wartosc")
@@ -355,12 +355,13 @@ def trip_record(change, trip_id, members):
     title = change["nazwa"]
     if not isinstance(title, str) or len(title) > 100 or "\x00" in title:
         raise ValueError
-    details = visit_details({"data": change["data"], "notatka": change["notatka"]})
+    details = visit_details({"data": change["data"], "notatka": change["notatka"], "data_niepewna": change.get("data_niepewna", "")})
     end = validate_date(change["data_konca"])
     if details["data"] and end and end < details["data"]:
         raise ValueError
     return {"kategoria": "wycieczka", "id": trip_id, "nazwa": title.strip(), **details,
-            "data_konca": end, "miejsca": json.dumps(members, separators=(",", ":"))}
+            "data_konca": end, "data_konca_niepewna": "1" if uncertain_date(change.get("data_konca_niepewna", "")) else "",
+            "miejsca": json.dumps(members, separators=(",", ":"))}
 
 
 def journal_model(rows, server, language="en", title=""):
@@ -404,6 +405,8 @@ def journal_model(rows, server, language="en", title=""):
         members = sorted((visits[key] for key in keys), key=lambda visit: visit["date"], reverse=True)
         trips.append({"kind": "trip", "title": row.get("nazwa") or WORDS["trip"][language == "en"],
                       "date": row.get("data") or "", "end": row.get("data_konca") or "",
+                      "uncertain": uncertain_date(row.get("data_niepewna", "")),
+                      "end_uncertain": uncertain_date(row.get("data_konca_niepewna", "")),
                       "note": row.get("notatka") or "", "members": members})
     entries = [visit for key, visit in visits.items() if key not in claimed] + trips
     entries.sort(key=lambda entry: entry.get("date") or entry.get("end") or "", reverse=True)
@@ -415,7 +418,10 @@ def journal_model(rows, server, language="en", title=""):
                    | {trip[field] for trip in trips for field in ("date", "end") if trip[field]})
     approximate = {entry["date"] for entry in visits.values() if entry["date"] and entry["uncertain"]}
     exact = {entry["date"] for entry in visits.values() if entry["date"] and not entry["uncertain"]}
-    exact.update(trip[field] for trip in trips for field in ("date", "end") if trip[field])
+    for trip in trips:
+        for field, flag in (("date", "uncertain"), ("end", "end_uncertain")):
+            if trip[field]:
+                (approximate if trip[flag] else exact).add(trip[field])
     approximate -= exact
     span = day_label(dates[0], language, dates[0] in approximate) if dates else ""
     if len(dates) > 1:
@@ -523,7 +529,9 @@ def import_progress(content, format, server):
         raise ValueError
     if format == "csv":
         reader = csv.DictReader(io.StringIO(content.lstrip("\ufeff"), newline=""), strict=True)
-        if not reader.fieldnames or len(set(reader.fieldnames)) != len(reader.fieldnames) or set(reader.fieldnames) not in (set(FIELDS), set(FIELDS) - {"data_niepewna"}):
+        if (not reader.fieldnames or len(set(reader.fieldnames)) != len(reader.fieldnames)
+                or set(reader.fieldnames) - set(FIELDS)
+                or set(FIELDS) - {"data_niepewna", "data_konca_niepewna"} - set(reader.fieldnames)):
             raise ValueError
         rows = list(reader)
         for row in rows:
@@ -585,6 +593,7 @@ def import_progress(content, format, server):
         details["kolejne_wizyty"] = json.loads(row["kolejne_wizyty"] or "[]")
         visit_details(details)
         validate_date(row["data_konca"])
+        uncertain_date(row["data_konca_niepewna"])
         if category == "pinezka":
             pin_record({**row, "kolejne_wizyty": details["kolejne_wizyty"], "pozycja": [float(row["lon"]), float(row["lat"])]}, id)
         if category == "wycieczka":
@@ -1154,7 +1163,7 @@ class App(BaseHTTPRequestHandler):
             exists = len(remaining) < len(rows)
             members = change["miejsca"]
             if (not isinstance(members, list) or len(members) > 500 or not all(isinstance(key, str) for key in members)
-                    or len(members) != len(set(members)) or (not exists and len(members) < 2)):
+                    or len(members) != len(set(members)) or (not exists and len(members) < 1)):
                 raise ValueError
             claimed = {key for row in remaining if row["kategoria"] == "wycieczka" for key in trip_members(row)}
             if not set(members).issubset(diary_visits(rows)) or claimed.intersection(members):

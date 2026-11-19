@@ -50,12 +50,14 @@ def day_label(value, language, uncertain=False):
 
 def date_label(entry, model):
     first, last = entry.get("date", ""), entry.get("end", "")
+    first_label = day_label(first, model["language"], entry.get("uncertain", False)) if first else ""
+    last_label = day_label(last, model["language"], entry.get("end_uncertain", False)) if last else ""
     if first and last:
-        return day_label(first, model["language"]) + (" - " + day_label(last, model["language"]) if last != first else "")
+        return first_label + (" - " + last_label if last_label != first_label else "")
     if first:
         return (words(model, "from") + " " if entry.get("kind") == "trip" else "") + day_label(first, model["language"], entry.get("uncertain", False))
     if last:
-        return words(model, "until") + " " + day_label(last, model["language"])
+        return words(model, "until") + " " + last_label
     return words(model, "undated")
 
 
