@@ -245,7 +245,6 @@ h1 { font-size: 24px; letter-spacing: -.045em; }
 #bliza-goal-progress { display: block; width: 100%; height: 8px; margin-top: 5px; accent-color: var(--accent); }
 #challenge-map-stage { position: relative; flex: 1; min-height: 0; }
 #challenge-map { position: absolute; inset: 0; }
-#challenge-osm-credit { position: absolute; z-index: 1; right: 0; bottom: 0; padding: 2px 5px; background: #ffffffe8; color: var(--ink); font-size: 10px; }
 .castle-list-heading { padding: 8px 0 3px; font-weight: 650; }
 .castle-marker-key { display: inline-grid; flex: 0 0 19px; width: 19px; height: 19px; place-items: center; border-radius: 50%; background: var(--castle-color); color: #fff; font-size: 12px; }
 #castle-legend-keys { display: grid; gap: 7px; list-style: none; margin: 0; padding: 0; }
