@@ -12,7 +12,7 @@ function setup(preset, focusCategory = null, villages = false) {
     { kategoria: category, id: category + '-planned', nazwa: 'Planned', tryb: 'plan' },
   ]);
   const context = vm.createContext({
-    activePreset: preset, savedRows: rows, visitColor: 'purple', planColor: 'orange',
+    activePreset: preset, savedRows: rows, tr:(pl,en)=>en, layout:{},tabs:[],byId:()=>({classList:{toggle:()=>{}}}), visitColor: 'purple', planColor: 'orange',
     areaFocusActive: () => Boolean(focusCategory), syncAreaFocusLayers: () => {},
     focusShowsCountries: () => focusCategory === 'kontynent',
     focusShowsRegions: () => focusCategory === 'panstwo',
@@ -40,7 +40,7 @@ function setup(preset, focusCategory = null, villages = false) {
     + block('const isSavedPreset =', '// U.S. Department')
     + block('function statusColor(', 'function getRegionCatalogue(')
     + block('function paintCityPins(', 'function pinImage(')
-    + block('function densityState(', 'function setLayerVisible('), context);
+    + block('function renderZoom(', 'function setLayerVisible('), context);
   return { context, filters, paints, sources, shown, zoomRanges };
 }
 

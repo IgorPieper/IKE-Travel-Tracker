@@ -7,6 +7,15 @@ from src import atlas
 
 
 class SavedPresetSettingsTests(unittest.TestCase):
+    def test_render_distances_default_to_wider_views_and_persist_independently(self):
+        with tempfile.TemporaryDirectory() as folder, patch.object(atlas, 'SETTINGS', Path(folder)/'settings.csv'):
+            ranges, visibility, layout = atlas.read_settings()
+            self.assertEqual([layout['render_'+kind] for kind in ('regions','cities','villages')], ['3','7','9'])
+            layout.update(render_regions='2.5', render_cities='6', render_villages='8')
+            atlas.write_settings(ranges, visibility, layout)
+            saved=atlas.read_settings()[2]
+            self.assertEqual([saved['render_'+kind] for kind in ('regions','cities','villages')], ['2.5','6','8'])
+
     def test_achievement_notifications_default_on_and_save_off(self):
         with tempfile.TemporaryDirectory() as folder, patch.object(atlas, 'SETTINGS', Path(folder)/'settings.csv'):
             ranges, visibility, layout = atlas.read_settings()

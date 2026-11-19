@@ -65,6 +65,9 @@ DEFAULT_VISIBILITY["visited-only"] = False
 DEFAULT_VISIBILITY["planned-only"] = False
 DEFAULT_LAYOUT = {"language": "en", "sidebar": "auto", "cyprus": "show"}
 LAYOUT_VALUES = {"language": ("pl", "en"), "sidebar": ("auto", "open", "closed"), "cyprus": ("show", "hide")}
+for kind, value in (("regions", "3"), ("cities", "7"), ("villages", "9")):
+    DEFAULT_LAYOUT["render_" + kind] = value
+    LAYOUT_VALUES["render_" + kind] = tuple(f"{step / 2:g}" for step in range(33))
 DEFAULT_LAYOUT["achievement_notifications"] = "on"
 LAYOUT_VALUES["achievement_notifications"] = ("off", "on")
 DEFAULT_LAYOUT["developer_panel"] = "off"

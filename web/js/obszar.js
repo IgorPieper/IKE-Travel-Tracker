@@ -43,7 +43,7 @@ function updateFocusHint() {
   if (areaFocus.loading) hint.textContent = tr("Wczytywanie obszaru…", "Loading area…");
   else if (areaFocus.error) hint.textContent = tr("Nie udało się wczytać obrysu. Wybierz inny obszar lub spróbuj ponownie.", "Could not load the boundary. Choose another area or try again.");
   else if (areaFocus.selecting) hint.textContent = tr("Kliknij obszar, który chcesz wyodrębnić. Escape anuluje wybór.", "Click an area to focus on it. Escape cancels selection.");
-  else if (areaFocusActive()) { hint.textContent = zoomRequirementHint(); hint.hidden = !hint.textContent; }
+  else if (areaFocusActive()) { hint.textContent = ""; hint.hidden = true; }
   else return false;
   return true;
 }

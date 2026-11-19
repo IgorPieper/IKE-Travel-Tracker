@@ -487,3 +487,7 @@ canvas.target { cursor: pointer; }
 
 .visit-date-value input[type="date"] { font-size: 11px; padding: 6px 3px; }
 .visit-date-value input[type="date"]::-webkit-calendar-picker-indicator { margin-left: 0; padding: 0; width: 13px; }
+
+.categories button.zoom-required { border-color: #d85a68; box-shadow: inset 0 0 0 1px #d85a68; }
+#area-focus-villages-option.zoom-required { outline: 1px solid #d85a68; outline-offset: 4px; border-radius: 3px; }
+#settings-rendering input[type="number"] { width: 85px; }

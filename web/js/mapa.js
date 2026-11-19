@@ -411,8 +411,8 @@ const cityZoom = 9;
 const worldCitySource = "world-settlements";
 const polishCityZoom = 8;
 const majorCityZoom = 6;
-const villageZoom = 11;
-const regionZoom = 4;
+const villageZoom = 9;
+const regionZoom = 3;
 const worldWaterZoom = 8;
 const polishWaterZoom = 9;
 const villageSource = "polish-rural-settlements";
@@ -475,11 +475,53 @@ function placeInPreset(place) {
   return true;
 }
 
+function renderZoom(kind) {
+  const fallback = { regions: 3, cities: 7, villages: 9 };
+  const value = Number(layout["render_" + kind] ?? fallback[kind]);
+  return Number.isFinite(value) ? Math.max(0, Math.min(16, value)) : fallback[kind];
+}
+
+function settlementTiles([west, south, east, north]) {
+  if (!(east > west && north > south)) return [];
+  const columns = Math.ceil((east - west) / 2.4), rows = Math.ceil((north - south) / 1.9);
+  if (columns * rows > 64) return [];
+  const tiles = [];
+  for (let y = 0; y < rows; y++) for (let x = 0; x < columns; x++) tiles.push([
+    west + (east - west) * x / columns, south + (north - south) * y / rows,
+    west + (east - west) * (x + 1) / columns, south + (north - south) * (y + 1) / rows,
+  ]);
+  return tiles;
+}
+
+async function loadSettlementViewport(endpoint, bounds, signal) {
+  const tiles = settlementTiles(bounds);
+  if (!tiles.length) throw new Error("Viewport too large");
+  const features = new Map();
+  let next = 0;
+  async function worker() {
+    while (next < tiles.length) {
+      if (signal.aborted) throw new DOMException("Aborted", "AbortError");
+      const tile = tiles[next++];
+      const data = await request(endpoint + "?bbox=" + tile.join(","), { signal });
+      for (const feature of data.features) features.set(feature.properties.division_id + ":" + feature.geometry.type, feature);
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(4, tiles.length) }, worker));
+  return { type: "FeatureCollection", features: [...features.values()] };
+}
+
+function polishSettlementViewport(bounds, padding = 0) {
+  const [west, south, east, north] = bounds;
+  const dx = (east - west) * padding, dy = (north - south) * padding;
+  const clipped = [Math.max(14, west - dx), Math.max(48.9, south - dy), Math.min(24.3, east + dx), Math.min(55.1, north + dy)];
+  return settlementTiles(clipped).length ? clipped : null;
+}
+
 function densityState() {
   const zoom = cityMap?.getZoom() ?? Math.log2(view.zoom);
-  const fits = cityMap ? settlementViewportFits(visibleWorldBounds()) : false;
-  return { regions: zoom >= regionZoom, major: zoom >= majorCityZoom,
-    cities: zoom >= cityZoom && fits, villages: zoom >= villageZoom && fits };
+  const fits = cityMap ? settlementTiles(visibleWorldBounds()).length > 0 : false;
+  return { regions: zoom >= renderZoom("regions"), major: zoom >= majorCityZoom,
+    cities: zoom >= renderZoom("cities") && fits, villages: zoom >= renderZoom("villages") && fits };
 }
 
 function wantsCityDetails() {
@@ -493,17 +535,33 @@ function savedCityRows() {
         (!row.id.startsWith("simc:") || (areaFocusActive() ? focusShowsVillages() : activePreset === "settlements"))));
 }
 
-function zoomRequirementHint() {
-  if (!cityMap || (isSavedPreset() && !areaFocusActive())) return "";
+function zoomRequirementHint(preset = activePreset, useFocus = true) {
+  const focused = useFocus && areaFocusActive();
+  if (!cityMap || (isSavedPreset(preset) && !focused)) return "";
   const details = densityState();
-  const villageView = areaFocusActive() ? focusShowsVillages() : activePreset === "settlements";
-  const cityView = areaFocusActive() ? focusShowsCities() : activePreset === "cities";
-  const regionView = areaFocusActive() ? focusShowsRegions() : activePreset === "regions";
+  const villageView = focused ? focusShowsVillages() : preset === "settlements";
+  const cityView = focused ? focusShowsCities() : preset === "cities";
+  const regionView = focused ? focusShowsRegions() : preset === "regions";
   if (villageView && !details.villages) return tr("Przybliż mapę, aby zobaczyć wsie.", "Zoom in to see villages.");
   if (cityView && !details.cities) return tr("Przybliż mapę, aby zobaczyć miasta.", "Zoom in to see cities.");
   if (regionView && !details.regions) return tr("Przybliż mapę, aby zobaczyć granice rejonów.", "Zoom in to see region boundaries.");
-  if (!areaFocusActive() && activePreset === "major" && !details.major) return tr("Przybliż mapę, aby zobaczyć duże miasta.", "Zoom in to see major cities.");
+  if (!focused && preset === "major" && !details.major) return tr("Przybliż mapę, aby zobaczyć duże miasta.", "Zoom in to see major cities.");
   return "";
+}
+
+function updatePresetDistanceWarnings() {
+  for (const tab of tabs) {
+    const message = zoomRequirementHint(tab.dataset.preset, false);
+    tab.classList.toggle("zoom-required", Boolean(message));
+    tab.title = message;
+    if (message) tab.setAttribute("aria-description", message);
+    else tab.removeAttribute("aria-description");
+  }
+  const villages = byId("area-focus-villages-option");
+  const message = areaFocusActive() && focusShowsVillages() && !densityState().villages
+    ? tr("Przybliż mapę, aby zobaczyć wsie.", "Zoom in to see villages.") : "";
+  villages.classList.toggle("zoom-required", Boolean(message));
+  villages.title = message;
 }
 
 function syncPresetLayers() {
@@ -519,7 +577,7 @@ function syncPresetLayers() {
   const savedCities = visited || wantsCityDetails();
   const showWorld = showCities && !viewportInsidePoland();
   const viewBounds = visibleWorldBounds();
-  const villageDetailBounds = polishViewport(viewBounds, 0);
+  const villageDetailBounds = polishSettlementViewport(viewBounds, 0);
   const detailCities = containsBounds(worldCitiesView.bounds, viewBounds);
   const detailVillages = villageDetailBounds && containsBounds(loadedVillageBounds, villageDetailBounds);
   const zoom = cityMap.getZoom();
@@ -561,13 +619,13 @@ function syncPresetLayers() {
     cityMap.setFilter("area-capital-pins", null);
   }
   if (cityMap.getLayer(capitalLayer)) cityMap.setLayerZoomRange(capitalLayer, onlyCapitals ? 0 : 4, 24);
-  for (const [id, minimum] of [[regionLayer, regionZoom], [polishCityLayer, cityZoom], [cityLayer, cityZoom],
-    [polishMajorLayer, majorCityZoom], [majorCityLayer, activePreset === "major" && !focused ? majorCityZoom : cityZoom],
-    [villageLayer, villageZoom], [markerLayer(villageSource), villageZoom]]) {
+  for (const [id, minimum] of [[regionLayer, renderZoom("regions")], [polishCityLayer, renderZoom("cities")], [cityLayer, renderZoom("cities")],
+    [polishMajorLayer, majorCityZoom], [majorCityLayer, activePreset === "major" && !focused ? majorCityZoom : renderZoom("cities")],
+    [villageLayer, renderZoom("villages")], [markerLayer(villageSource), renderZoom("villages")]]) {
     if (cityMap.getLayer(id)) cityMap.setLayerZoomRange(id, minimum, 24);
   }
   if (cityMap.getLayer(visitedPinLayer)) cityMap.setLayerZoomRange(visitedPinLayer, 0,
-    visited ? 24 : activePreset === "settlements" || focusShowsVillages() ? villageZoom : activePreset === "major" ? majorCityZoom : cityZoom);
+    visited ? 24 : activePreset === "settlements" || focusShowsVillages() ? renderZoom("villages") : activePreset === "major" ? majorCityZoom : renderZoom("cities"));
 
   for (const source of [villageSource, overviewVillages]) {
     const layer = markerLayer(source);
@@ -575,6 +633,7 @@ function syncPresetLayers() {
       "all", ["==", ["geometry-type"], "Point"], [">", ["get", "markerZoom"], zoom],
     ]);
   }
+  updatePresetDistanceWarnings();
   loadRegions();
   syncAreaFocusLayers();
 }
@@ -691,15 +750,15 @@ async function loadVisibleVillages() {
     return;
   }
   const bounds = visibleWorldBounds();
-  const viewBounds = polishViewport(bounds, 0);
+  const viewBounds = polishSettlementViewport(bounds, 0);
   if (!viewBounds) return;
   if (containsBounds(loadedVillageBounds, viewBounds) || containsBounds(villageBoundsRequest?.bounds, viewBounds)) return;
-  const nearby = polishViewport(bounds, 0.3);
+  const nearby = polishSettlementViewport(bounds, 0.1);
   villageBoundsRequest?.controller.abort();
   const controller = new AbortController();
   villageBoundsRequest = { controller, bounds: nearby };
   try {
-    const data = await request("/api/wsie?bbox=" + nearby.join(","), { signal: controller.signal });
+    const data = await loadSettlementViewport("/api/wsie", nearby, controller.signal);
     if (controller.signal.aborted) return;
     source.setData(data);
     loadedVillageBounds = nearby;
@@ -796,12 +855,14 @@ async function loadMajorCities(dataRequest, capitalRequest) {
 
 function updateCityView(collect = false) {
   if (!cityMap) return;
+  updatePresetDistanceWarnings();
   if (updateFocusHint()) { retryMap.hidden = true; updateControls(); return; }
+  byId("map-hint").hidden = false;
   const zoomHint = zoomRequirementHint();
   if (zoomHint) {
     retryMap.hidden = true;
-    byId("map-hint").hidden = false;
-    byId("map-hint").textContent = zoomHint;
+    byId("map-hint").hidden = true;
+    byId("map-hint").textContent = "";
     updateControls();
     return;
   }
@@ -835,8 +896,7 @@ function updateCityView(collect = false) {
     return;
   }
   const zoom = cityMap.getZoom();
-  const needsWorld = activePreset !== "major" && zoom >= cityZoom &&
-    settlementViewportFits(visibleWorldBounds()) && !viewportInsidePoland();
+  const needsWorld = activePreset !== "major" && densityState().cities && !viewportInsidePoland();
   if (collect) {
     const layers = [cityLayer, polishCityLayer, polishMajorLayer, majorCityLayer, villageLayer, overviewCities, overviewVillages,
       markerLayer(villageSource), markerLayer(overviewVillages)]
@@ -989,14 +1049,14 @@ async function loadVisibleCities() {
   const dx = Math.max(0, Math.min((east - west) * 0.2, (2.49 - (east - west)) / 2));
   const dy = Math.max(0, Math.min((north - south) * 0.2, (1.99 - (north - south)) / 2));
   const nearby = [Math.max(-180, west - dx), Math.max(-90, south - dy), Math.min(180, east + dx), Math.min(90, north + dy)];
-  if (nearby[2] - nearby[0] > 2.5 || nearby[3] - nearby[1] > 2) return;
+  if (!settlementTiles(nearby).length) return;
   worldCitiesView.pending?.controller.abort();
   const controller = new AbortController();
   worldCitiesView.pending = { controller, bounds: nearby };
   cityProblem = false;
   updateCityView();
   try {
-    const data = await request("/api/miasta?bbox=" + nearby.join(","), { signal: controller.signal });
+    const data = await loadSettlementViewport("/api/miasta", nearby, controller.signal);
     if (controller.signal.aborted) return;
     source.setData(data);
     worldCitiesView.bounds = nearby;
@@ -2437,6 +2497,22 @@ const sidebar = byId("map-sidebar");
 const narrowLayout = matchMedia("(max-width: 640px)");
 const languageSelect = byId("atlas-language");
 let layout = { language: "en", sidebar: "auto", online_focus: "off", achievement_notifications: "on" };
+const renderDistanceInputs = new Map();
+for (const kind of ["regions", "cities", "villages"]) {
+  const input = document.createElement("input");
+  Object.assign(input, { type: "number", min: "0", max: "16", step: "0.5", value: String(renderZoom(kind)) });
+  input.addEventListener("change", () => {
+    if (!input.value.trim()) { input.value = String(renderZoom(kind)); return; }
+    const value = Number(input.value);
+    if (!Number.isFinite(value)) return;
+    const normalized = String(Math.max(0, Math.min(16, Math.round(value * 2) / 2)));
+    input.value = normalized;
+    saveLayout("render_" + kind, normalized);
+    refreshPreset();
+    syncMainSettings();
+  });
+  renderDistanceInputs.set(kind, input);
+}
 const achievementNotificationsEnabled = () => layout.achievement_notifications !== "off";
 const achievementNotificationInput = document.createElement("input");
 achievementNotificationInput.type = "checkbox";
@@ -2901,6 +2977,7 @@ function scheduleSettingsCategory() {
 window.addEventListener("scroll", scheduleSettingsCategory, { passive: true });
 window.addEventListener("resize", scheduleSettingsCategory);
 function syncMainSettings() {
+  for (const [kind, input] of renderDistanceInputs) { input.value = String(renderZoom(kind)); input.disabled = !ready; }
   achievementNotificationInput.checked = achievementNotificationsEnabled();
   achievementNotificationInput.disabled = !ready;
   for (const [key, input] of onlineInputs) input.checked = onlineEnabled(key);
@@ -3130,6 +3207,7 @@ function renderMainSettings() {
   const icons = {
     general: '<circle cx="12" cy="12" r="8"/><path d="M4 12h16M12 4c5 5 5 11 0 16-5-5-5-11 0-16Z"/>',
     layers: '<path d="m12 3 9 5-9 5-9-5 9-5Zm-9 9 9 5 9-5M3 16l9 5 9-5"/>',
+    rendering: '<circle cx="10" cy="10" r="6"/><path d="m15 15 6 6M6 10h8M10 6v8"/>',
     views: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
     other: '<path d="M4 6h16M4 12h16M4 18h16"/><circle cx="8" cy="6" r="2"/><circle cx="16" cy="12" r="2"/><circle cx="10" cy="18" r="2"/>',
     progress: '<path d="M5 7h14M9 7V4h6v3M7 7l1 14h8l1-14M10 11v6m4-6v6"/>',
@@ -3243,6 +3321,11 @@ function renderMainSettings() {
   const views = category("views", "Widoki mapy", "Map views", "", "");
   for (const [key, input] of visibilityInputs) {
     mirror(key in layerLabels ? layers : views, input, () => visibilityLabels.get(key).textContent);
+  }
+  const rendering = category("rendering", "Odległość wyświetlania", "Render distance",
+    "Niższa wartość pokazuje obrysy z większej odległości.", "Lower values show boundaries from farther away.");
+  for (const [kind, pl, en] of [["regions", "Rejony", "Regions"], ["cities", "Miasta", "Cities"], ["villages", "Wsie", "Villages"]]) {
+    mirror(rendering, renderDistanceInputs.get(kind), () => tr(pl, en));
   }
   const other = category("other", "Pozostałe", "Other", "", "");
   const islandsHeading = document.createElement("h4");
