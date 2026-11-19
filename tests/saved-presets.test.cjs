@@ -12,7 +12,7 @@ function setup(preset, focusCategory = null, villages = false) {
     { kategoria: category, id: category + '-planned', nazwa: 'Planned', tryb: 'plan' },
   ]);
   const context = vm.createContext({
-    activePreset: preset, markingsHidden:false, savedRows: rows, tr:(pl,en)=>en, layout:{},tabs:[],byId:()=>({classList:{toggle:()=>{}}}), visitColor: 'purple', planColor: 'orange',
+    activePreset: preset, markingsHidden:false, compactCountries:new Set(['SM']), places:{panstwo:[]}, savedRows: rows, tr:(pl,en)=>en, layout:{},tabs:[],byId:()=>({classList:{toggle:()=>{}}}), visitColor: 'purple', planColor: 'orange',
     areaFocusActive: () => Boolean(focusCategory), syncAreaFocusLayers: () => {},
     focusShowsCountries: () => focusCategory === 'kontynent',
     focusShowsRegions: () => focusCategory === 'panstwo',
@@ -43,6 +43,28 @@ function setup(preset, focusCategory = null, villages = false) {
     + block('function renderZoom(', 'function setLayerVisible('), context);
   return { context, filters, paints, sources, shown, zoomRanges };
 }
+
+test('regions keep compact countries whole and restore the country filter when changing views', () => {
+  const {context:c,filters,shown}=setup('regions');
+  c.places.panstwo=[{id:'san-marino',code:'SM'},{id:'poland',code:'PL'}];
+  c.syncVisitedCountries();c.syncPresetLayers();
+  assert.equal(shown.countryFillLayer,true);
+  assert.deepEqual(Array.from(filters.countryFillLayer[2][2][1]),['san-marino']);
+  c.activePreset='countries';c.syncVisitedCountries();
+  assert.equal(JSON.stringify(filters.countryFillLayer),JSON.stringify(['==',['get','kind'],'country']));
+});
+
+test('compact country districts are excluded from the shared region catalogue',async()=>{
+  const source=fs.readFileSync(path.join(__dirname,'../web/js/mapa.js'),'utf8');
+  const data=JSON.parse(require('node:zlib').gunzipSync(fs.readFileSync(path.join(__dirname,'../data/maps/rejony.json.gz'))));
+  assert.ok(data.features.some(f=>f.properties.country==='SM'));
+  const c=vm.createContext({request:async()=>data,regionCatalogueRequest:undefined});
+  vm.runInContext(source.slice(source.indexOf('const compactCountries ='),source.indexOf('const presetLabel ='))+
+    source.slice(source.indexOf('function getRegionCatalogue('),source.indexOf('function loadRegions(')),c);
+  const result=await c.getRegionCatalogue();
+  assert.ok(!result.features.some(f=>['SM','MC','VA','LI','AD','MT'].includes(f.properties.country)));
+  assert.equal(result.features.filter(f=>f.properties.country==='PL').length,data.features.filter(f=>f.properties.country==='PL').length);
+});
 
 test('saved-only presets retain the combined view and filter both statuses consistently', () => {
   for (const [preset, suffixes] of [['visited', ['visited', 'planned']], ['visited-only', ['visited']], ['planned-only', ['planned']]]) {

@@ -23,6 +23,8 @@ const defaultPresets = {
 const layerLabels = { forests: ["Lasy", "Forests"], lakes: ["Jeziora", "Lakes"], rivers: ["Rzeki", "Rivers"],
   seas: ["Morza i oceany", "Seas and oceans"],
   capitals: ["Czerwone obrysy stolic", "Red capital boundaries"], warnings: ["Ostrzeżenia dla państw", "Travel advisories"] };
+// Compact states are represented by their country boundary rather than local districts.
+const compactCountries = new Set("VA MC SM LI AD MT SG BH MV NR TV MH PW KN GD VC BB AG DM SC ST FM LC".split(" "));
 const presetLabel = (preset) => tr(preset.label, preset.english);
 const visibilityKeys = [...Object.keys(defaultPresets), ...Object.keys(layerLabels)];
 let visibility = Object.fromEntries(visibilityKeys.map((key) => [key, true]));
@@ -245,7 +247,11 @@ function syncVisitedCountries() {
   cityMap.setFilter(visitedCountryLayer, ["all", ["==", ["get", "kind"], "country"], selected]);
   const fill = statusColor("panstwo", "country_id", "rgba(0,0,0,0)");
   cityMap.setPaintProperty(visitedCountryLayer, "fill-color", fill);
-  cityMap.setPaintProperty(countryFillLayer, "fill-color", (areaFocusActive() ? focusShowsCountries() : activePreset === "countries") ? fill : "rgba(0,0,0,0)");
+  const compactView = !areaFocusActive() && activePreset === "regions";
+  cityMap.setFilter(countryFillLayer, compactView ? ["all", ["==", ["get", "kind"], "country"],
+    ["in", ["get", "country_id"], ["literal", places.panstwo.filter((place) => compactCountries.has(place.code)).map((place) => place.id)]]]
+    : ["==", ["get", "kind"], "country"]);
+  cityMap.setPaintProperty(countryFillLayer, "fill-color", (areaFocusActive() ? focusShowsCountries() : activePreset === "countries" || compactView) ? fill : "rgba(0,0,0,0)");
   cityMap.setPaintProperty(continentFillLayer, "fill-color", statusColor("kontynent", "id", "#fff"));
 }
 
@@ -267,7 +273,9 @@ function paintRegions() {
 }
 
 function getRegionCatalogue() {
-  regionCatalogueRequest ||= request("/rejony.json", { cache: "reload" }).catch((error) => {
+  regionCatalogueRequest ||= request("/rejony.json", { cache: "reload" }).then((data) => ({ ...data,
+    features: data.features.filter((feature) => !compactCountries.has(feature.properties.country)),
+  })).catch((error) => {
     regionCatalogueRequest = undefined;
     throw error;
   });
@@ -585,7 +593,7 @@ function syncPresetLayers() {
   const zoom = cityMap.getZoom();
   const shown = {
     "land-mask": visibility.seas,
-    [countryFillLayer]: focused ? focusShowsCountries() : (activePreset === "countries" || visited),
+    [countryFillLayer]: focused ? focusShowsCountries() : (["countries", "regions"].includes(activePreset) || visited),
     countries: activePreset !== "continents" || focused,
     [continentFillLayer]: activePreset === "continents" && !focused,
     [continentOutlineLayer]: activePreset === "continents" && !focused,
@@ -1482,9 +1490,10 @@ function draw() {
     }
   }
   for (const place of continents ? [] : places.panstwo) {
-    const active = !markingsHidden && !areaFocusActive() && (activePreset === "countries" || visited) && marked.has(key(place))
+    const countryStatus = activePreset === "countries" || visited || (activePreset === "regions" && compactCountries.has(place.code));
+    const active = !markingsHidden && !areaFocusActive() && countryStatus && marked.has(key(place))
       && (!visited || rowInSavedPreset({ kategoria: "panstwo", tryb: "" }));
-    const inPlans = !markingsHidden && !areaFocusActive() && (activePreset === "countries" || visited) && planned.has(key(place))
+    const inPlans = !markingsHidden && !areaFocusActive() && countryStatus && planned.has(key(place))
       && (!visited || rowInSavedPreset({ kategoria: "panstwo", tryb: "plan" }));
     const warning = visibility.warnings && !visited && warningCountries.has(place.code);
     if (active || inPlans || place === hovered || warning) {
