@@ -12,7 +12,7 @@ function setup(preset, focusCategory = null, villages = false) {
     { kategoria: category, id: category + '-planned', nazwa: 'Planned', tryb: 'plan' },
   ]);
   const context = vm.createContext({
-    activePreset: preset, savedRows: rows, tr:(pl,en)=>en, layout:{},tabs:[],byId:()=>({classList:{toggle:()=>{}}}), visitColor: 'purple', planColor: 'orange',
+    activePreset: preset, markingsHidden:false, savedRows: rows, tr:(pl,en)=>en, layout:{},tabs:[],byId:()=>({classList:{toggle:()=>{}}}), visitColor: 'purple', planColor: 'orange',
     areaFocusActive: () => Boolean(focusCategory), syncAreaFocusLayers: () => {},
     focusShowsCountries: () => focusCategory === 'kontynent',
     focusShowsRegions: () => focusCategory === 'panstwo',

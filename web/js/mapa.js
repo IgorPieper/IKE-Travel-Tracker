@@ -89,6 +89,7 @@ let places = { kontynent: [], panstwo: [], miasto: [] };
 const continentsById = new Map();
 let marked = new Set();
 let planned = new Set();
+let markingsHidden = false;
 let pendingMapClick;
 const visitColor = "#b695e5";
 const planColor = "#f5c689";
@@ -210,6 +211,7 @@ function cityPosition(x, y) {
 }
 
 function statusColor(category, field, fallback, formatId = (id) => id) {
+  if (markingsHidden) return fallback;
   const rows = savedRows.filter((row) => row.kategoria === category && (areaFocusActive() || !isSavedPreset() || rowInSavedPreset(row)));
   const matches = (planning) => ["in", ["get", field], ["literal",
     rows.filter((row) => (row.tryb === "plan") === planning).map((row) => formatId(row.id))]];
@@ -639,6 +641,8 @@ function syncPresetLayers() {
 }
 
 function setLayerVisible(id, show) {
+  if (markingsHidden && [visitedPlaceLayer, visitedCountryLayer, visitedRegionLayer, visitedPinLayer,
+    "visited-city-pins", "visited-polish-city-pins", "visited-major-city-pins", "visited-village-pins"].includes(id)) show = false;
   const next = show ? "visible" : "none";
   if (cityMap.getLayer(id) && (cityMap.getLayoutProperty(id, "visibility") || "visible") !== next) {
     cityMap.setLayoutProperty(id, "visibility", next);
@@ -1468,8 +1472,8 @@ function draw() {
   const visited = isSavedPreset() && !areaFocusActive();
   if (continents || visibility.seas) {
     for (const place of places.kontynent) {
-      ctx.fillStyle = continents && marked.has(key(place)) ? visitColor
-        : continents && planned.has(key(place)) ? planColor : "#fff";
+      ctx.fillStyle = !markingsHidden && continents && marked.has(key(place)) ? visitColor
+        : !markingsHidden && continents && planned.has(key(place)) ? planColor : "#fff";
       ctx.fill(place.path, "evenodd");
       if (continents) {
         ctx.strokeStyle = "#8b8498";
@@ -1478,9 +1482,9 @@ function draw() {
     }
   }
   for (const place of continents ? [] : places.panstwo) {
-    const active = !areaFocusActive() && (activePreset === "countries" || visited) && marked.has(key(place))
+    const active = !markingsHidden && !areaFocusActive() && (activePreset === "countries" || visited) && marked.has(key(place))
       && (!visited || rowInSavedPreset({ kategoria: "panstwo", tryb: "" }));
-    const inPlans = !areaFocusActive() && (activePreset === "countries" || visited) && planned.has(key(place))
+    const inPlans = !markingsHidden && !areaFocusActive() && (activePreset === "countries" || visited) && planned.has(key(place))
       && (!visited || rowInSavedPreset({ kategoria: "panstwo", tryb: "plan" }));
     const warning = visibility.warnings && !visited && warningCountries.has(place.code);
     if (active || inPlans || place === hovered || warning) {
@@ -2032,7 +2036,7 @@ function positionCustomPins() {
     let x, y;
     if (interactive) ({ x, y } = cityMap.project(pin.position));
     else [x, y] = screen(...project(lon, lat));
-    element.hidden = !focusContains(pin.position) || (element !== pinDraft && !areaFocusActive() && isSavedPreset() && !rowInSavedPreset(pin)) || x < 0 || x > width || y < 0 || y > height;
+    element.hidden = (markingsHidden && element !== pinDraft) || !focusContains(pin.position) || (element !== pinDraft && !areaFocusActive() && isSavedPreset() && !rowInSavedPreset(pin)) || x < 0 || x > width || y < 0 || y > height;
     if (!element.hidden) element.style.transform = `translate(${x - 13}px, ${y - 25}px)`;
   }
 }
@@ -2595,6 +2599,33 @@ function canUseMapShortcuts(event) {
     !event.target.closest?.("input, select, textarea, [contenteditable]");
 }
 
+function syncMarkingsButton() {
+  const button = byId("toggle-marks");
+  const label = (markingsHidden ? tr("Pokaż zaznaczenia", "Show markings") : tr("Ukryj zaznaczenia", "Hide markings")) + " (H)";
+  button.setAttribute("aria-pressed", String(markingsHidden));
+  button.setAttribute("aria-label", label);
+  button.title = label;
+  for (const [id, shortcut] of [["add-pin", "P"], ["focus-area", "F"]]) {
+    const tool = byId(id);
+    tool.title = tool.getAttribute("aria-label") + ` (${shortcut})`;
+    tool.setAttribute("aria-keyshortcuts", shortcut);
+  }
+  button.setAttribute("aria-keyshortcuts", "H");
+}
+
+function toggleMapMarkings() {
+  markingsHidden = !markingsHidden;
+  showHover(null);
+  syncMarkingsButton();
+  paintVisits();
+  syncVisitedCountries();
+  paintRegions();
+  if (hasInteractiveMap()) syncPresetLayers();
+  positionCustomPins();
+  scheduleDraw();
+}
+byId("toggle-marks").addEventListener("click", toggleMapMarkings);
+
 // Handle the view shortcut before MapLibre handles horizontal arrows as panning.
 document.addEventListener("keydown", (event) => {
   if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
@@ -2628,7 +2659,13 @@ document.addEventListener("keydown", (event) => {
     return;
   }
   if (event.ctrlKey || event.metaKey || event.altKey) return;
-  if (event.key === "0") byId("reset").click();
+  const tool = { p: "add-pin", f: "focus-area", h: "toggle-marks" }[event.key.toLowerCase()];
+  if (tool) {
+    if (event.repeat || event.shiftKey || !ready) return;
+    const button = byId(tool);
+    if (button.hidden || button.disabled) return;
+    button.click();
+  } else if (event.key === "0") byId("reset").click();
   else if (!cityContainer.contains(event.target) && (event.key === "+" || event.key === "-")) {
     changePresetZoom(event.key === "+" ? 1 : -1);
   } else return;
@@ -2649,6 +2686,7 @@ function setMapSidebarOpen(open) {
 
 function syncLanguage() {
   translatePage(layout.language);
+  syncMarkingsButton();
   renderDataDates();
   languageSelect.value = layout.language;
   for (const tab of tabs) tab.querySelector(".preset-label").textContent = presetLabel(presets[tab.dataset.preset]);
