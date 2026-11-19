@@ -93,6 +93,7 @@ let marked = new Set();
 let planned = new Set();
 let markingsHidden = false;
 let pendingMapClick;
+let lastRightMapClick;
 const visitColor = "#b695e5";
 const planColor = "#f5c689";
 let category = "panstwo";
@@ -880,13 +881,13 @@ function updateCityView(collect = false) {
   }
   if (activePreset === "continents") {
     retryMap.hidden = true;
-    byId("map-hint").textContent = tr("Kliknij kontynent, aby otworzyć jego szczegóły.", "Click a continent to open its details.");
+    byId("map-hint").textContent = tr("Kliknij prawym przyciskiem kontynent, aby otworzyć jego szczegóły.", "Right-click a continent to open its details.");
     updateControls();
     return;
   }
   if (activePreset === "countries") {
     retryMap.hidden = true;
-    byId("map-hint").textContent = tr("Kliknij państwo, aby otworzyć jego szczegóły.", "Click a country to open its details.");
+    byId("map-hint").textContent = tr("Kliknij prawym przyciskiem państwo, aby otworzyć jego szczegóły.", "Right-click a country to open its details.");
     updateControls();
     return;
   }
@@ -902,7 +903,7 @@ function updateCityView(collect = false) {
       ? activePreset === "visited-only" ? tr("Wyświetlane są tylko odwiedzone miejsca.", "Only visited places are shown.")
         : activePreset === "planned-only" ? tr("Wyświetlane są tylko zaplanowane miejsca.", "Only planned places are shown.")
           : tr("Fioletowe miejsca są odwiedzone, pomarańczowe są w planach.", "Purple places are visited. Orange places are planned.")
-      : adminRegions.size ? tr("Kliknij rejon, aby otworzyć jego szczegóły.", "Click a region to open its details.")
+      : adminRegions.size ? tr("Kliknij prawym przyciskiem rejon, aby otworzyć jego szczegóły.", "Right-click a region to open its details.")
         : tr("Wczytywanie granic rejonów…", "Loading region boundaries…");
     updateControls();
     return;
@@ -924,7 +925,7 @@ function updateCityView(collect = false) {
   retryMap.hidden = !needsWorld || !cityProblem;
   byId("map-hint").textContent = !basemapReady
     ? tr("Wczytywanie podkładu mapy…", "Loading the basemap…")
-    : cityPlaces.size ? tr("Kliknij miejscowość, aby otworzyć jej szczegóły.", "Click a place to open its details.")
+    : cityPlaces.size ? tr("Kliknij prawym przyciskiem miejscowość, aby otworzyć jej szczegóły.", "Click a place to open its details.")
       : activePreset === "major" ? tr("Przesuń mapę lub wyszukaj duże miasto.", "Pan the map or search for a major city.")
       : needsWorld && cityProblem ? tr("Część obrysów chwilowo niedostępna. Podkład mapy jest nadal widoczny.", "Some boundaries are temporarily unavailable.")
         : needsWorld && worldCitiesView.pending ? tr("Wczytywanie obrysów miast…", "Loading city boundaries…")
@@ -1170,6 +1171,8 @@ function openCityMap() {
     },
   });
   cityMap.touchZoomRotate.disableRotation();
+  cityMap.boxZoom.disable();
+  cityMap.doubleClickZoom.disable();
   cityMap.on("load", () => {
     cityMap.addSource(polishWaterSource, { type: "geojson", data: emptyFeatures(), maxzoom: 14, tolerance: 0.55 });
     cityMap.addLayer({ id: "polish-rivers", type: "line", source: polishWaterSource, minzoom: polishWaterZoom,
@@ -1342,33 +1345,11 @@ function openCityMap() {
     if (region) return { place: adminRegions.get(region.properties.id) };
     return { place: landPlace(features) };
   }
-  cityMap.on("click", (event) => {
-    if (placePinAt(event.originalEvent, event.lngLat.wrap().toArray())) return;
-    const { place } = placeAt(event);
-    if (!place) return;
-    if (event.originalEvent.shiftKey) quicklyRemovePlace(place);
-    else if (event.originalEvent.ctrlKey) planPlace(place);
-    else queuePlaceClick(place, () => openPlace(place));
-  });
-  // MapLibre consumes Shift-clicks as cancelled box zooms, even without a drag.
-  cityMap.on("boxzoomcancel", ({ originalEvent }) => {
-    if (!(originalEvent instanceof MouseEvent) || !originalEvent.shiftKey) return;
+  bindMapPointerNavigation(cityMap.getCanvas(), (dx, dy) => cityMap.panBy([-dx, -dy], { duration: 0 }), (event) => {
     const bounds = cityMap.getCanvas().getBoundingClientRect();
-    const point = [originalEvent.clientX - bounds.left, originalEvent.clientY - bounds.top];
+    const point = { x: event.clientX - bounds.left, y: event.clientY - bounds.top };
     const lngLat = cityMap.unproject(point);
-    if (placePinAt(originalEvent, lngLat.wrap().toArray())) return;
-    const { place } = placeAt({ point, lngLat });
-    if (place) quicklyRemovePlace(place);
-  });
-  cityMap.on("dblclick", (event) => {
-    if (event.originalEvent.altKey) {
-      event.preventDefault();
-      return;
-    }
-    const { place } = placeAt(event);
-    if (!place || event.originalEvent.shiftKey) return;
-    event.preventDefault();
-    planPlace(place);
+    selectMapPlace(event, placeAt({ point, lngLat }).place, lngLat.wrap().toArray());
   });
   updateCityView();
 }
@@ -1594,8 +1575,9 @@ canvas.addEventListener("wheel", (event) => {
   zoomAt(event.deltaY < 0 ? 1.23 : 1 / 1.23, ...coordinates(event));
 }, { passive: false });
 
+canvas.addEventListener("contextmenu", (event) => event.preventDefault());
 canvas.addEventListener("pointerdown", (event) => {
-  if (event.button !== 0 || pointers.size >= 2) return;
+  if (![0, 2].includes(event.button) || pointers.size >= 2) return;
   const [x, y] = coordinates(event);
   if (!pointers.size) dragged = false;
   else dragged = true;
@@ -1610,7 +1592,7 @@ canvas.addEventListener("pointermove", (event) => {
     if (!pointers.size && event.pointerType === "mouse") showHover(findAt(x, y), x, y);
     return;
   }
-  if (Math.hypot(x - previous.startX, y - previous.startY) > 5) dragged = true;
+  if (Math.hypot(x - previous.startX, y - previous.startY) > 5) { dragged = true; lastRightMapClick = undefined; }
   if (!dragged) return;
   canvas.classList.add("dragging");
   const other = [...pointers.entries()].find(([id]) => id !== event.pointerId)?.[1];
@@ -1634,12 +1616,8 @@ function endPointer(event) {
   if (!pointers.delete(event.pointerId)) return;
   if (!dragged && event.type === "pointerup") {
     const position = coordinates(event);
-    if (!placePinAt(event, cityPosition(...world(...position))) && (["continents", "countries"].includes(activePreset) || isSavedPreset())) {
-      const place = findAt(...position);
-      if (place && event.shiftKey) quicklyRemovePlace(place);
-      else if (place && event.ctrlKey) planPlace(place);
-      else if (place) queuePlaceClick(place, () => openPlace(place));
-    }
+    const place = ["continents", "countries", "regions"].includes(activePreset) || isSavedPreset() ? findAt(...position) : null;
+    selectMapPlace(event, place, cityPosition(...world(...position)));
   }
   if (!pointers.size) {
     canvas.classList.remove("dragging");
@@ -1650,11 +1628,52 @@ canvas.addEventListener("pointerup", endPointer);
 canvas.addEventListener("pointercancel", endPointer);
 canvas.addEventListener("lostpointercapture", endPointer);
 canvas.addEventListener("pointerleave", () => showHover(null));
-canvas.addEventListener("dblclick", (event) => {
-  if (event.shiftKey || event.altKey || !(["continents", "countries"].includes(activePreset) || isSavedPreset())) return;
-  const place = findAt(...coordinates(event));
-  if (place) planPlace(place);
-});
+function selectMapPlace(event, place, position) {
+  if (event.button !== 2) return;
+  if (placePinAt(event, position)) return;
+  if (!place) return;
+  if (event.shiftKey) { lastRightMapClick = undefined; quicklyRemovePlace(place); }
+  else if (event.ctrlKey) { lastRightMapClick = undefined; planPlace(place); }
+  else {
+    const now = performance.now();
+    if (lastRightMapClick?.key === key(place) && now - lastRightMapClick.time < 500) {
+      lastRightMapClick = undefined;
+      planPlace(place);
+    } else {
+      lastRightMapClick = { key: key(place), time: now };
+      queuePlaceClick(place, () => openPlace(place));
+    }
+  }
+}
+
+// MapLibre handles left-button navigation itself; right dragging is navigation too.
+function bindMapPointerNavigation(element, pan, select, bothButtons = false) {
+  let gesture;
+  element.addEventListener("contextmenu", (event) => event.preventDefault());
+  element.addEventListener("pointerdown", (event) => {
+    if (event.button !== 2 && !(bothButtons && event.button === 0)) return;
+    gesture = { id: event.pointerId, x: event.clientX, y: event.clientY, startX: event.clientX, startY: event.clientY, dragged: false };
+    lastRightMapClick = event.button === 0 ? undefined : lastRightMapClick;
+    element.setPointerCapture(event.pointerId);
+    event.preventDefault();
+  });
+  element.addEventListener("pointermove", (event) => {
+    if (!gesture || gesture.id !== event.pointerId) return;
+    if (Math.hypot(event.clientX - gesture.startX, event.clientY - gesture.startY) > 5) gesture.dragged = true;
+    if (!gesture.dragged) return;
+    lastRightMapClick = undefined;
+    pan(event.clientX - gesture.x, event.clientY - gesture.y);
+    gesture.x = event.clientX; gesture.y = event.clientY;
+    showHover(null);
+  });
+  element.addEventListener("pointerup", (event) => {
+    if (!gesture || gesture.id !== event.pointerId) return;
+    const click = !gesture.dragged && Math.hypot(event.clientX - gesture.startX, event.clientY - gesture.startY) <= 5;
+    gesture = undefined;
+    if (click && event.button === 2) select(event);
+  });
+  for (const name of ["pointercancel", "lostpointercapture"]) element.addEventListener(name, () => { gesture = undefined; });
+}
 function changePresetZoom(direction) {
   if (hasInteractiveMap()) {
     const zoom = clampZoom(cityMap.getZoom() + 0.5 * direction, mapZoomRange);
@@ -2073,7 +2092,7 @@ function renderCustomPins(rows) {
     element.addEventListener("mouseleave", hideName);
     element.addEventListener("focus", showName);
     element.addEventListener("blur", hideName);
-    element.addEventListener("click", (event) => {
+    const selectPin = (event) => {
       if (event.shiftKey) {
         const visitCount = 1 + (pin.kolejne_wizyty?.length || 0);
         if (visitCount > 1 && !window.confirm(tr(
@@ -2083,7 +2102,12 @@ function renderCustomPins(rows) {
         const editor = editedPin?.pin.id === pin.id ? editedPin : { pin };
         saveCustomPin({ usun: true }, editor);
       } else if (!placePinAt(event, pin.position)) openPinEditor(pin, true);
-    });
+    };
+    element.addEventListener("click", (event) => { if (event.detail === 0) selectPin(event); });
+    bindMapPointerNavigation(element, (dx, dy) => {
+      if (hasInteractiveMap()) cityMap.panBy([-dx, -dy], { duration: 0 });
+      else { view.x -= dx / scale(); view.y -= dy / scale(); keepInBounds(); scheduleDraw(); }
+    }, selectPin, true);
     element.addEventListener("dblclick", (event) => event.stopPropagation());
     return { pin, element };
   });
@@ -2616,7 +2640,7 @@ function syncMarkingsButton() {
   button.title = label;
   for (const [id, shortcut] of [["add-pin", "P"], ["focus-area", "F"]]) {
     const tool = byId(id);
-    tool.title = tool.getAttribute("aria-label") + ` (${shortcut})`;
+    tool.title = tool.getAttribute("aria-label") + ` (${shortcut}) — ` + tr("wybierz miejsce prawym przyciskiem", "right-click a place");
     tool.setAttribute("aria-keyshortcuts", shortcut);
   }
   button.setAttribute("aria-keyshortcuts", "H");
