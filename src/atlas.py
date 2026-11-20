@@ -50,6 +50,7 @@ DEFAULT_ZOOMS = {
     "continents": {"min": 0, "max": 4},
     "countries": {"min": 0, "max": 4},
     "regions": {"min": 1, "max": 12},
+    "subregions": {"min": 0, "max": 19},
     "major": {"min": 4, "max": 12},
     "capital-cities": {"min": 0, "max": 16},
     "cities": {"min": 6, "max": 15},
@@ -65,7 +66,7 @@ DEFAULT_VISIBILITY["visited-only"] = False
 DEFAULT_VISIBILITY["planned-only"] = False
 DEFAULT_LAYOUT = {"language": "en", "sidebar": "auto", "cyprus": "show"}
 LAYOUT_VALUES = {"language": ("pl", "en"), "sidebar": ("auto", "open", "closed"), "cyprus": ("show", "hide")}
-for kind, value in (("regions", "3"), ("cities", "7"), ("villages", "9")):
+for kind, value in (("regions", "3"), ("subregions", "6"), ("cities", "7"), ("villages", "9")):
     DEFAULT_LAYOUT["render_" + kind] = value
     LAYOUT_VALUES["render_" + kind] = tuple(f"{step / 2:g}" for step in range(33))
 DEFAULT_LAYOUT["achievement_notifications"] = "on"
@@ -77,7 +78,7 @@ for feature in ("online_water", "online_hewelion", "online_castles"):
     LAYOUT_VALUES[feature] = ("off", "on")
 DEFAULT_LAYOUT["online_focus"] = "off"
 LAYOUT_VALUES["online_focus"] = ("off", "on")
-for kind in ("continents", "countries", "regions", "major", "cities", "villages", "pins", "trips"):
+for kind in ("continents", "countries", "regions", "subregions", "major", "cities", "villages", "pins", "trips"):
     DEFAULT_LAYOUT[f"diary_filter_{kind}"] = "on"
     LAYOUT_VALUES[f"diary_filter_{kind}"] = ("off", "on")
 for challenge in ("parks", "bliza", "islands", "hewelion", "castles"):
@@ -106,6 +107,7 @@ ASSETS = {
     "/kontynenty-obrysy.json": ("data/maps/kontynenty-obrysy.json.gz", "application/geo+json"),
     "/podklad.json": ("data/maps/podklad.json.gz", "application/geo+json"),
     "/rejony.json": ("data/maps/rejony.json.gz", "application/geo+json"),
+    "/podregiony-zrodla.json": ("data/maps/podregiony-zrodla.json", "application/json"),
     "/stolice.json": ("data/maps/stolice.json.gz", "application/geo+json"),
     "/miasta-polska.json": ("data/maps/miasta-polska.json.gz", "application/geo+json"),
     "/duze-miasta.json": ("data/maps/duze-miasta.json.gz", "application/geo+json"),
@@ -964,10 +966,25 @@ def add_linked_visits(rows, server):
             key = ("rejon", city_region_id(row, server, country_id))
             if key in server.places and key not in existing:
                 linked[key] = {**server.places[key], "tryb": "auto"}
+            try:
+                subregion = region_at(float(row["lon"]), float(row["lat"]), getattr(server, "subregion_shapes", {}).get(country_id, ()))
+            except (KeyError, TypeError, ValueError):
+                subregion = None
+            key = ("rejon", subregion)
+            if key in server.places and key not in existing:
+                linked[key] = {**server.places[key], "tryb": "auto"}
+            parent = getattr(server, "region_parents", {}).get(subregion)
+        elif category == "rejon":
+            parent = getattr(server, "region_parents", {}).get(row["id"])
+        else:
+            parent = None
+        key = ("rejon", parent)
+        if key in server.places and key not in existing:
+            linked[key] = {**server.places[key], "tryb": "auto"}
     return visits + list(linked.values())
 
 
-FILL_PRESETS = {"continents", "countries", "regions", "major", "capital-cities", "cities", "settlements"}
+FILL_PRESETS = {"continents", "countries", "regions", "subregions", "major", "capital-cities", "cities", "settlements"}
 
 
 def developer_candidates(server, preset):
@@ -975,9 +992,12 @@ def developer_candidates(server, preset):
     cache = getattr(server, "developer_catalogues", {})
     if preset in cache:
         return cache[preset]
-    if preset in ("continents", "countries", "regions"):
-        category = {"continents": "kontynent", "countries": "panstwo", "regions": "rejon"}[preset]
+    if preset in ("continents", "countries", "regions", "subregions"):
+        category = {"continents": "kontynent", "countries": "panstwo", "regions": "rejon", "subregions": "rejon"}[preset]
         result = [place.copy() for (kind, _), place in server.places.items() if kind == category]
+        if preset in ("regions", "subregions"):
+            subregions = getattr(server, "subregion_ids", set())
+            result = [place for place in result if (place["id"] in subregions) == (preset == "subregions")]
     else:
         places = {}
 
@@ -1117,6 +1137,9 @@ class App(BaseHTTPRequestHandler):
     def send_visits(self, rows):
         visits = [{**row, "kolejne_wizyty": additional_visits(row)} for row in rows if row["kategoria"] in MAP_CATEGORIES
                   and row.get("tryb") != SKIP_LINKED]
+        for row in visits:
+            if row["kategoria"] == "rejon":
+                row["level"] = "subregion" if row["id"] in getattr(self.server, "subregion_ids", ()) else "region"
         self.send_data(json.dumps(visits, ensure_ascii=False).encode(), "application/json")
 
     def send_pins(self, rows):
@@ -1125,6 +1148,9 @@ class App(BaseHTTPRequestHandler):
 
     def send_diary(self, rows):
         visits = {key: row.copy() for key, row in diary_visits(rows).items()}
+        for row in visits.values():
+            if row["kategoria"] == "rejon" and row["id"] in getattr(self.server, "subregion_ids", ()):
+                row["diary_type"] = "subregions"
         if any(row["kategoria"] == "miasto" for row in visits.values()):
             if not hasattr(self.server, "diary_major_ids"):
                 self.server.diary_major_ids = {place["id"] for place in developer_candidates(self.server, "major")}
@@ -1584,18 +1610,22 @@ def run_atlas(instance_file):
             (f"{code:02d}" for code in range(2, 33, 2)),
         ))
         server.region_shapes = {}
+        server.subregion_shapes = {}
+        server.subregion_ids = {f["properties"]["id"] for f in admin_regions if f["properties"].get("level") == "subregion"}
+        server.region_parents = {f["properties"]["id"]: f["properties"]["parent_id"] for f in admin_regions if f["properties"].get("parent_id")}
         server.polish_region_codes = {}
         server.polish_region_names = {}
         for feature in admin_regions:
             props = feature["properties"]
             country = server.country_codes.get(props["country"])
-            server.region_shapes.setdefault(country, []).extend(polygon_bounds(props["id"], feature["geometry"]))
+            shapes = server.subregion_shapes if props.get("level") == "subregion" else server.region_shapes
+            shapes.setdefault(country, []).extend(polygon_bounds(props["id"], feature["geometry"]))
             server.places["rejon", props["id"]] = {
                 "kategoria": "rejon", "id": props["id"], "nazwa": props["name"],
                 "lon": props["lon"], "lat": props["lat"],
                 "panstwo_id": country,
             }
-            if props["country"] == "PL":
+            if props["country"] == "PL" and props.get("level") != "subregion":
                 iso = props["alias"].split()[-1]
                 server.polish_region_codes[province_teryt[iso]] = props["id"]
                 name = props["name"].casefold().removeprefix("województwo ")

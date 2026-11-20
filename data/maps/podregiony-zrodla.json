@@ -1,0 +1,46 @@
+{
+  "classification": {
+    "localCountries": [
+      "AL",
+      "AZ",
+      "BN",
+      "BT",
+      "CY",
+      "EE",
+      "HR",
+      "IE",
+      "IL",
+      "JM",
+      "LK",
+      "LS",
+      "LU",
+      "LV",
+      "MD",
+      "ME",
+      "MK",
+      "SI",
+      "TL",
+      "UG",
+      "XK"
+    ],
+    "groupedCountries": {
+      "IT": "region",
+      "FR": "region",
+      "GB": "geonunit"
+    }
+  },
+  "sources": [
+    {
+      "name": "Natural Earth",
+      "url": "https://www.naturalearthdata.com/",
+      "license": "Public domain"
+    },
+    {
+      "name": "geoBoundaries POL ADM2",
+      "url": "https://www.geoboundaries.org/api/current/gbOpen/POL/ADM2/",
+      "license": "Open Data Commons Open Database License 1.0",
+      "boundaryYearRepresented": "2017",
+      "boundaryID": "POL-ADM2-97123803"
+    }
+  ]
+}

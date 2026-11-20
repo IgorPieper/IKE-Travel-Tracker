@@ -12,6 +12,7 @@ const defaultPresets = {
   continents: { label: "Kontynenty", english: "Continents", category: "kontynent", min: 0, zoom: 0, max: 4 },
   countries: { label: "Państwa", english: "Countries", category: "panstwo", min: 0, zoom: 0, max: 4 },
   regions: { label: "Rejony", english: "Regions", category: "miasto", min: 1, zoom: 4, max: 12 },
+  subregions: { label: "Podregiony", english: "Subregions", category: "rejon", min: 0, zoom: 7, max: 19 },
   major: { label: "Duże miasta", english: "Major cities", category: "miasto", min: 4, zoom: 7, max: 12 },
   "capital-cities": { label: "Stolice", english: "Capitals", category: "miasto", min: 0, zoom: 7, max: 16 },
   cities: { label: "Miasta", english: "Cities", category: "miasto", min: 6, zoom: 10.75, max: 15 },
@@ -150,6 +151,7 @@ const warningLayer = "country-warnings";
 const forestLayer = "world-forests";
 const markerLayer = (source) => source + "-markers";
 const regionLayer = "regional-boundaries";
+const subregionLayer = "subregional-boundaries";
 const visitedRegionLayer = "visited-regional-boundaries";
 const adminRegions = new Map();
 let regionData;
@@ -269,8 +271,10 @@ function paintRegions() {
   const selected = ["in", ["get", "id"], ["literal", ids]];
   const fill = statusColor("rejon", "id", "#fff");
   cityMap.setPaintProperty(regionLayer, "fill-color", fill);
+  if (cityMap.getLayer(subregionLayer)) cityMap.setPaintProperty(subregionLayer, "fill-color", fill);
   cityMap.setPaintProperty(visitedRegionLayer, "fill-color", fill);
-  cityMap.setFilter(visitedRegionLayer, selected);
+  cityMap.setFilter(visitedRegionLayer, isSavedPreset() && !areaFocusActive() ? selected : ["all", selected,
+    [activePreset === "subregions" && !areaFocusActive() ? "==" : "!=", ["get", "level"], "subregion"]]);
 }
 
 function getRegionCatalogue() {
@@ -284,18 +288,23 @@ function getRegionCatalogue() {
 }
 
 function loadRegions() {
-  if (!basemapReady || !(activePreset === "regions" || isSavedPreset() || focusShowsRegions()) || regionData ||
-    (!(isSavedPreset() && !areaFocusActive()) && !densityState().regions && !savedRows.some((row) => row.kategoria === "rejon") && search.value.trim().length < 2) ||
+  if (!basemapReady || !(["regions", "subregions"].includes(activePreset) || isSavedPreset() || focusShowsRegions()) || regionData ||
+    (!(isSavedPreset() && !areaFocusActive()) && !densityState()[activePreset === "subregions" ? "subregions" : "regions"] && !savedRows.some((row) => row.kategoria === "rejon") && search.value.trim().length < 2) ||
     (isSavedPreset() && !areaFocusActive() && !savedRows.some((row) => row.kategoria === "rejon" && rowInSavedPreset(row)))) return;
   regionData = getRegionCatalogue().then((data) => {
     for (const { properties: props } of data.features) {
       const region = regions.of(props.country) || props.country;
       adminRegions.set(props.id, { id: props.id, category: "rejon", name: props.name, region, country: props.country,
+        level: props.level || "region",
         searchText: normalize(props.name + " " + props.alias + " " + region),
         getPosition: () => [props.lon, props.lat] });
     }
     cityMap.addSource("admin-regions", { type: "geojson", data, maxzoom: 10, tolerance: 0.3 });
     cityMap.addLayer({ id: regionLayer, type: "fill", source: "admin-regions",
+      filter: ["!=", ["get", "level"], "subregion"],
+      paint: { "fill-color": "#fff", "fill-opacity": 0.7, "fill-outline-color": "#797084" } }, visitedCountryLayer);
+    cityMap.addLayer({ id: subregionLayer, type: "fill", source: "admin-regions",
+      filter: ["==", ["get", "level"], "subregion"],
       paint: { "fill-color": "#fff", "fill-opacity": 0.7, "fill-outline-color": "#797084" } }, visitedCountryLayer);
     cityMap.addLayer({ id: visitedRegionLayer, type: "fill", source: "admin-regions",
       paint: { "fill-color": "#b695e5", "fill-opacity": 0.7, "fill-outline-color": "#8057b6" } }, visitedPlaceLayer);
@@ -487,7 +496,7 @@ function placeInPreset(place) {
 }
 
 function renderZoom(kind) {
-  const fallback = { regions: 3, cities: 7, villages: 9 };
+  const fallback = { regions: 3, subregions: 6, cities: 7, villages: 9 };
   const value = Number(layout["render_" + kind] ?? fallback[kind]);
   return Number.isFinite(value) ? Math.max(0, Math.min(16, value)) : fallback[kind];
 }
@@ -531,7 +540,7 @@ function polishSettlementViewport(bounds, padding = 0) {
 function densityState() {
   const zoom = cityMap?.getZoom() ?? Math.log2(view.zoom);
   const fits = cityMap ? settlementTiles(visibleWorldBounds()).length > 0 : false;
-  return { regions: zoom >= renderZoom("regions"), major: zoom >= majorCityZoom,
+  return { regions: zoom >= renderZoom("regions"), subregions: zoom >= renderZoom("subregions"), major: zoom >= majorCityZoom,
     cities: zoom >= renderZoom("cities") && fits, villages: zoom >= renderZoom("villages") && fits };
 }
 
@@ -556,6 +565,7 @@ function zoomRequirementHint(preset = activePreset, useFocus = true) {
   if (villageView && !details.villages) return tr("Przybliż mapę, aby zobaczyć wsie.", "Zoom in to see villages.");
   if (cityView && !details.cities) return tr("Przybliż mapę, aby zobaczyć miasta.", "Zoom in to see cities.");
   if (regionView && !details.regions) return tr("Przybliż mapę, aby zobaczyć granice rejonów.", "Zoom in to see region boundaries.");
+  if (!focused && preset === "subregions" && !details.subregions) return tr("Przybliż mapę, aby zobaczyć granice podregionów.", "Zoom in to see subregion boundaries.");
   if (!focused && preset === "major" && !details.major) return tr("Przybliż mapę, aby zobaczyć duże miasta.", "Zoom in to see major cities.");
   return "";
 }
@@ -583,6 +593,7 @@ function syncPresetLayers() {
   const visited = isSavedPreset() && !focused;
   const wantedRegions = focused ? focusShowsRegions() : activePreset === "regions";
   const showRegions = wantedRegions && details.regions;
+  const wantedSubregions = !focused && activePreset === "subregions";
   const showVillages = (focused ? focusShowsVillages() : activePreset === "settlements") && details.villages;
   const showCities = (focused ? focusShowsCities() : ["cities", "settlements"].includes(activePreset)) && details.cities;
   const savedCities = visited || wantsCityDetails();
@@ -603,7 +614,8 @@ function syncPresetLayers() {
     "area-capital-fill": onlyCapitals || (focused && focusShowsRegions()),
     "area-capital-pins": onlyCapitals || (focused && focusShowsRegions()),
     [regionLayer]: showRegions,
-    [visitedRegionLayer]: visited || wantedRegions,
+    [subregionLayer]: wantedSubregions && details.subregions,
+    [visitedRegionLayer]: visited || wantedRegions || wantedSubregions,
     [visitedCountryLayer]: visited,
     [visitedPlaceLayer]: savedCities,
     [visitedPinLayer]: savedCities,
@@ -630,7 +642,7 @@ function syncPresetLayers() {
     cityMap.setFilter("area-capital-pins", null);
   }
   if (cityMap.getLayer(capitalLayer)) cityMap.setLayerZoomRange(capitalLayer, onlyCapitals ? 0 : 4, 24);
-  for (const [id, minimum] of [[regionLayer, renderZoom("regions")], [polishCityLayer, renderZoom("cities")], [cityLayer, renderZoom("cities")],
+  for (const [id, minimum] of [[regionLayer, renderZoom("regions")], [subregionLayer, renderZoom("subregions")], [polishCityLayer, renderZoom("cities")], [cityLayer, renderZoom("cities")],
     [polishMajorLayer, majorCityZoom], [majorCityLayer, activePreset === "major" && !focused ? majorCityZoom : renderZoom("cities")],
     [villageLayer, renderZoom("villages")], [markerLayer(villageSource), renderZoom("villages")]]) {
     if (cityMap.getLayer(id)) cityMap.setLayerZoomRange(id, minimum, 24);
@@ -738,7 +750,7 @@ function updateMapWater() {
   updateWaterFallback();
 }
 
-const presetShowsWater = () => areaFocusActive() ? focusShowsCities() : ["regions", "cities", "settlements"].includes(activePreset);
+const presetShowsWater = () => areaFocusActive() ? focusShowsCities() : ["regions", "subregions", "cities", "settlements"].includes(activePreset);
 
 function updateWaterFallback() {
   const zoom = cityMap.getZoom();
@@ -897,13 +909,14 @@ function updateCityView(collect = false) {
     updateControls();
     return;
   }
-  if (isSavedPreset() || activePreset === "regions") {
+  if (isSavedPreset() || ["regions", "subregions"].includes(activePreset)) {
     retryMap.hidden = true;
     byId("map-hint").textContent = isSavedPreset()
       ? activePreset === "visited-only" ? tr("Wyświetlane są tylko odwiedzone miejsca.", "Only visited places are shown.")
         : activePreset === "planned-only" ? tr("Wyświetlane są tylko zaplanowane miejsca.", "Only planned places are shown.")
           : tr("Fioletowe miejsca są odwiedzone, pomarańczowe są w planach.", "Purple places are visited. Orange places are planned.")
-      : adminRegions.size ? tr("Kliknij lewym przyciskiem rejon, aby otworzyć jego szczegóły.", "Left-click a region to open its details.")
+      : activePreset === "subregions" ? tr("Kliknij podregion, aby otworzyć jego szczegóły.", "Click a subregion to open its details.")
+        : adminRegions.size ? tr("Kliknij lewym przyciskiem rejon, aby otworzyć jego szczegóły.", "Left-click a region to open its details.")
         : tr("Wczytywanie granic rejonów…", "Loading region boundaries…");
     updateControls();
     return;
@@ -1307,7 +1320,7 @@ function openCityMap() {
     showHover(null);
     cityMap.getCanvas().style.cursor = "";
   });
-  const regionLayers = [regionLayer, visitedRegionLayer];
+  const regionLayers = [regionLayer, subregionLayer, visitedRegionLayer];
   cityMap.on("mousemove", regionLayers, (event) => {
     const place = adminRegions.get(event.features[0].properties.id);
     showHover(place, event.point.x, event.point.y);
@@ -1722,7 +1735,8 @@ function updateSidebar(focusKey) {
   byId("capital-city-count").textContent = new Set(cityVisits.filter((row) => isCapitalCity(row.id)).map((row) => row.id)).size;
   byId("city-count").textContent = cityVisits.filter((row) => !row.id.startsWith("simc:")).length;
   byId("settlement-count").textContent = cityVisits.length;
-  byId("region-count").textContent = visits.filter((row) => row.kategoria === "rejon").length;
+  byId("region-count").textContent = visits.filter((row) => row.kategoria === "rejon" && (row.level || adminRegions.get(row.id)?.level) !== "subregion").length;
+  byId("subregion-count").textContent = visits.filter((row) => row.kategoria === "rejon" && (row.level || adminRegions.get(row.id)?.level) === "subregion").length;
   byId("visited-count").textContent = visits.filter((row) => row.kategoria !== "kontynent").length;
   byId("visited-only-count").textContent = savedRows.filter((row) => rowInSavedPreset(row, "visited-only")).length;
   byId("planned-only-count").textContent = savedRows.filter((row) => rowInSavedPreset(row, "planned-only")).length;
@@ -1748,7 +1762,7 @@ function updateSidebar(focusKey) {
       const country = category === "panstwo" ? places.panstwo.find((place) => place.id === row.id) : null;
       const region = category === "rejon" ? adminRegions.get(row.id) : null;
       return { id: row.id, category, name: region?.name || row.nazwa, code: country?.code, country: region?.country,
-        region: region?.region, navigateOnly: true,
+        region: region?.region, level: region?.level, navigateOnly: true,
         getPosition: () => country ? cityPosition(country.x, country.y)
           : region ? region.getPosition() : savedCityPosition(row) };
     }).filter((place) => place &&
@@ -1756,8 +1770,8 @@ function updateSidebar(focusKey) {
   } else if (activePreset === "capital-cities" && !areaFocusActive()) {
     matches = capitalLocations().filter((place) => place.searchText.includes(query))
       .map((place) => ({ ...place, navigateOnly: true }));
-  } else if (activePreset === "regions" && !areaFocusActive()) {
-    matches = [...adminRegions.values()].filter((place) => place.searchText.includes(query));
+  } else if (["regions", "subregions"].includes(activePreset) && !areaFocusActive()) {
+    matches = [...adminRegions.values()].filter((place) => (place.level === "subregion") === (activePreset === "subregions") && place.searchText.includes(query));
   } else if (category === "panstwo" || category === "kontynent") {
     matches = places[category].filter((place) => place.searchText.includes(query));
   } else {
@@ -1803,6 +1817,9 @@ function updateSidebar(focusKey) {
     const select = () => {
       if (consumeFocusSelection(place)) return;
       if (savedPlaces.has(key(place))) {
+        if (place.category === "rejon" && place.getPosition) {
+          cityMap?.jumpTo({ center: place.getPosition(), zoom: clampZoom(place.level === "subregion" ? 7 : 6, mapZoomRange) });
+        }
         openPlace(place, { focus: true });
         return;
       }
@@ -1816,7 +1833,7 @@ function updateSidebar(focusKey) {
         return;
       }
       if (place.category === "rejon") {
-        const preset = presets.regions;
+        const preset = presets[place.level === "subregion" ? "subregions" : "regions"];
         cityMap.jumpTo({ center: place.getPosition(), zoom: clampZoom(6, preset) });
       }
       if (place.capital) {
@@ -2334,7 +2351,7 @@ tabs.forEach((tab) => tab.addEventListener("click", () => {
   activePreset = next;
   category = areaFocusActive() ? focusSearchCategory() : presets[next].category;
   tabs.forEach((item) => item.setAttribute("aria-pressed", item === tab));
-  if (previousCategory !== category || isSavedPreset(next) || next === "regions") search.value = "";
+  if (previousCategory !== category || isSavedPreset(next) || ["regions", "subregions"].includes(next)) search.value = "";
   updateSearchPrompt();
   cityPlaces.clear();
   searchSignature = "";
@@ -2351,6 +2368,7 @@ function updateSearchPrompt() {
     : activePreset === "planned-only" ? tr("Szukaj w zaplanowanych…", "Search planned places…")
       : tr("Szukaj zapisanych miejsc…", "Search saved places…")
     : activePreset === "regions" ? tr("Szukaj rejonu…", "Search for a region…")
+    : activePreset === "subregions" ? tr("Szukaj podregionu…", "Search for a subregion…")
     : activePreset === "capital-cities" ? tr("Szukaj stolicy…", "Search for a capital…")
     : activePreset === "continents" ? tr("Wpisz nazwę kontynentu…", "Enter a continent name…")
     : category === "miasto" ? tr("Szukaj miasta na świecie…", "Search for a city…")
@@ -2364,7 +2382,7 @@ function updateLayerLegend() {
     : visibility.rivers ? tr("Rzeki", "Rivers") : tr("Jeziora", "Lakes");
   byId("forest-key").hidden = !visibility.forests || (areaFocusActive() ? !focusShowsCities() : (activePreset === "continents" || isSavedPreset()));
   byId("warning-key").hidden = areaFocusActive() || !visibility.warnings || ["continents"].includes(activePreset) || isSavedPreset();
-  byId("capital-key").hidden = !visibility.capitals || (areaFocusActive() ? focusShowsCountries() : ["continents", "countries", "regions"].includes(activePreset));
+  byId("capital-key").hidden = !visibility.capitals || (areaFocusActive() ? focusShowsCountries() : ["continents", "countries", "regions", "subregions"].includes(activePreset));
 }
 
 const visibilityDialog = byId("visibility-settings");
@@ -2488,6 +2506,7 @@ byId("progress-reset-form").addEventListener("submit", async (event) => {
 });
 
 search.addEventListener("input", () => {
+  loadRegions();
   schedulePlaceSearch();
   updateSidebar();
 });
@@ -2538,7 +2557,7 @@ const narrowLayout = matchMedia("(max-width: 640px)");
 const languageSelect = byId("atlas-language");
 let layout = { language: "en", sidebar: "auto", online_focus: "off", achievement_notifications: "on" };
 const renderDistanceInputs = new Map();
-for (const kind of ["regions", "cities", "villages"]) {
+for (const kind of ["regions", "subregions", "cities", "villages"]) {
   const input = document.createElement("input");
   Object.assign(input, { type: "number", min: "0", max: "16", step: "0.5", value: String(renderZoom(kind)) });
   input.addEventListener("change", () => {
@@ -3401,7 +3420,7 @@ function renderMainSettings() {
   }
   const rendering = category("rendering", "Odległość wyświetlania", "Render distance",
     "Niższa wartość pokazuje obrysy z większej odległości.", "Lower values show boundaries from farther away.");
-  for (const [kind, pl, en] of [["regions", "Rejony", "Regions"], ["cities", "Miasta", "Cities"], ["villages", "Wsie", "Villages"]]) {
+  for (const [kind, pl, en] of [["regions", "Rejony", "Regions"], ["subregions", "Podregiony", "Subregions"], ["cities", "Miasta", "Cities"], ["villages", "Wsie", "Villages"]]) {
     mirror(rendering, renderDistanceInputs.get(kind), () => tr(pl, en));
   }
   const other = category("other", "Pozostałe", "Other", "", "");

@@ -34,7 +34,7 @@ function setup(preset, focusCategory = null, villages = false) {
   });
   for (const id of ['polishCityLayer', 'polishMajorLayer', 'cityLayer', 'overviewCities', 'villageLayer', 'overviewVillages',
     'visitedPlaceLayer', 'majorCityLayer', 'villageSource', 'visitedCountryLayer', 'countryFillLayer', 'continentFillLayer',
-    'continentOutlineLayer', 'capitalLayer', 'regionLayer', 'visitedRegionLayer', 'visitedCitiesSource', 'warningLayer', 'visitedPinLayer']) context[id] = id;
+    'continentOutlineLayer', 'capitalLayer', 'regionLayer', 'subregionLayer', 'visitedRegionLayer', 'visitedCitiesSource', 'warningLayer', 'visitedPinLayer']) context[id] = id;
   const block = (start, end) => source.slice(source.indexOf(start), source.indexOf(end));
   vm.runInContext(block('const defaultPresets =', 'const layerLabels =')
     + block('const isSavedPreset =', '// U.S. Department')
@@ -52,6 +52,18 @@ test('regions keep compact countries whole and restore the country filter when c
   assert.deepEqual(Array.from(filters.countryFillLayer[2][2][1]),['san-marino']);
   c.activePreset='countries';c.syncVisitedCountries();
   assert.equal(JSON.stringify(filters.countryFillLayer),JSON.stringify(['==',['get','kind'],'country']));
+});
+
+test('subregions use their own density threshold and never display regular region boundaries',()=>{
+  const {context:c,shown,filters,zoomRanges}=setup('subregions');
+  c.cityMap.getZoom=()=>5.5;c.paintRegions();c.syncPresetLayers();
+  assert.equal(shown.subregionLayer,false);assert.equal(shown.regionLayer,false);
+  assert.equal(shown.visitedRegionLayer,true,'saved subregions stay visible from farther away');
+  assert.equal(JSON.stringify(filters.visitedRegionLayer).includes('["==",["get","level"],"subregion"]'),true);
+  c.cityMap.getZoom=()=>6;c.syncPresetLayers();assert.equal(shown.subregionLayer,true);
+  assert.deepEqual(zoomRanges.subregionLayer,[6,24]);
+  c.layout.render_subregions='7';c.syncPresetLayers();assert.equal(shown.subregionLayer,false);
+  assert.equal(c.densityState().regions,true);
 });
 
 test('compact country districts are excluded from the shared region catalogue',async()=>{

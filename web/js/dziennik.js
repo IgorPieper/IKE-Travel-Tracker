@@ -26,6 +26,7 @@
   const collapsedYears = new Set();
   const filterLabels = {
     continents: ["Kontynenty", "Continents"], countries: ["Państwa", "Countries"], regions: ["Rejony", "Regions"],
+    subregions: ["Podregiony", "Subregions"],
     major: ["Duże miasta", "Major cities"], cities: ["Pozostałe miasta", "Other cities"], villages: ["Wsie", "Villages"],
     pins: ["Pinezki", "Pins"], trips: ["Wycieczki", "Trips"],
   };
@@ -86,6 +87,7 @@
   }
 
   function visitType(visit) {
+    if (visit.kategoria === "rejon" && visit.diary_type === "subregions") return "subregions";
     if (visit.kategoria === "miasto") return visit.diary_type || (visit.id.startsWith("simc:") ? "villages" : isMajorCity(visit.id) ? "major" : "cities");
     return { kontynent: "continents", panstwo: "countries", rejon: "regions", pinezka: "pins", wycieczka: "trips" }[visit.kategoria];
   }

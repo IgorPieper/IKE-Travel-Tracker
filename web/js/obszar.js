@@ -30,6 +30,7 @@ function focusPlaceAllowed(place) {
   if (!areaFocusActive()) return true;
   if (focusShowsCountries() && place.category !== "panstwo") return false;
   if (focusShowsRegions() && !["rejon", "miasto"].includes(place.category)) return false;
+  if (focusShowsRegions() && place.category === "rejon" && place.level === "subregion") return false;
   if (focusShowsRegions() && place.category === "miasto" && !place.capital && !capitalRecords.has(place.id)) return false;
   if (focusShowsCities() && place.category !== "miasto") return false;
   if (!focusShowsVillages() && place.id.startsWith("simc:")) return false;

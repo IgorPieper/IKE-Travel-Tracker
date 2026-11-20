@@ -2,6 +2,7 @@
 
 import csv
 import io
+import os
 import subprocess
 import sys
 import zipfile
@@ -27,6 +28,11 @@ def main():
     if not runtime.exists():
         subprocess.run([sys.executable, "-m", "venv", str(build / "runtime")], check=True)
     subprocess.run([str(runtime), "-m", "pip", "install", "pyinstaller==6.22.3", "-r", str(root / "requirements.txt")], check=True)
+    # A venv backed by Conda keeps SQLite outside DLLs; PyInstaller does not
+    # always discover Library/bin automatically. Include it for portable builds.
+    sqlite_dll = next((path for path in (Path(sys.base_prefix) / "Library/bin/sqlite3.dll",
+                                       Path(sys.base_prefix) / "DLLs/sqlite3.dll") if path.exists()), None)
+    binary_options = ["--add-binary", str(sqlite_dll) + os.pathsep + "."] if sqlite_dll else []
     subprocess.run([
         str(runtime), "-m", "PyInstaller",
         "--noconfirm", "--clean", "--onefile", "--windowed",
@@ -34,6 +40,7 @@ def main():
         "--distpath", str(root),
         "--workpath", str(build / "work"),
         "--specpath", str(build),
+        *binary_options,
         str(root / "uruchom.py"),
     ], cwd=root, check=True)
 
