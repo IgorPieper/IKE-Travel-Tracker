@@ -30,6 +30,10 @@ const presetLabel = (preset) => tr(preset.label, preset.english);
 const visibilityKeys = [...Object.keys(defaultPresets), ...Object.keys(layerLabels)];
 let visibility = Object.fromEntries(visibilityKeys.map((key) => [key, true]));
 visibility.major = false;
+visibility.subregions = false;
+visibility.settlements = false;
+visibility.regions = false;
+visibility.cities = false;
 visibility.seas = false;
 visibility["visited-only"] = false;
 visibility["planned-only"] = false;
@@ -104,9 +108,13 @@ let cityProblem = false;
 let savedRows = [];
 let savedPlaces = new Map();
 let editedPlace;
+let editorRequest = 0;
+let editorSidebarScroll = 0;
 const placeForm = byId("place-form");
 const placePlanned = byId("place-planned");
 const placeDate = byId("place-date");
+const placeDeparture = byId("place-departure");
+const placeDepartureUncertain = byId("place-departure-uncertain");
 const placeVisitDates = byId("place-visit-dates");
 const addPlaceVisit = byId("add-place-visit");
 const placeRating = byId("place-rating");
@@ -117,6 +125,8 @@ const pinLayerElement = byId("map-pins");
 const addPinButton = byId("add-pin");
 const pinName = byId("pin-name");
 const pinDate = byId("pin-date");
+const pinDeparture = byId("pin-departure");
+const pinDepartureUncertain = byId("pin-departure-uncertain");
 const placeDateUncertain = byId("place-date-uncertain");
 const pinDateUncertain = byId("pin-date-uncertain");
 const pinVisitDates = byId("pin-visit-dates");
@@ -156,6 +166,8 @@ const visitedRegionLayer = "visited-regional-boundaries";
 const adminRegions = new Map();
 let regionData;
 let regionCatalogueRequest;
+let regionViewportKey;
+let regionViewportRequest;
 let visitedOutlinesRequest;
 let visitedOutlinesKey = null;
 const hasInteractiveMap = () => Boolean(cityMap && cityContainer.classList.contains("ready"));
@@ -274,11 +286,12 @@ function paintRegions() {
   if (cityMap.getLayer(subregionLayer)) cityMap.setPaintProperty(subregionLayer, "fill-color", fill);
   cityMap.setPaintProperty(visitedRegionLayer, "fill-color", fill);
   cityMap.setFilter(visitedRegionLayer, isSavedPreset() && !areaFocusActive() ? selected : ["all", selected,
-    [activePreset === "subregions" && !areaFocusActive() ? "==" : "!=", ["get", "level"], "subregion"]]);
+    [(areaFocusActive() ? focusShowsSubregions() : activePreset === "subregions") ? "==" : "!=", ["get", "level"], "subregion"],
+    ...(focusShowsSubregions() && areaFocus.area.category === "rejon" ? [["==", ["get", "parent_id"], areaFocus.area.id]] : [])]);
 }
 
 function getRegionCatalogue() {
-  regionCatalogueRequest ||= request("/rejony.json", { cache: "reload" }).then((data) => ({ ...data,
+  regionCatalogueRequest ||= request("/api/rejony?catalogue=1", { cache: "reload" }).then((data) => ({ ...data,
     features: data.features.filter((feature) => !compactCountries.has(feature.properties.country)),
   })).catch((error) => {
     regionCatalogueRequest = undefined;
@@ -288,18 +301,18 @@ function getRegionCatalogue() {
 }
 
 function loadRegions() {
-  if (!basemapReady || !(["regions", "subregions"].includes(activePreset) || isSavedPreset() || focusShowsRegions()) || regionData ||
+  if (!basemapReady || !(["regions", "subregions"].includes(activePreset) || isSavedPreset() || focusShowsRegions() || focusShowsSubregions()) || regionData ||
     (!(isSavedPreset() && !areaFocusActive()) && !densityState()[activePreset === "subregions" ? "subregions" : "regions"] && !savedRows.some((row) => row.kategoria === "rejon") && search.value.trim().length < 2) ||
     (isSavedPreset() && !areaFocusActive() && !savedRows.some((row) => row.kategoria === "rejon" && rowInSavedPreset(row)))) return;
   regionData = getRegionCatalogue().then((data) => {
     for (const { properties: props } of data.features) {
       const region = regions.of(props.country) || props.country;
       adminRegions.set(props.id, { id: props.id, category: "rejon", name: props.name, region, country: props.country,
-        level: props.level || "region",
+        level: props.level || "region", parent_id: props.parent_id,
         searchText: normalize(props.name + " " + props.alias + " " + region),
         getPosition: () => [props.lon, props.lat] });
     }
-    cityMap.addSource("admin-regions", { type: "geojson", data, maxzoom: 10, tolerance: 0.3 });
+    cityMap.addSource("admin-regions", { type: "geojson", data: emptyFeatures(), maxzoom: 10, tolerance: 0.3 });
     cityMap.addLayer({ id: regionLayer, type: "fill", source: "admin-regions",
       filter: ["!=", ["get", "level"], "subregion"],
       paint: { "fill-color": "#fff", "fill-opacity": 0.7, "fill-outline-color": "#797084" } }, visitedCountryLayer);
@@ -317,6 +330,33 @@ function loadRegions() {
     regionData = undefined;
     if (activePreset === "regions") byId("map-hint").textContent = tr("Nie udało się wczytać granic rejonów.",
       "Region boundaries could not be loaded.");
+  });
+}
+
+function syncRegionViewport() {
+  if (!cityMap?.getSource("admin-regions")) return;
+  const focused = areaFocusActive();
+  const details = densityState();
+  const levels = [];
+  if ((focused ? focusShowsRegions() && !focusShowsSubregions() : activePreset === "regions") && details.regions) levels.push("region");
+  if ((focused ? focusShowsSubregions() : activePreset === "subregions") && (focused && focusShowsRegions() ? details.regions : details.subregions)) levels.push("subregion");
+  const ids = savedRows.filter((row) => row.kategoria === "rejon" && rowInSavedPreset(row)).map((row) => row.id).sort();
+  const bounds = mapBounds().map((value) => Math.round(value * 1000) / 1000);
+  const params = new URLSearchParams({ bbox: bounds.join(","), levels: levels.join(","), ids: ids.join(","),
+    country: focused ? areaFocus.area.country : "", parent: focused && focusShowsSubregions() && areaFocus.area.category === "rejon" ? areaFocus.area.id : "" });
+  const key = params.toString();
+  if (key === regionViewportKey) return;
+  regionViewportKey = key;
+  regionViewportRequest?.abort();
+  const controller = regionViewportRequest = new AbortController();
+  request("/api/rejony?" + key, { signal: controller.signal }).then((data) => {
+    if (regionViewportRequest !== controller) return;
+    data.features = data.features.filter((feature) => !compactCountries.has(feature.properties.country));
+    cityMap.getSource("admin-regions").setData(data);
+  }).catch((error) => {
+    if (error.name === "AbortError" || regionViewportRequest !== controller) return;
+    regionViewportKey = undefined;
+    console.error(error);
   });
 }
 
@@ -545,14 +585,14 @@ function densityState() {
 }
 
 function wantsCityDetails() {
-  return areaFocusActive() ? focusShowsCities() : ["major", "cities", "settlements"].includes(activePreset);
+  return areaFocusActive() ? focusShowsCities() || focusShowsVillages() : ["major", "cities", "settlements"].includes(activePreset);
 }
 
 function savedCityRows() {
   return savedRows.filter((row) => row.kategoria === "miasto" &&
     (isSavedPreset() && !areaFocusActive() ? rowInSavedPreset(row)
       : wantsCityDetails() && (activePreset !== "major" || areaFocusActive() || isMajorCity(row.id)) &&
-        (!row.id.startsWith("simc:") || (areaFocusActive() ? focusShowsVillages() : activePreset === "settlements"))));
+        (areaFocusActive() ? (row.id.startsWith("simc:") ? focusShowsVillages() : focusShowsCities()) : (!row.id.startsWith("simc:") || activePreset === "settlements"))));
 }
 
 function zoomRequirementHint(preset = activePreset, useFocus = true) {
@@ -582,7 +622,7 @@ function updatePresetDistanceWarnings() {
   const message = areaFocusActive() && focusShowsVillages() && !densityState().villages
     ? tr("Przybliż mapę, aby zobaczyć wsie.", "Zoom in to see villages.") : "";
   villages.classList.toggle("zoom-required", Boolean(message));
-  villages.title = message;
+  villages.title = [tr("Ze względu na liczbę wsi wczytywanie może chwilę potrwać.", "Loading may take a moment due to the number of villages."), message].filter(Boolean).join(" ");
 }
 
 function syncPresetLayers() {
@@ -591,9 +631,9 @@ function syncPresetLayers() {
   const onlyMajor = activePreset === "major" && !focused && details.major;
   const onlyCapitals = activePreset === "capital-cities" && !focused;
   const visited = isSavedPreset() && !focused;
-  const wantedRegions = focused ? focusShowsRegions() : activePreset === "regions";
+  const wantedRegions = focused ? focusShowsRegions() && !focusShowsSubregions() : activePreset === "regions";
   const showRegions = wantedRegions && details.regions;
-  const wantedSubregions = !focused && activePreset === "subregions";
+  const wantedSubregions = focused ? focusShowsSubregions() : activePreset === "subregions";
   const showVillages = (focused ? focusShowsVillages() : activePreset === "settlements") && details.villages;
   const showCities = (focused ? focusShowsCities() : ["cities", "settlements"].includes(activePreset)) && details.cities;
   const savedCities = visited || wantsCityDetails();
@@ -614,7 +654,7 @@ function syncPresetLayers() {
     "area-capital-fill": onlyCapitals || (focused && focusShowsRegions()),
     "area-capital-pins": onlyCapitals || (focused && focusShowsRegions()),
     [regionLayer]: showRegions,
-    [subregionLayer]: wantedSubregions && details.subregions,
+    [subregionLayer]: wantedSubregions && (focused && focusShowsRegions() ? details.regions : details.subregions),
     [visitedRegionLayer]: visited || wantedRegions || wantedSubregions,
     [visitedCountryLayer]: visited,
     [visitedPlaceLayer]: savedCities,
@@ -637,12 +677,15 @@ function syncPresetLayers() {
   };
   cityMap.setPaintProperty("map-background", "background-color", visibility.seas ? mapColors.lake : "#fff");
   for (const [id, show] of Object.entries(shown)) setLayerVisible(id, show);
+  if (cityMap.getLayer(subregionLayer)) cityMap.setFilter(subregionLayer, ["all",
+    ["==", ["get", "level"], "subregion"],
+    ...(focusShowsSubregions() && areaFocus.area.category === "rejon" ? [["==", ["get", "parent_id"], areaFocus.area.id]] : [])]);
   if (cityMap.getLayer("area-capital-pins")) {
     cityMap.setLayerZoomRange("area-capital-pins", 0, cityZoom);
     cityMap.setFilter("area-capital-pins", null);
   }
   if (cityMap.getLayer(capitalLayer)) cityMap.setLayerZoomRange(capitalLayer, onlyCapitals ? 0 : 4, 24);
-  for (const [id, minimum] of [[regionLayer, renderZoom("regions")], [subregionLayer, renderZoom("subregions")], [polishCityLayer, renderZoom("cities")], [cityLayer, renderZoom("cities")],
+  for (const [id, minimum] of [[regionLayer, renderZoom("regions")], [subregionLayer, renderZoom(focused && focusShowsRegions() ? "regions" : "subregions")], [polishCityLayer, renderZoom("cities")], [cityLayer, renderZoom("cities")],
     [polishMajorLayer, majorCityZoom], [majorCityLayer, activePreset === "major" && !focused ? majorCityZoom : renderZoom("cities")],
     [villageLayer, renderZoom("villages")], [markerLayer(villageSource), renderZoom("villages")]]) {
     if (cityMap.getLayer(id)) cityMap.setLayerZoomRange(id, minimum, 24);
@@ -658,6 +701,7 @@ function syncPresetLayers() {
   }
   updatePresetDistanceWarnings();
   loadRegions();
+  syncRegionViewport();
   syncAreaFocusLayers();
 }
 
@@ -800,7 +844,7 @@ function schedulePlaceSearch() {
   placeSearchRequest?.abort();
   placeSearchResults = [];
   const query = search.value.trim();
-  if ((areaFocusActive() ? !focusShowsCities() : !["cities", "settlements"].includes(activePreset)) || query.length < 2) return;
+  if ((areaFocusActive() ? !(focusShowsCities() || focusShowsVillages()) : !["cities", "settlements"].includes(activePreset)) || query.length < 2) return;
   const preset = activePreset;
   placeSearchTimer = setTimeout(async () => {
     const controller = new AbortController();
@@ -1273,6 +1317,7 @@ function openCityMap() {
   });
   cityMap.on("move", updateMapScale);
   cityMap.on("move", positionCustomPins);
+  cityMap.on("zoomstart", resetHigherFocusDetail);
   cityMap.on("moveend", () => {
     const { lng, lat } = cityMap.getCenter().wrap();
     [view.x, view.y] = project(lng, lat);
@@ -1554,8 +1599,10 @@ function showMapTooltip(label, x, y, reading = "") {
 }
 
 function zoomAt(factor, x, y) {
+  const previousZoom = view.zoom;
   const before = world(x, y);
   view.zoom = 2 ** clampZoom(Math.log2(view.zoom * factor), mapZoomRange);
+  if (view.zoom !== previousZoom) resetHigherFocusDetail();
   const after = world(x, y);
   view.x += before[0] - after[0];
   view.y += before[1] - after[1];
@@ -1647,6 +1694,10 @@ function mapQueryPoint(point) {
 function selectMapPlace(event, place, position) {
   if (event.button !== 0) return;
   if (placePinAt(event, position)) return;
+  if (focusDetailedActive()) {
+    if (areaFocus.selecting && place) consumeFocusSelection(place);
+    return;
+  }
   if (!place) return;
   if (event.shiftKey) { lastRightMapClick = undefined; quicklyRemovePlace(place); }
   else if (event.ctrlKey) { lastRightMapClick = undefined; planPlace(place); }
@@ -1702,7 +1753,7 @@ function changePresetZoom(direction) {
 
 byId("zoom-in").addEventListener("click", () => changePresetZoom(1));
 byId("zoom-out").addEventListener("click", () => changePresetZoom(-1));
-byId("reset").addEventListener("click", () => {
+function resetMapView() {
   if (areaFocusActive() && cityMap) {
     fitFocusedArea();
     return;
@@ -1716,7 +1767,7 @@ byId("reset").addEventListener("click", () => {
   showHover(null);
   updateControls();
   scheduleDraw();
-});
+}
 new ResizeObserver(() => {
   if (byId("map-view").hidden) return;
   if (areaFocusActive() && cityMap) fitFocusedArea(true);
@@ -1791,6 +1842,7 @@ function updateSidebar(focusKey) {
     matches = polygons.concat([...polishLocations, ...majorLocations, ...found].filter(placeInPreset)
       .map((p) => ({ ...p, navigateOnly: true })), locations);
   }
+  if (focusShowsSubregions()) matches.push(...[...adminRegions.values()].filter((place) => place.searchText.includes(query)));
   if (areaFocusActive()) matches = [...new Map(matches.filter(focusPlaceAllowed).map((place) => [key(place), place])).values()]
     .sort((a, b) => Number(normalize(b.name) === query) - Number(normalize(a.name) === query));
   let focusTarget;
@@ -1907,15 +1959,13 @@ function updatePlaceLabels() {
   reading.textContent = areaFocusActive() ? "" : placeReading(editedPlace.place);
   reading.hidden = !reading.textContent;
   byId("place-return-visits").hidden = placePlanned.checked;
-  for (const label of placeVisitDates.querySelectorAll(".visit-date-label")) {
-    label.textContent = tr("Data kolejnej wizyty", "Date of return visit");
-  }
   for (const button of placeVisitDates.querySelectorAll("button")) {
     button.textContent = tr("Usuń wizytę", "Remove visit");
   }
   for (const date of placeVisitDates.querySelectorAll("input")) date.disabled = placePlanned.checked;
   byId("place-date-label").textContent = placePlanned.checked
-    ? tr("Planowana data", "Planned date") : tr("Data wizyty", "Date visited");
+    ? tr("Przyjazd", "Arrival") : tr("Data przyjazdu", "Arrival date");
+  byId("place-departure-label").textContent = placePlanned.checked ? tr("Odjazd", "Departure") : tr("Data odjazdu", "Departure date");
   byId("place-rating-label").textContent = placePlanned.checked
     ? tr("Chęć odwiedzenia (1–10)", "How much you want to visit (1–10)") : tr("Ocena wizyty (1–10)", "Visit rating (1–10)");
 }
@@ -1937,41 +1987,38 @@ function bindUncertainDate(date, checkbox, prefix) {
 }
 
 function updateUncertainDateLabels() {
-  for (const text of document.querySelectorAll("[data-uncertain-date-label]")) text.textContent = tr("Niepewna", "Uncertain");
+  for (const label of document.querySelectorAll(".visit-arrival-label")) label.textContent = tr("Data przyjazdu", "Arrival date");
+  for (const label of document.querySelectorAll(".visit-departure-label")) label.textContent = tr("Data odjazdu", "Departure date");
+  for (const text of document.querySelectorAll("[data-uncertain-date-label]")) text.textContent = tr("Około", "Approximate");
   for (const label of document.querySelectorAll(".uncertain-date-option")) label.title = tr("Data niepewna", "Uncertain date");
 }
 
 function readVisitDates(container) {
-  return [...container.querySelectorAll('input[type="date"]')].map((date) => ({
+  return [...container.querySelectorAll('input[type="date"][data-visit-id]')].map((date) => ({
     id: date.dataset.visitId, data: date.value, data_niepewna: date.uncertaintyInput.checked,
+    data_konca: date.departureInput?.value || "", data_konca_niepewna: date.departureInput?.uncertaintyInput.checked || false,
   }));
 }
 
 bindUncertainDate(placeDate, placeDateUncertain, byId("place-date-approx"));
 bindUncertainDate(pinDate, pinDateUncertain, byId("pin-date-approx"));
+bindUncertainDate(placeDeparture, placeDepartureUncertain, byId("place-departure-approx"));
+bindUncertainDate(pinDeparture, pinDepartureUncertain, byId("pin-departure-approx"));
 
-function appendVisitDate({ id = crypto.randomUUID(), data = "", data_niepewna = "" } = {}, container = placeVisitDates, addButton = addPlaceVisit) {
-  const row = document.createElement("div");
-  row.className = "place-return-visit";
+function bindVisitRange(arrival, departure) {
+  arrival.syncDepartureRange = () => { departure.min = arrival.value; };
+  arrival.addEventListener("input", arrival.syncDepartureRange);
+  arrival.syncDepartureRange();
+}
+bindVisitRange(placeDate, placeDeparture);
+bindVisitRange(pinDate, pinDeparture);
+
+function visitDateField(date, labelText, approximate, labelClass) {
+  const field = document.createElement("div");
   const label = document.createElement("label");
-  const date = document.createElement("input");
-  date.type = "date";
-  date.id = "place-visit-" + id;
-  date.dataset.visitId = id;
-  date.max = placeDate.max;
-  date.required = true;
-  date.value = data;
   label.htmlFor = date.id;
-  label.className = "visit-date-label";
-  label.textContent = tr("Data kolejnej wizyty", "Date of return visit");
-  const remove = document.createElement("button");
-  remove.type = "button";
-  remove.textContent = tr("Usuń wizytę", "Remove visit");
-  remove.addEventListener("click", () => {
-    row.remove();
-    addButton.disabled = false;
-    addButton.focus();
-  });
+  label.className = "visit-date-label " + labelClass;
+  label.textContent = labelText;
   const line = document.createElement("div");
   line.className = "visit-date-line";
   const value = document.createElement("span");
@@ -1981,28 +2028,65 @@ function appendVisitDate({ id = crypto.randomUUID(), data = "", data_niepewna = 
   prefix.setAttribute("aria-hidden", "true");
   const uncertainLabel = document.createElement("label");
   uncertainLabel.className = "uncertain-date-option";
-  uncertainLabel.title = tr("Data niepewna", "Uncertain date");
   const checkbox = document.createElement("input");
   checkbox.type = "checkbox";
-  checkbox.checked = dateIsUncertain({ data_niepewna });
+  checkbox.checked = dateIsUncertain({ data_niepewna: approximate });
   const text = document.createElement("span");
   text.dataset.uncertainDateLabel = "";
-  text.textContent = tr("Niepewna", "Uncertain");
+  text.textContent = tr("Około", "Approximate");
   uncertainLabel.append(checkbox, text);
   value.append(prefix, date);
   line.append(value, uncertainLabel);
   bindUncertainDate(date, checkbox, prefix);
-  row.append(label, line, remove);
+  field.append(label, line);
+  return field;
+}
+
+function appendVisitDate({ id = crypto.randomUUID(), data = "", data_niepewna = "", data_konca = "", data_konca_niepewna = "" } = {}, container = placeVisitDates, addButton = addPlaceVisit) {
+  const row = document.createElement("div");
+  row.className = "place-return-visit";
+  const pair = document.createElement("div");
+  pair.className = "visit-date-pair";
+  const date = document.createElement("input");
+  date.type = "date";
+  date.id = "place-visit-" + id;
+  date.dataset.visitId = id;
+  date.max = placeDate.max;
+  date.required = true;
+  date.value = data;
+  const departure = document.createElement("input");
+  departure.type = "date";
+  departure.id = "place-departure-" + id;
+  departure.max = placeDate.max;
+  departure.value = data_konca;
+  date.departureInput = departure;
+  bindVisitRange(date, departure);
+  pair.append(visitDateField(date, tr("Data przyjazdu", "Arrival date"), data_niepewna, "visit-arrival-label"),
+    visitDateField(departure, tr("Data odjazdu", "Departure date"), data_konca_niepewna, "visit-departure-label"));
+  const remove = document.createElement("button");
+  remove.type = "button";
+  remove.textContent = tr("Usuń wizytę", "Remove visit");
+  remove.addEventListener("click", () => {
+    row.remove();
+    addButton.disabled = false;
+    addButton.focus();
+  });
+  row.append(pair, remove);
   container.append(row);
   addButton.disabled = container.childElementCount >= 100;
   return date;
 }
 
 function fillPlaceFields(row, planning = false) {
+  photoPicker(byId("place-photos"), editedPlace, row?.zdjecia);
   placePlanned.checked = row ? row.tryb === "plan" : planning;
   placeDate.value = row?.data || "";
   placeDateUncertain.checked = dateIsUncertain(row);
   placeDate.syncUncertainty();
+  placeDeparture.value = row?.data_konca || "";
+  placeDepartureUncertain.checked = dateIsUncertain({ data_niepewna: row?.data_konca_niepewna });
+  placeDeparture.syncUncertainty();
+  placeDate.syncDepartureRange();
   const rating = String(row?.ocena ?? "");
   placeRating.value = tr(rating.replace(".", ","), rating.replace(",", "."));
   placeRating.setCustomValidity("");
@@ -2019,19 +2103,24 @@ function setPlaceEditorBusy(busy) {
   placeRemove.disabled = busy;
 }
 
-function openPlace(place, { planning = false, focus = false } = {}) {
+async function openPlace(place, { planning = false, focus = false } = {}) {
   if (!ready) return;
+  if (layout.editor_auto_close === "off" && (editedPlace || editedPin)) return;
   if (consumeFocusSelection(place)) return;
-  closePinEditor();
-  setMapSidebarOpen(true);
   if (editedPlace && key(editedPlace.place) === key(place)) {
     if (focus) byId("place-details-title").focus({ preventScroll: true });
     return;
   }
+  const requestId = ++editorRequest;
+  if (!await closePlaceDetails() || !await closePinEditor() || requestId !== editorRequest) return;
+  setMapSidebarOpen(true);
   const row = savedPlaces.get(key(place));
   const editor = { place, busy: false };
   editedPlace = editor;
   fillPlaceFields(row, planning);
+  editor.initialSnapshot = JSON.stringify(readPlaceChange(false));
+  updateEditorSaveLabels();
+  syncEditorSidebar();
   placeRemove.hidden = !row;
   setPlaceEditorBusy(false);
   byId("map-places").hidden = true;
@@ -2041,13 +2130,40 @@ function openPlace(place, { planning = false, focus = false } = {}) {
   if (!row) commitPlace(editor, { odwiedzone: true, planowane: planning, tylko_nowe: true });
 }
 
-function closePlaceDetails(restoreFocus = false) {
-  if (!editedPlace) return;
+async function closePlaceDetails(restoreFocus = false, discard = false) {
+  if (!editedPlace) return true;
+  const editor = editedPlace;
+  if (!discard) {
+    if (editor.closing) return editor.closing;
+    editor.closing = (async () => {
+      await visitQueue;
+      await editor.photoUpload;
+      if (editedPlace !== editor) return true;
+      const change = readPlaceChange(false);
+      if (JSON.stringify(change) !== editor.initialSnapshot) {
+        if (!readPlaceChange(true)) return false;
+        if (!await commitPlace(editor, change)) return false;
+      }
+      return closePlaceDetails(restoreFocus, true);
+    })();
+    try { return await editor.closing; }
+    finally { editor.closing = undefined; }
+  }
   const focusKey = restoreFocus ? key(editedPlace.place) : null;
   editedPlace = undefined;
   byId("place-details").hidden = true;
-  byId("map-places").hidden = false;
+  syncEditorSidebar();
   if (focusKey) updateSidebar(focusKey);
+  return true;
+}
+
+function syncEditorSidebar() {
+  const panel = byId("map-sidebar");
+  const open = Boolean(editedPlace || editedPin);
+  if (open && !panel.classList.contains("editor-open")) editorSidebarScroll = panel.scrollTop;
+  panel.classList.toggle("editor-open", open);
+  byId("map-places").hidden = open;
+  if (!open) panel.scrollTop = editorSidebarScroll;
 }
 
 function setPinPlacement(active) {
@@ -2139,22 +2255,28 @@ function renderCustomPins(rows) {
 function updatePinTitle() {
   updateUncertainDateLabels();
   if (!editedPin) return;
-  for (const label of pinVisitDates.querySelectorAll(".visit-date-label")) label.textContent = tr("Data kolejnej wizyty", "Date of return visit");
   for (const button of pinVisitDates.querySelectorAll("button")) button.textContent = tr("Usuń wizytę", "Remove visit");
   byId("pin-details-title").textContent = editedPin.saved ? editedPin.pin.nazwa : tr("Nowa pinezka", "New pin");
 }
 
-function openPinEditor(pin, saved) {
-  closePlaceDetails();
+async function openPinEditor(pin, saved) {
+  if (layout.editor_auto_close === "off" && (editedPlace || editedPin)) return;
+  const requestId = ++editorRequest;
+  if (!await closePlaceDetails() || (editedPin?.pin.id !== pin.id && !await closePinEditor()) || requestId !== editorRequest) return;
   setMapSidebarOpen(true);
   if (editedPin?.pin.id !== pin.id) {
     editedPin = { pin, saved, busy: false };
+    photoPicker(byId("pin-photos"), editedPin, pin.zdjecia);
     pinName.value = pin.nazwa;
     pinName.setCustomValidity("");
     pinLong.value = pin.opis_dlugi || "";
     pinDate.value = pin.data || "";
     pinDateUncertain.checked = dateIsUncertain(pin);
     pinDate.syncUncertainty();
+    pinDeparture.value = pin.data_konca || "";
+    pinDepartureUncertain.checked = dateIsUncertain({ data_niepewna: pin.data_konca_niepewna });
+    pinDeparture.syncUncertainty();
+    pinDate.syncDepartureRange();
     pinVisitDates.replaceChildren();
     addPinVisit.disabled = false;
     for (const visit of pin.kolejne_wizyty || []) appendVisitDate(visit, pinVisitDates, addPinVisit);
@@ -2162,35 +2284,58 @@ function openPinEditor(pin, saved) {
     pinRemove.hidden = !saved;
     setPinEditorBusy(false);
     updatePinTitle();
+    editedPin.initialSnapshot = JSON.stringify(readPinChange(false));
+    updateEditorSaveLabels();
   }
+  syncEditorSidebar();
   byId("map-places").hidden = true;
   byId("pin-details").hidden = false;
+  byId("map-sidebar").scrollTop = 0;
   pinDraft.style.setProperty("--pin-color", pinColor.value);
   positionCustomPins();
   pinName.focus({ preventScroll: true });
 }
 
-function closePinEditor(restoreFocus = false) {
-  if (!editedPin) return;
+async function closePinEditor(restoreFocus = false, discard = false) {
+  if (!editedPin) return true;
+  const editor = editedPin;
+  if (!discard) {
+    if (editor.closing) return editor.closing;
+    editor.closing = (async () => {
+      await visitQueue;
+      await editor.photoUpload;
+      if (editedPin !== editor) return true;
+      const change = readPinChange(false);
+      if (JSON.stringify(change) !== editor.initialSnapshot) {
+        if (!readPinChange(true)) return false;
+        if (!await saveCustomPin(change, editor)) return false;
+      }
+      return closePinEditor(restoreFocus, true);
+    })();
+    try { return await editor.closing; }
+    finally { editor.closing = undefined; }
+  }
   const marker = pinMarkers.find(({ pin }) => pin.id === editedPin.pin.id)?.element;
   editedPin = undefined;
   pinDraft.hidden = true;
   byId("pin-details").hidden = true;
-  byId("map-places").hidden = false;
+  syncEditorSidebar();
   if (restoreFocus) (marker && !marker.hidden ? marker : addPinButton).focus({ preventScroll: true });
+  return true;
 }
 
 function setPinEditorBusy(busy) {
   byId("pin-fields").disabled = busy;
   pinSave.disabled = busy;
+  byId("cancel-pin").disabled = busy;
   pinRemove.disabled = busy;
 }
 
 function saveCustomPin(change, editor = editedPin) {
-  if (!editor || editor.busy) return;
+  if (!editor || editor.busy) return Promise.resolve(false);
   editor.busy = true;
   if (editedPin === editor) setPinEditorBusy(true);
-  visitQueue = visitQueue.then(async () => {
+  return visitQueue = visitQueue.then(async () => {
     status.textContent = "";
     try {
       const rows = await request("/api/pinezki", {
@@ -2199,17 +2344,20 @@ function saveCustomPin(change, editor = editedPin) {
       });
       renderCustomPins(rows);
       visitUpdates?.postMessage("pins");
-      if (editedPin !== editor) return;
-      if (change.usun) closePinEditor(true);
+      if (editedPin !== editor) return true;
+      if (change.usun) closePinEditor(true, true);
       else {
         editor.pin = pinMarkers.find(({ pin }) => pin.id === editor.pin.id).pin;
         editor.saved = true;
         pinDraft.hidden = true;
         pinRemove.hidden = false;
         updatePinTitle();
+        editor.initialSnapshot = JSON.stringify(readPinChange(false));
       }
+      return true;
     } catch {
       status.textContent = tr("Nie udało się zapisać pinezki.", "Could not save the pin.");
+      return false;
     } finally {
       editor.busy = false;
       if (editedPin === editor) setPinEditorBusy(false);
@@ -2219,43 +2367,59 @@ function saveCustomPin(change, editor = editedPin) {
 
 addPinButton.addEventListener("click", () => { if (ready) setPinPlacement(!pinPlacement); });
 pinDraft.addEventListener("click", (event) => {
-  if (event.shiftKey) closePinEditor(true);
+  if (event.shiftKey) closePinEditor(true, true);
   else pinName.focus({ preventScroll: true });
 });
 pinColor.addEventListener("input", () => pinDraft.style.setProperty("--pin-color", pinColor.value));
 byId("close-pin-details").addEventListener("click", () => closePinEditor(true));
+byId("cancel-pin").addEventListener("click", () => closePinEditor(true, true));
 pinName.addEventListener("input", () => pinName.setCustomValidity(""));
-byId("pin-form").addEventListener("submit", (event) => {
-  event.preventDefault();
+function readPinChange(validate = true) {
   const name = pinName.value.trim();
-  if (!name) {
+  if (validate && !name) {
     pinName.setCustomValidity(tr("Wpisz nazwę pinezki.", "Enter a name for the pin."));
     pinName.reportValidity();
-    return;
+    return null;
   }
-  saveCustomPin({
+  if (validate && !byId("pin-form").reportValidity()) return null;
+  return {
     nazwa: name, opis_dlugi: pinLong.value, kolor: pinColor.value, data: pinDate.value, data_niepewna: pinDateUncertain.checked,
-    kolejne_wizyty: readVisitDates(pinVisitDates),
-  });
+    data_konca: pinDeparture.value, data_konca_niepewna: pinDepartureUncertain.checked,
+    kolejne_wizyty: readVisitDates(pinVisitDates), zdjecia: editedPin?.photos || [],
+  };
+}
+byId("pin-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const editor = editedPin;
+  await editor?.photoUpload;
+  if (editedPin !== editor) return;
+  await closePinEditor(true);
 });
 addPinVisit.addEventListener("click", () => appendVisitDate({}, pinVisitDates, addPinVisit).focus());
 pinRemove.addEventListener("click", () => saveCustomPin({ usun: true }));
 
 function commitPlace(editor, change) {
-  if (editor.busy) return;
+  if (editor.busy) return Promise.resolve(false);
   editor.busy = true;
   const restoreSaveFocus = editedPlace === editor && document.activeElement === placeSave;
   if (editedPlace === editor) setPlaceEditorBusy(true);
-  visitQueue = visitQueue.then(async () => {
+  return visitQueue = visitQueue.then(async () => {
     const saved = await saveVisit(editor.place, change);
     editor.busy = false;
-    if (editedPlace !== editor) return;
+    if (editedPlace !== editor) return saved;
     setPlaceEditorBusy(false);
     const row = savedPlaces.get(key(editor.place));
     placeRemove.hidden = !row;
-    if (row && change.tylko_nowe) fillPlaceFields(row);
-    if (saved && !change.odwiedzone) closePlaceDetails(true);
+    if (row && change.tylko_nowe) {
+      const photos = editor.photos;
+      fillPlaceFields(row);
+      photoPicker(byId("place-photos"), editor, photos);
+    }
+    if (saved) editor.initialSnapshot = JSON.stringify(readPlaceChange(false));
+    updateEditorSaveLabels();
+    if (saved && !change.odwiedzone) closePlaceDetails(true, true);
     else if (restoreSaveFocus && document.activeElement === document.body) placeSave.focus({ preventScroll: true });
+    return saved;
   });
 }
 
@@ -2278,26 +2442,63 @@ function quicklyRemovePlace(place) {
 placePlanned.addEventListener("change", updatePlaceLabels);
 addPlaceVisit.addEventListener("click", () => appendVisitDate().focus());
 placeRating.addEventListener("input", () => placeRating.setCustomValidity(""));
-placeForm.addEventListener("submit", (event) => {
-  event.preventDefault();
-  if (!editedPlace) return;
+function readPlaceChange(validate = true) {
   const rating = placeRating.value.trim().replace(",", ".");
-  if (rating) {
+  if (validate && rating) {
     const [whole, fraction = ""] = rating.split(".");
     const value = Number(whole);
     if (!/^[0-9]+(?:\.[0-9]+)?$/.test(rating) || value < 1 || value > 10 || (value === 10 && /[1-9]/.test(fraction))) {
       placeRating.setCustomValidity(tr("Wpisz liczbę od 1 do 10.", "Enter a number from 1 to 10."));
       placeRating.reportValidity();
-      return;
+      return null;
     }
   }
-  commitPlace(editedPlace, {
+  if (validate && !placeForm.reportValidity()) return null;
+  return {
     odwiedzone: true, planowane: placePlanned.checked, data: placeDate.value, data_niepewna: placeDateUncertain.checked,
-    ocena: rating, notatka: placeNote.value,
+    data_konca: placeDeparture.value, data_konca_niepewna: placeDepartureUncertain.checked,
+    ocena: rating, notatka: placeNote.value, zdjecia: editedPlace?.photos || [],
     kolejne_wizyty: placePlanned.checked ? undefined : readVisitDates(placeVisitDates),
-  });
+  };
+}
+placeForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if (!editedPlace) return;
+  const editor = editedPlace;
+  await editor.photoUpload;
+  if (editedPlace !== editor) return;
+  await closePlaceDetails(true);
 });
 byId("close-place-details").addEventListener("click", () => closePlaceDetails(true));
+function updateEditorSaveLabels() {
+  for (const [editor, read, button, close] of [
+    [editedPlace, readPlaceChange, placeSave, "close-place-details"],
+    [editedPin, readPinChange, pinSave, "close-pin-details"],
+  ]) {
+    if (!editor) continue;
+    const dirty = editor.photoUploading || JSON.stringify(read(false)) !== editor.initialSnapshot;
+    button.removeAttribute("data-en");
+    button.textContent = button === pinSave || dirty ? tr("Zapisz", "Save") : tr("Wyjdź", "Exit");
+    byId(close).hidden = layout.editor_auto_close === "off";
+  }
+}
+for (const form of [placeForm, byId("pin-form")]) {
+  for (const type of ["input", "change", "click", "atlas-photo-change"]) {
+    form.addEventListener(type, () => queueMicrotask(updateEditorSaveLabels));
+  }
+}
+
+function dismissEditorOutside(event) {
+  if (!editedPlace && !editedPin) return;
+  if (layout.editor_auto_close === "off") return;
+  if (event.target.closest?.("#map-sidebar")) return;
+  // Let quick removal discard the selected editor instead of racing its save.
+  if (event.shiftKey && event.target.closest?.("#city-map, #map-pins, #atlas")) return;
+  closePlaceDetails();
+  closePinEditor();
+}
+document.addEventListener("pointerdown", dismissEditorOutside, { capture: true });
+document.addEventListener("click", (event) => { if (!event.detail) dismissEditorOutside(event); }, { capture: true });
 placeRemove.addEventListener("click", () => {
   if (editedPlace) commitPlace(editedPlace, { odwiedzone: false });
 });
@@ -2341,7 +2542,10 @@ visitUpdates?.addEventListener("message", (event) => {
   if (event.data === "journal") return;
   if (event.data === "pins") {
     visitQueue = visitQueue.then(async () => renderCustomPins(await request("/api/pinezki"))).catch(console.error);
-  } else refreshMapVisits().catch(console.error);
+  } else {
+    refreshMapVisits().catch(console.error);
+    if (event.data === "photos") visitQueue = visitQueue.then(async () => renderCustomPins(await request("/api/pinezki"))).catch(console.error);
+  }
 });
 
 tabs.forEach((tab) => tab.addEventListener("click", () => {
@@ -2527,6 +2731,9 @@ function applyZoomRanges(settings) {
 const workspace = document.querySelector(".workspace");
 const sections = [...document.querySelectorAll(".atlas-nav [data-section]")];
 function showSection(id) {
+  ++editorRequest;
+  closePlaceDetails();
+  closePinEditor();
   if (id === "map-view" && (areaFocusActive() || areaFocus.selecting || areaFocus.loading)) leaveAreaFocus();
   if (id !== "map-view" && (areaFocus.selecting || areaFocus.loading)) setAreaSelection(false);
   byId("settings-view").hidden = id !== "settings-view";
@@ -2555,7 +2762,7 @@ byId("brand-home").addEventListener("click", (event) => {
 const sidebar = byId("map-sidebar");
 const narrowLayout = matchMedia("(max-width: 640px)");
 const languageSelect = byId("atlas-language");
-let layout = { language: "en", sidebar: "auto", online_focus: "off", achievement_notifications: "on" };
+let layout = { language: "en", sidebar: "auto", online_details: "on", achievement_notifications: "on", editor_auto_close: "on" };
 const renderDistanceInputs = new Map();
 for (const kind of ["regions", "subregions", "cities", "villages"]) {
   const input = document.createElement("input");
@@ -2581,10 +2788,8 @@ achievementNotificationInput.addEventListener("change", () => {
   document.dispatchEvent(new Event("atlas-achievement-notifications-change"));
 });
 const onlineLabels = {
-  online_focus: ["Lupka — szczegółowa mapa", "Area focus Detailed Map"],
+  online_details: ["Zezwalaj na szczegółowe mapy", "Allow detailed maps"],
   online_water: ["Szczegółowe rzeki i jeziora", "Detailed rivers and lakes"],
-  online_hewelion: ["Hewelion — szczegółowa mapa", "Hewelion Detailed Map"],
-  online_castles: ["Polskie zamki — szczegółowa mapa", "Polish Castles Detailed Map"],
 };
 const onlineInputs = new Map();
 let savedOnline = Object.fromEntries(Object.keys(onlineLabels).map((key) => [key, layout[key] || "on"]));
@@ -2711,8 +2916,10 @@ document.addEventListener("keydown", (event) => {
       setPinPlacement(false);
       addPinButton.focus();
     } else if (!sidebar.hidden) {
-      if (editedPin) closePinEditor(true);
-      else closePlaceDetails(true);
+      if (layout.editor_auto_close !== "off") {
+        if (editedPin) closePinEditor(true);
+        else closePlaceDetails(true);
+      }
     }
     return;
   }
@@ -2723,7 +2930,7 @@ document.addEventListener("keydown", (event) => {
     const button = byId(tool);
     if (button.hidden || button.disabled) return;
     button.click();
-  } else if (event.key === "0") byId("reset").click();
+  } else if (event.key === "0") resetMapView();
   else if (!cityContainer.contains(event.target) && (event.key === "+" || event.key === "-")) {
     changePresetZoom(event.key === "+" ? 1 : -1);
   } else return;
@@ -2756,6 +2963,7 @@ function syncLanguage() {
   updateSidebar();
   updatePlaceLabels();
   updatePinTitle();
+  updateEditorSaveLabels();
   updateCityView();
   status.textContent = "";
   document.dispatchEvent(new Event("atlas-language-change"));
@@ -3144,6 +3352,13 @@ function renderProgressTransfer(section) {
   const hint = document.createElement("p");
   hint.className = "transfer-hint";
   hint.textContent = tr("CSV i JSON: pełna kopia postępu. KML: mapa dla Google My Maps; duże eksporty są dzielone na pliki w ZIP.", "CSV and JSON: full progress backup. KML: map for Google My Maps; large exports are split into files in a ZIP.");
+  const photosButton = document.createElement("button");
+  photosButton.type = "button";
+  photosButton.id = "export-photos";
+  photosButton.textContent = tr("Eksportuj wszystkie zdjęcia (ZIP)", "Export all photos (ZIP)");
+  const photosHint = document.createElement("p");
+  photosHint.className = "transfer-hint";
+  photosHint.textContent = tr("Zdjęcia i podpisy. Kopia CSV/JSON zawiera odnośniki; folder photos z ZIP przechowuj w data/user.", "Photos and captions. CSV/JSON backups contain references; keep the ZIP’s photos folder in data/user.");
   const journalDivider = document.createElement("hr");
   const journalHeading = document.createElement("h4");
   journalHeading.className = "transfer-journal-heading";
@@ -3200,6 +3415,7 @@ function renderProgressTransfer(section) {
   status.className = "transfer-status";
   status.setAttribute("role", "status");
   function sync() {
+    photosButton.disabled = !ready || transferState.busy;
     format.disabled = file.disabled = exportButton.disabled = !ready || transferState.busy;
     journalTitle.disabled = journalFormat.disabled = journalButton.disabled = !ready || transferState.busy;
     importButton.disabled = !ready || transferState.busy || !transferState.file;
@@ -3218,6 +3434,17 @@ function renderProgressTransfer(section) {
     link.remove();
     setTimeout(() => URL.revokeObjectURL(objectUrl), 60000);
   }
+  photosButton.addEventListener("click", async () => {
+    if (transferState.busy) return;
+    transferState.busy = true; sync();
+    status.textContent = tr("Przygotowywanie zdjęć…", "Preparing photos…");
+    try {
+      await visitQueue;
+      await downloadFile("/api/eksport-zdjec", "travel-tracker-photos.zip");
+      status.textContent = tr("Eksport gotowy.", "Export ready.");
+    } catch { status.textContent = tr("Eksport nie powiódł się.", "Export failed."); }
+    finally { transferState.busy = false; transferState.sync(); }
+  });
   file.addEventListener("change", () => {
     transferState.file = file.files[0] || null;
     transferState.content = null;
@@ -3287,7 +3514,7 @@ function renderProgressTransfer(section) {
       transferState.sync();
     }
   });
-  body.append(exportLabel, exportButton, hint, journalDivider, journalHeading, journalHint, titleLabel, journalFormatLabel,
+  body.append(exportLabel, exportButton, hint, photosButton, photosHint, journalDivider, journalHeading, journalHint, titleLabel, journalFormatLabel,
     journalButton, divider, fileLabel, filename, importButton, warning, status);
   section.append(body);
   sync();
@@ -3394,6 +3621,20 @@ function renderMainSettings() {
   });
   sidebarLabel.append(sidebarText, sidebarSetting);
   general.append(sidebarLabel);
+  const autoCloseLabel = document.createElement("label");
+  const autoCloseText = document.createElement("span");
+  autoCloseText.textContent = tr("Zamykaj edytor po kliknięciu mapy", "Close the editor when clicking the map");
+  const autoClose = document.createElement("input");
+  autoClose.type = "checkbox";
+  autoClose.checked = layout.editor_auto_close !== "off";
+  autoClose.disabled = !ready;
+  autoClose.addEventListener("change", () => {
+    saveLayout("editor_auto_close", autoClose.checked ? "on" : "off");
+    updateEditorSaveLabels();
+  });
+  autoCloseLabel.append(autoCloseText, autoClose);
+  general.append(autoCloseLabel);
+  renderNavigationSettings(general);
   renderProgressTransfer(category("transfer", "Import i eksport", "Import and export", "", ""));
   const internet = category("internet", "Internet", "Internet", "Wyłącz te opcje, aby korzystać offline.", "Turn these options off to use the app offline.");
   const disableOnline = document.createElement("button");

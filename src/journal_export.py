@@ -50,6 +50,8 @@ def day_label(value, language, uncertain=False):
 
 def date_label(entry, model):
     first, last = entry.get("date", ""), entry.get("end", "")
+    if first and last and entry.get("uncertain") and entry.get("end_uncertain"):
+        return words(model, "undated")
     first_label = day_label(first, model["language"], entry.get("uncertain", False)) if first else ""
     last_label = day_label(last, model["language"], entry.get("end_uncertain", False)) if last else ""
     if first and last:
@@ -93,6 +95,19 @@ def cover_map(model, shapes):
     output = io.BytesIO()
     image.save(output, "PNG")
     return output.getvalue()
+
+
+def journal_photos(entry):
+    from .photos import photo_path
+    from PIL import Image
+    for photo in entry.get("photos", []):
+        try:
+            path = photo_path(photo["id"])
+            with Image.open(path) as image:
+                width, height = image.size
+            yield path, width, height, photo.get("caption", "")
+        except (OSError, ValueError, KeyError):
+            continue
 
 
 def export_docx(model, illustration):
@@ -183,6 +198,15 @@ def export_docx(model, illustration):
     paragraph("   ·   ".join(f'{words(model, key)}  {model[key]}' for key in ("trips", "visits", "countries")), size=10, color="655E6D")
     document.add_page_break()
 
+    def photos(entry):
+        for path, width, height, caption in journal_photos(entry):
+            scale = min(6.5 / width, 4.2 / height)
+            item = document.add_paragraph()
+            item.paragraph_format.keep_with_next = bool(caption)
+            item.add_run().add_picture(str(path), width=Inches(width * scale), height=Inches(height * scale))
+            if caption:
+                paragraph(caption, size=9, color="655E6D", after=14)
+
     def visit(entry):
         paragraph(entry["title"], "Heading 3")
         if entry.get("reading"):
@@ -191,6 +215,7 @@ def export_docx(model, illustration):
         metadata.paragraph_format.keep_with_next = bool(entry.get("note"))
         if entry.get("note"):
             paragraph(entry["note"])
+        photos(entry)
 
     for index, (year, entries) in enumerate(model["years"]):
         paragraph(year or words(model, "undated"), "Heading 1", before=28 if index else 0, after=18)
@@ -201,6 +226,7 @@ def export_docx(model, illustration):
                 paragraph(date_label(entry, model), size=9, color="655E6D").paragraph_format.keep_with_next = bool(entry["note"] or entry["members"])
                 if entry["note"]:
                     paragraph(entry["note"])
+                photos(entry)
                 for member in entry["members"]:
                     visit(member)
             else:
@@ -290,6 +316,16 @@ def export_pdf(model, illustration):
     story.extend([Spacer(1, 25), Image(io.BytesIO(illustration), width=473, height=230.6), Spacer(1, 25),
                   Paragraph(text("   ·   ".join(f'{words(model, key)}  {model[key]}' for key in ("trips", "visits", "countries")), "JournalMeta"), meta), PageBreak()])
 
+    def photos(entry):
+        for path, width, height, caption in journal_photos(entry):
+            scale = min(473 / width, 300 / height)
+            picture = Image(str(path), width=width * scale, height=height * scale)
+            picture.hAlign = "LEFT"
+            picture.keepWithNext = bool(caption)
+            story.extend([Spacer(1, 8), picture, Spacer(1, 5)])
+            if caption:
+                story.append(Paragraph(text(caption, "JournalMeta"), meta))
+
     def visit(entry):
         story.append(CondPageBreak(80))
         story.append(Paragraph(text(entry["title"], "JournalHeading"), visit_style))
@@ -298,6 +334,7 @@ def export_pdf(model, illustration):
         story.append(Paragraph(text(visit_metadata(entry, model), "JournalMeta"), meta))
         if entry.get("note"):
             story.append(Paragraph(text(entry["note"]), body))
+        photos(entry)
 
     for index, (year, entries) in enumerate(model["years"]):
         if index:
@@ -310,6 +347,7 @@ def export_pdf(model, illustration):
                               Paragraph(text(date_label(entry, model), "JournalMeta"), meta)])
                 if entry["note"]:
                     story.append(Paragraph(text(entry["note"]), body))
+                photos(entry)
                 for member in entry["members"]:
                     visit(member)
             else:

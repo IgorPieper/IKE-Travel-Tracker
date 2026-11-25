@@ -56,6 +56,34 @@ test('focus search allows countries, regions with capitals, or cities with optio
 });
 
 
+test('countries without regions offer their subregions and capitals directly', () => {
+  const c=vm.createContext({capitalRecords:new Map([['capital',{}]])});
+  vm.runInContext(source.slice(source.indexOf('const areaFocus ='),source.indexOf('function updateFocusHint(')),c);
+  c.geometry=geometry;
+  const evaluate=text=>vm.runInContext(text,c);
+  evaluate("areaFocus.area={category:'panstwo',country:'LV',division_level:'subregion',feature:{geometry}};");
+  assert.equal(evaluate('focusShowsSubregions()'),true);
+  c.place={category:'rejon',id:'municipality',level:'subregion',getPosition:()=>[2,2]};
+  assert.equal(evaluate('focusPlaceAllowed(place)'),true);
+  c.place.level='region';assert.equal(evaluate('focusPlaceAllowed(place)'),false);
+  c.place={category:'miasto',id:'capital',getPosition:()=>[2,2]};assert.equal(evaluate('focusPlaceAllowed(place)'),true);
+});
+
+test('region focus independently permits cities, villages and only its own subregions', () => {
+  const c=vm.createContext({capitalRecords:new Map()});
+  vm.runInContext(source.slice(source.indexOf('const areaFocus ='),source.indexOf('function updateFocusHint(')),c);
+  c.geometry=geometry;
+  const evaluate=text=>vm.runInContext(text,c);
+  evaluate("areaFocus.area={category:'rejon',id:'parent',feature:{geometry}}; areaFocus.cities=false; areaFocus.villages=true; areaFocus.subregions=true;");
+  c.place={category:'miasto',id:'city',getPosition:()=>[2,2]};
+  assert.equal(evaluate('focusPlaceAllowed(place)'),false);
+  c.place.id='simc:1';assert.equal(evaluate('focusPlaceAllowed(place)'),true);
+  c.place={category:'rejon',id:'child',level:'subregion',parent_id:'parent',getPosition:()=>[2,2]};
+  assert.equal(evaluate('focusPlaceAllowed(place)'),true);
+  c.place.parent_id='neighbor';assert.equal(evaluate('focusPlaceAllowed(place)'),false);
+  c.place.parent_id='parent';evaluate('areaFocus.subregions=false;');assert.equal(evaluate('focusPlaceAllowed(place)'),false);
+});
+
 test('arming magnifier in an existing focus preserves its area and camera', () => {
   const area = { id: 'africa' };
   const state = { area, selecting:false, loading:false };
@@ -94,12 +122,31 @@ test('full-area view becomes the zoom-out and pan limit, recalculated for each f
   assert.equal(calls.at(-1)[1].zoom,5);
 });
 
-test('detailed streets load only for opted-in localities and are removed when leaving', () => {
+test('back removes one magnifier level and restores its camera and layer choices before returning to the main map', () => {
+  const parent={id:'region',category:'rejon'},country={id:'country',category:'panstwo'};
+  const regionSnapshot={area:parent,place:{id:'region'},cities:false,villages:true,subregions:true,
+    category:'miasto',view:{x:2,y:3,zoom:64},center:[18,54],zoom:8};
+  const countrySnapshot={...regionSnapshot,area:country,place:{id:'country'},cities:true,villages:false,subregions:false,center:[19,52],zoom:5};
+  const calls=[],state={area:{id:'city'},history:[countrySnapshot,regionSnapshot],controller:{abort:()=>calls.push('abort')}};
+  const c=vm.createContext({areaFocus:state,areaFocusActive:()=>Boolean(state.area),category:'miasto',view:{},search:{value:'city'},
+    mapZoomRange:{min:4},cityMap:{jumpTo:camera=>calls.push(camera)},
+    leaveAreaFocus:()=>{calls.push('main');state.area=null;},
+    closePlaceDetails:()=>{},closePinEditor:()=>{},showHover:()=>{},syncAreaFocusUi:()=>{},updateSearchPrompt:()=>{},
+    fitFocusedArea:()=>{},schedulePlaceSearch:()=>{},refreshPreset:()=>{},updateSidebar:()=>{},scheduleDraw:()=>{}});
+  vm.runInContext(source.slice(source.indexOf('function backAreaFocus('),source.indexOf('function syncAreaFocusLayers(')),c);
+  c.backAreaFocus();assert.equal(state.area,parent);assert.equal(state.history.length,1);
+  assert.equal(state.cities,false);assert.equal(state.villages,true);assert.equal(state.subregions,true);
+  assert.deepEqual(JSON.parse(JSON.stringify(calls.at(-1))),{center:[18,54],zoom:8});assert.equal(c.search.value,'');
+  c.backAreaFocus();assert.equal(state.area,country);assert.equal(state.history.length,0);
+  c.backAreaFocus();assert.equal(calls.at(-1),'main');
+});
+
+test('detailed streets support all magnifier levels and are removed when leaving or disabled', () => {
   let enabled=false;
   const layers=new Map(), sources=new Map();
   const area={category:'miasto',bounds:[18,54,19,55]};
-  const state={area};
-  const context=vm.createContext({areaFocus:state, onlineEnabled:()=>enabled,statusColor:()=> 'transparent',
+  const state={area,details:true};
+  const context=vm.createContext({areaFocus:state, onlineEnabled:()=>enabled,focusDetailedActive:()=>Boolean(state.area&&state.details&&enabled),statusColor:()=> 'transparent',
     cityMap:{getLayer:id=>layers.get(id),getSource:id=>sources.get(id),
       addSource:(id,value)=>sources.set(id,value),removeSource:id=>sources.delete(id),
       addLayer:layer=>layers.set(layer.id,layer),removeLayer:id=>layers.delete(id),moveLayer:()=>{}}});
@@ -111,8 +158,21 @@ test('detailed streets load only for opted-in localities and are removed when le
   assert.equal(sources.get('area-focus-streets').tiles[0],'https://tile.openstreetmap.org/{z}/{x}/{y}.png');
   assert.deepEqual(sources.get('area-focus-streets').bounds,area.bounds);
   assert.equal(layers.has('area-focus-status'),true);
-  state.area={category:'panstwo'};
+  for(const category of ['panstwo','rejon','kontynent']) {
+    state.area={category,bounds:[14,49,24,55]};context.syncFocusDetailMap();
+    assert.equal(layers.has('area-focus-streets'),true);
+  }
+  state.area=null;
   context.syncFocusDetailMap();
   assert.equal(sources.size,0);
   assert.equal(layers.size,0);
+});
+
+test('zoom resets detailed mode at higher levels while the locality level keeps its choice',()=>{
+  let refreshes=0;
+  const state={area:{category:'rejon'},details:true};
+  const c=vm.createContext({areaFocus:state,basemapReady:true,syncAreaFocusUi:()=>{},syncAreaFocusLayers:()=>refreshes++});
+  vm.runInContext(source.slice(source.indexOf('function resetHigherFocusDetail('),source.indexOf('function syncFocusDetailMap(')),c);
+  c.resetHigherFocusDetail();assert.equal(state.details,false);assert.equal(refreshes,1);
+  state.area={category:'miasto'};state.details=true;c.resetHigherFocusDetail();assert.equal(state.details,true);
 });

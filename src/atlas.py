@@ -28,6 +28,7 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 from urllib.request import build_opener
 from .branding import APP_NAME
+from .photos import photo_refs, encoded_refs, photo_path, store_photo, archive_photos, gallery, update_gallery
 
 ROOT = Path(sys.executable).resolve().parent if getattr(sys, "frozen", False) else Path(__file__).resolve().parents[1]
 INSTANCE_KEY = hashlib.sha256(os.fsencode(str(ROOT).casefold())).hexdigest()
@@ -42,7 +43,7 @@ HYDROGRAPHY = MAP_DATA / "hydrografia.sqlite3"
 VISIT_DETAILS = ("data", "ocena", "notatka", "data_niepewna")
 PIN_DETAILS = ("opis_krotki", "opis_dlugi", "kolor")
 FIELDS = ("kategoria", "id", "nazwa", "lon", "lat", "panstwo_id", "tryb", *VISIT_DETAILS, *PIN_DETAILS,
-          "data_konca", "data_konca_niepewna", "miejsca", "kolejne_wizyty")
+          "data_konca", "data_konca_niepewna", "miejsca", "kolejne_wizyty", "zdjecia")
 MAP_CATEGORIES = ("kontynent", "panstwo", "rejon", "miasto")
 SKIP_LINKED = "pomin_auto"
 SETTINGS_FIELDS = ("widok", "min_zoom", "maks_zoom", "widoczny", "wartosc")
@@ -61,11 +62,20 @@ DEFAULT_ZOOMS = {
 }
 DEFAULT_VISIBILITY = dict.fromkeys((*DEFAULT_ZOOMS, "forests", "lakes", "rivers", "capitals", "warnings"), True)
 DEFAULT_VISIBILITY["major"] = False
+DEFAULT_VISIBILITY["subregions"] = False
+DEFAULT_VISIBILITY["settlements"] = False
+DEFAULT_VISIBILITY["regions"] = False
+DEFAULT_VISIBILITY["cities"] = False
 DEFAULT_VISIBILITY["seas"] = False
 DEFAULT_VISIBILITY["visited-only"] = False
 DEFAULT_VISIBILITY["planned-only"] = False
 DEFAULT_LAYOUT = {"language": "en", "sidebar": "auto", "cyprus": "show"}
 LAYOUT_VALUES = {"language": ("pl", "en"), "sidebar": ("auto", "open", "closed"), "cyprus": ("show", "hide")}
+DEFAULT_LAYOUT["editor_auto_close"] = "on"
+LAYOUT_VALUES["editor_auto_close"] = ("off", "on")
+for section in ("map-view", "challenges-view", "diary-view", "achievements-view", "gallery-view"):
+    DEFAULT_LAYOUT["nav_" + section] = "more" if section == "gallery-view" else "top"
+    LAYOUT_VALUES["nav_" + section] = ("top",) if section == "map-view" else ("top", "more", "hidden")
 for kind, value in (("regions", "3"), ("subregions", "6"), ("cities", "7"), ("villages", "9")):
     DEFAULT_LAYOUT["render_" + kind] = value
     LAYOUT_VALUES["render_" + kind] = tuple(f"{step / 2:g}" for step in range(33))
@@ -73,11 +83,9 @@ DEFAULT_LAYOUT["achievement_notifications"] = "on"
 LAYOUT_VALUES["achievement_notifications"] = ("off", "on")
 DEFAULT_LAYOUT["developer_panel"] = "off"
 LAYOUT_VALUES["developer_panel"] = ("off", "on")
-for feature in ("online_water", "online_hewelion", "online_castles"):
+for feature in ("online_water", "online_details"):
     DEFAULT_LAYOUT[feature] = "on"
     LAYOUT_VALUES[feature] = ("off", "on")
-DEFAULT_LAYOUT["online_focus"] = "off"
-LAYOUT_VALUES["online_focus"] = ("off", "on")
 for kind in ("continents", "countries", "regions", "subregions", "major", "cities", "villages", "pins", "trips"):
     DEFAULT_LAYOUT[f"diary_filter_{kind}"] = "on"
     LAYOUT_VALUES[f"diary_filter_{kind}"] = ("off", "on")
@@ -94,6 +102,9 @@ ASSETS = {
     "/mapa.js": ("web/js/mapa.js", "text/javascript; charset=utf-8"),
     "/obszar.js": ("web/js/obszar.js", "text/javascript; charset=utf-8"),
     "/jezyk.js": ("web/js/jezyk.js", "text/javascript; charset=utf-8"),
+    "/zdjecia.js": ("web/js/zdjecia.js", "text/javascript; charset=utf-8"),
+    "/nawigacja.js": ("web/js/nawigacja.js", "text/javascript; charset=utf-8"),
+    "/galeria.js": ("web/js/galeria.js", "text/javascript; charset=utf-8"),
     "/wyzwania.js": ("web/js/wyzwania.js", "text/javascript; charset=utf-8"),
     "/dziennik.js": ("web/js/dziennik.js", "text/javascript; charset=utf-8"),
     "/parki-wyzwanie.json": ("data/challenges/parki-wyzwanie.json.gz", "application/geo+json"),
@@ -268,7 +279,7 @@ def pin_record(change, place_id):
         raise ValueError
     return {"kategoria": "pinezka", "id": place_id, "lon": round(lon, 6), "lat": round(lat, 6),
             **text, "kolor": color.lower(),
-            **visit_details({key: change[key] for key in ("data", "data_niepewna", "kolejne_wizyty") if key in change})}
+            **visit_details({key: change[key] for key in ("data", "data_niepewna", "data_konca", "data_konca_niepewna", "kolejne_wizyty", "zdjecia") if key in change})}
 
 
 def validate_date(value):
@@ -287,10 +298,18 @@ def uncertain_date(value):
 
 def visit_details(change):
     details = {}
+    if "zdjecia" in change:
+        details["zdjecia"] = encoded_refs(change["zdjecia"])
     if "data" in change:
         details["data"] = validate_date(change["data"])
     if "data_niepewna" in change:
         details["data_niepewna"] = "1" if uncertain_date(change["data_niepewna"]) else ""
+    if "data_konca" in change:
+        details["data_konca"] = validate_date(change["data_konca"])
+    if "data_konca_niepewna" in change:
+        details["data_konca_niepewna"] = "1" if uncertain_date(change["data_konca_niepewna"]) else ""
+    if details.get("data") and details.get("data_konca") and details["data_konca"] < details["data"]:
+        raise ValueError
     if "ocena" in change:
         value = change["ocena"]
         if type(value) not in (str, int, float):
@@ -311,7 +330,7 @@ def visit_details(change):
             raise ValueError
         seen = set()
         for visit in visits:
-            if not isinstance(visit, dict) or not {"id", "data"}.issubset(visit) or set(visit) - {"id", "data", "data_niepewna"}:
+            if not isinstance(visit, dict) or not {"id", "data"}.issubset(visit) or set(visit) - {"id", "data", "data_niepewna", "data_konca", "data_konca_niepewna"}:
                 raise ValueError
             visit_id = visit["id"]
             if (not isinstance(visit_id, str) or not re.fullmatch(r"[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}", visit_id)
@@ -319,6 +338,11 @@ def visit_details(change):
                 raise ValueError
             if "data_niepewna" in visit:
                 uncertain_date(visit["data_niepewna"])
+            departure = validate_date(visit.get("data_konca", ""))
+            if departure and departure < visit["data"]:
+                raise ValueError
+            if "data_konca_niepewna" in visit:
+                uncertain_date(visit["data_konca_niepewna"])
             seen.add(visit_id)
         details["kolejne_wizyty"] = json.dumps(visits, separators=(",", ":")) if visits else ""
     return details
@@ -341,7 +365,8 @@ def diary_visits(rows):
         key = row["kategoria"] + ":" + row["id"]
         visits[key] = row
         for visit in additional_visits(row):
-            visits[key + ":visit:" + visit["id"]] = {**row, "data": visit["data"], "data_niepewna": "1" if uncertain_date(visit.get("data_niepewna", "")) else "", "ocena": "", "notatka": ""}
+            visits[key + ":visit:" + visit["id"]] = {**row, "data": visit["data"], "data_niepewna": "1" if uncertain_date(visit.get("data_niepewna", "")) else "",
+                "data_konca": visit.get("data_konca", ""), "data_konca_niepewna": "1" if uncertain_date(visit.get("data_konca_niepewna", "")) else "", "ocena": "", "notatka": ""}
     return visits
 
 
@@ -363,7 +388,8 @@ def trip_record(change, trip_id, members):
         raise ValueError
     return {"kategoria": "wycieczka", "id": trip_id, "nazwa": title.strip(), **details,
             "data_konca": end, "data_konca_niepewna": "1" if uncertain_date(change.get("data_konca_niepewna", "")) else "",
-            "miejsca": json.dumps(members, separators=(",", ":"))}
+            "miejsca": json.dumps(members, separators=(",", ":")),
+            "zdjecia": encoded_refs(change.get("zdjecia"), multiple=True)}
 
 
 def journal_model(rows, server, language="en", title=""):
@@ -396,8 +422,10 @@ def journal_model(rows, server, language="en", title=""):
         if category == "miasto":
             reading = readings.get("byCountry", {}).get(code, {}).get(name, "") or readings.get("byName", {}).get(name, "")
         visits[key] = {"kind": "visit", "title": name, "date": row.get("data") or "", "uncertain": uncertain_date(row.get("data_niepewna", "")), "rating": row.get("ocena") or "",
+                       "end": row.get("data_konca") or "", "end_uncertain": uncertain_date(row.get("data_konca_niepewna", "")),
                        "note": (row.get("opis_dlugi") if category == "pinezka" else row.get("notatka")) or "",
-                       "reading": reading, "country": names.get(code, "") if category in ("miasto", "rejon") else ""}
+                       "reading": reading, "country": names.get(code, "") if category in ("miasto", "rejon") else "",
+                       "photos": photo_refs(row.get("zdjecia"))}
     trips, claimed = [], set()
     for row in rows:
         if row["kategoria"] != "wycieczka":
@@ -409,12 +437,12 @@ def journal_model(rows, server, language="en", title=""):
                       "date": row.get("data") or "", "end": row.get("data_konca") or "",
                       "uncertain": uncertain_date(row.get("data_niepewna", "")),
                       "end_uncertain": uncertain_date(row.get("data_konca_niepewna", "")),
-                      "note": row.get("notatka") or "", "members": members})
+                      "note": row.get("notatka") or "", "members": members, "photos": photo_refs(row.get("zdjecia"))})
     entries = [visit for key, visit in visits.items() if key not in claimed] + trips
-    entries.sort(key=lambda entry: entry.get("date") or entry.get("end") or "", reverse=True)
+    entries.sort(key=lambda entry: entry.get("date") or (entry.get("end") if entry["kind"] == "trip" else "") or "", reverse=True)
     years = {}
     for entry in entries:
-        year = (entry.get("date") or entry.get("end") or "")[:4]
+        year = (entry.get("date") or (entry.get("end") if entry["kind"] == "trip" else "") or "")[:4]
         years.setdefault(year, []).append(entry)
     dates = sorted({entry["date"] for entry in visits.values() if entry["date"]}
                    | {trip[field] for trip in trips for field in ("date", "end") if trip[field]})
@@ -533,7 +561,7 @@ def import_progress(content, format, server):
         reader = csv.DictReader(io.StringIO(content.lstrip("\ufeff"), newline=""), strict=True)
         if (not reader.fieldnames or len(set(reader.fieldnames)) != len(reader.fieldnames)
                 or set(reader.fieldnames) - set(FIELDS)
-                or set(FIELDS) - {"data_niepewna", "data_konca_niepewna"} - set(reader.fieldnames)):
+                or set(FIELDS) - {"data_niepewna", "data_konca_niepewna", "zdjecia"} - set(reader.fieldnames)):
             raise ValueError
         rows = list(reader)
         for row in rows:
@@ -564,6 +592,7 @@ def import_progress(content, format, server):
         if any("\x00" in value or len(value) > 65536 for value in row.values()):
             raise ValueError
         category, id = row["kategoria"], row["id"]
+        row["zdjecia"] = encoded_refs(row["zdjecia"], multiple=category == "wycieczka")
         if category not in ("pinezka", "wycieczka") and csv_note_needs_escape(row["nazwa"]):
             raise ValueError
         key = category, id
@@ -591,7 +620,7 @@ def import_progress(content, format, server):
             lon, lat = float(row["lon"]), float(row["lat"])
             if not -180 <= lon <= 180 or not -90 <= lat <= 90:
                 raise ValueError
-        details = {field: row[field] for field in VISIT_DETAILS}
+        details = {field: row[field] for field in (*VISIT_DETAILS, "data_konca", "data_konca_niepewna")}
         details["kolejne_wizyty"] = json.loads(row["kolejne_wizyty"] or "[]")
         visit_details(details)
         validate_date(row["data_konca"])
@@ -736,10 +765,18 @@ def read_settings():
     ranges = {name: dict(value) for name, value in DEFAULT_ZOOMS.items()}
     visibility = DEFAULT_VISIBILITY.copy()
     layout = DEFAULT_LAYOUT.copy()
+    legacy_details = {"online_focus": "off", "online_hewelion": "on", "online_castles": "on"}
+    has_legacy_details = has_details = False
     if SETTINGS.exists():
         with SETTINGS.open(encoding="utf-8-sig", newline="") as file:
             for row in csv.DictReader(file):
                 name = row.get("widok")
+                value = row.get("wartosc")
+                if name in legacy_details and value in ("on", "off"):
+                    legacy_details[name] = value
+                    has_legacy_details = True
+                if name == "online_details" and value in ("on", "off"):
+                    has_details = True
                 if name in layout and row.get("wartosc") in LAYOUT_VALUES[name]:
                     layout[name] = row["wartosc"]
                 if name in visibility and row.get("widoczny") in ("0", "1"):
@@ -749,6 +786,8 @@ def read_settings():
                         ranges[name] = validate_zoom(float(row["min_zoom"]), float(row["maks_zoom"]))
                     except (KeyError, TypeError, ValueError):
                         continue
+    if has_legacy_details and not has_details:
+        layout["online_details"] = "on" if "on" in legacy_details.values() else "off"
     if not any(visibility[name] for name in ranges):
         visibility["countries"] = True
     return ranges, visibility, layout
@@ -967,7 +1006,11 @@ def add_linked_visits(rows, server):
             if key in server.places and key not in existing:
                 linked[key] = {**server.places[key], "tryb": "auto"}
             try:
-                subregion = region_at(float(row["lon"]), float(row["lat"]), getattr(server, "subregion_shapes", {}).get(country_id, ()))
+                lon, lat = float(row["lon"]), float(row["lat"])
+                subregion = region_at(lon, lat, getattr(server, "subregion_shapes", {}).get(country_id, ()))
+                if subregion is None:
+                    from .admin_boundaries import subregion_at
+                    subregion = subregion_at(lon, lat, country_id)
             except (KeyError, TypeError, ValueError):
                 subregion = None
             key = ("rejon", subregion)
@@ -1213,17 +1256,69 @@ class App(BaseHTTPRequestHandler):
     def do_GET(self):
         try:
             parsed = urlsplit(self.path)
+            if parsed.path == "/api/rejony":
+                params = parse_qs(parsed.query, keep_blank_values=True)
+                if params.get("catalogue") == ["1"]:
+                    data = {"type": "FeatureCollection", "features": [
+                        {"type": "Feature", "properties": f["properties"], "geometry": None}
+                        for f, _ in self.server.admin_boundary_index]}
+                else:
+                    from .admin_boundaries import viewport_features, hydrate_features
+                    try:
+                        data = hydrate_features(viewport_features(self.server.admin_boundary_index, params))
+                    except ValueError:
+                        self.send_error(400)
+                        return
+                self.send_data(json.dumps(data, ensure_ascii=False, separators=(",", ":")).encode(), "application/geo+json")
+                return
+            if parsed.path == "/api/galeria":
+                with self.server.write_lock:
+                    data = gallery(read_visits())
+                self.send_data(json.dumps(data, ensure_ascii=False).encode(), "application/json")
+                return
+            if parsed.path.startswith("/photos/"):
+                name = parsed.path.removeprefix("/photos/")
+                if not re.fullmatch(r"[a-f0-9]{64}\.jpg", name):
+                    self.send_error(404)
+                    return
+                path = photo_path(name[:-4])
+                if not path.is_file():
+                    self.send_error(404)
+                    return
+                self.send_data(path.read_bytes(), "image/jpeg", cache="private, no-cache")
+                return
+            if parsed.path == "/api/eksport-zdjec":
+                with self.server.write_lock:
+                    rows = read_visits()
+                with tempfile.TemporaryFile() as archive:
+                    archive_photos(rows, archive)
+                    size = archive.tell()
+                    archive.seek(0)
+                    self.send_response(200)
+                    self.send_header("Content-Type", "application/zip")
+                    self.send_header("Content-Length", str(size))
+                    self.send_header("Content-Disposition", 'attachment; filename="travel-tracker-photos.zip"')
+                    self.send_header("Cache-Control", "no-store")
+                    self.end_headers()
+                    import shutil
+                    shutil.copyfileobj(archive, self.wfile)
+                return
             if parsed.path == "/api/instance":
                 self.send_data(json.dumps({"application": "travel-tracker", "instance": INSTANCE_KEY}).encode(), "application/json")
                 return
-            if parsed.path in ("/api/obszar", "/api/obszar-szukaj"):
-                from .focus_map import focus_area, search_area
+            if parsed.path in ("/api/obszar", "/api/obszar-szukaj", "/api/obszar-liczniki"):
+                from .focus_map import focus_area, search_area, area_counts
                 try:
                     params = parse_qs(parsed.query)
                     category, id = params["category"][0], params["id"][0]
                     if len(id) > 250:
                         raise ValueError
-                    data = search_area(category, id, params["q"][0], params.get("villages", ["1"])[0] != "0") if parsed.path.endswith("-szukaj") else focus_area(category, id)
+                    if parsed.path.endswith("-szukaj"):
+                        data = search_area(category, id, params["q"][0], params.get("villages", ["1"])[0] != "0")
+                    elif parsed.path.endswith("-liczniki"):
+                        data = area_counts(category, id)
+                    else:
+                        data = focus_area(category, id)
                 except (ValueError, KeyError, StopIteration):
                     self.send_error(400)
                     return
@@ -1325,7 +1420,7 @@ class App(BaseHTTPRequestHandler):
 
     def do_POST(self):
         if self.path not in ("/api/odwiedzone", "/api/pinezki", "/api/ustawienia", "/api/wyzwania",
-                             "/api/dziennik", "/api/reset-postepu", "/api/developer/fill-map", "/api/developer/progress", "/api/import-postepu"):
+                             "/api/dziennik", "/api/reset-postepu", "/api/developer/fill-map", "/api/developer/progress", "/api/import-postepu", "/api/zdjecia", "/api/galeria"):
             self.send_error(404)
             return
         origin = self.headers.get("Origin")
@@ -1334,8 +1429,8 @@ class App(BaseHTTPRequestHandler):
             return
         try:
             size = int(self.headers.get("Content-Length", 0))
-            size_limit = {"/api/pinezki": 24576, "/api/odwiedzone": 16384, "/api/dziennik": 65536,
-                          "/api/import-postepu": 2 * TRANSFER_LIMIT}.get(self.path, 2048)
+            size_limit = {"/api/pinezki": 24576, "/api/odwiedzone": 16384, "/api/dziennik": 131072, "/api/zdjecia": 35 * 1024 * 1024,
+                          "/api/import-postepu": 2 * TRANSFER_LIMIT, "/api/galeria": 32768}.get(self.path, 2048)
             if not 0 < size <= size_limit:
                 raise ValueError
             change = json.loads(self.rfile.read(size))
@@ -1347,6 +1442,16 @@ class App(BaseHTTPRequestHandler):
 
     def apply_update(self, change):
         try:
+            if self.path == "/api/galeria":
+                update_gallery(change, read_visits())
+                self.send_data(json.dumps(gallery(read_visits()), ensure_ascii=False).encode(), "application/json")
+                return
+            if self.path == "/api/zdjecia":
+                if (not isinstance(change, dict) or set(change) not in ({"data"}, {"data", "name"})
+                        or not isinstance(change.get("name", ""), str) or len(change.get("name", "")) > 250):
+                    raise ValueError
+                self.send_data(json.dumps(store_photo(change["data"], change.get("name", ""))).encode(), "application/json")
+                return
             if self.path == "/api/import-postepu":
                 if (not isinstance(change, dict) or set(change) != {"format", "content", "potwierdzam"}
                         or type(change["potwierdzam"]) is not bool):
@@ -1428,7 +1533,9 @@ class App(BaseHTTPRequestHandler):
                 existing = next((row for row in rows if (row["kategoria"], row["id"]) == ("pinezka", place_id)), {})
                 rows = [row for row in rows if row is not existing]
                 if not delete:
-                    rows.append({**existing, **pin_record(change, place_id)})
+                    record = {**existing, **pin_record(change, place_id)}
+                    visit_details({field: record[field] for field in ("data", "data_konca") if field in record})
+                    rows.append(record)
                 write_visits(rows)
                 self.send_pins(rows)
                 return
@@ -1518,6 +1625,9 @@ class App(BaseHTTPRequestHandler):
                 ):
                     raise ValueError
                 place = {"kategoria": category, "id": place_id, "nazwa": name}
+            if selected:
+                combined = {**place, **details}
+                visit_details({field: combined[field] for field in ("data", "data_konca") if field in combined})
             position = change.get("pozycja")
             if category == "miasto" and selected and position is not None and not stored:
                 lon, lat = position
@@ -1559,7 +1669,8 @@ def run_atlas(instance_file):
     records = json.loads(static_bytes("mapa.json"))
     polish_cities = json.loads(gzip.decompress(static_bytes("miasta-polska.json.gz")))["features"]
     major_cities = json.loads(gzip.decompress(static_bytes("duze-miasta.json.gz")))["features"]
-    admin_regions = json.loads(gzip.decompress(static_bytes("rejony.json.gz")))["features"]
+    from .focus_map import administrative_features
+    admin_regions = administrative_features()
     try:
         server = AtlasServer(("127.0.0.1", 8765), App)
     except OSError as error:
@@ -1615,11 +1726,14 @@ def run_atlas(instance_file):
         server.region_parents = {f["properties"]["id"]: f["properties"]["parent_id"] for f in admin_regions if f["properties"].get("parent_id")}
         server.polish_region_codes = {}
         server.polish_region_names = {}
+        server.admin_boundary_index = []
         for feature in admin_regions:
             props = feature["properties"]
             country = server.country_codes.get(props["country"])
             shapes = server.subregion_shapes if props.get("level") == "subregion" else server.region_shapes
-            shapes.setdefault(country, []).extend(polygon_bounds(props["id"], feature["geometry"]))
+            polygons = list(polygon_bounds(props["id"], feature["geometry"])) if feature["geometry"] else []
+            shapes.setdefault(country, []).extend(polygons)
+            server.admin_boundary_index.append((feature, [polygon[0] for polygon in polygons] or feature.get('bboxes') or [feature['bbox']]))
             server.places["rejon", props["id"]] = {
                 "kategoria": "rejon", "id": props["id"], "nazwa": props["name"],
                 "lon": props["lon"], "lat": props["lat"],

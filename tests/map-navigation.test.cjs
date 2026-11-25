@@ -18,6 +18,7 @@ test('hit testing queries the clicked point in the actual bundled MapLibre',()=>
 function setup(){
  const calls=[],listeners={},place={id:'test'};
  const c=vm.createContext({lastRightMapClick:undefined,performance:{now:()=>100},key:p=>p.id,
+  focusDetailedActive:()=>false,areaFocus:{selecting:false},
   placePinAt:(...args)=>{calls.push('tool');return false;},quicklyRemovePlace:()=>calls.push('remove'),
   planPlace:()=>calls.push('plan'),queuePlaceClick:()=>calls.push('visit'),showHover:()=>{}});
  vm.runInContext(code,c);
@@ -37,6 +38,15 @@ test('left clicks retain visit, plan, double-click and quick removal actions',()
  c.selectMapPlace({...event(0),shiftKey:true},place,[0,0]);assert.equal(calls.at(-1),'remove');
  c.selectMapPlace({...event(0),ctrlKey:true},place,[0,0]);assert.equal(calls.at(-1),'plan');
 });
+test('detailed focus blocks map selection and modifiers while preserving custom pins',()=>{
+ const {c,calls,place,event}=setup();c.focusDetailedActive=()=>true;
+ for(const modifiers of [{},{shiftKey:true},{ctrlKey:true}])c.selectMapPlace({...event(0),...modifiers},place,[0,0]);
+ assert.deepEqual(calls,['tool','tool','tool']);
+ c.placePinAt=()=>{calls.push('pin');return true;};c.selectMapPlace({...event(0),altKey:true},place,[0,0]);
+ assert.equal(calls.at(-1),'pin');
+ c.focusDetailedActive=()=>false;c.placePinAt=()=>false;c.selectMapPlace(event(0),place,[0,0]);assert.equal(calls.at(-1),'visit');
+});
+
 test('right dragging pans without selecting; cancellation and release movement are safe',()=>{
  const {c,listeners:l,el,event}=setup();let selected=0;const moves=[];
  c.bindMapPointerNavigation(el,(x,y)=>moves.push([x,y]),()=>selected++);

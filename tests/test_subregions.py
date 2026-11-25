@@ -9,7 +9,8 @@ from src import atlas
 class SubregionTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.features = json.loads(gzip.decompress(atlas.static_bytes('rejony.json.gz')))['features']
+        from src.focus_map import administrative_features
+        cls.features = administrative_features()
 
     def test_poland_has_all_counties_beneath_sixteen_voivodeships(self):
         poland=[f for f in self.features if f['properties']['country']=='PL']
@@ -58,8 +59,44 @@ class SubregionTests(unittest.TestCase):
         self.assertEqual([r['id'] for r in atlas.developer_candidates(server,'regions')],['r'])
         self.assertEqual([r['id'] for r in atlas.developer_candidates(server,'subregions')],['s'])
 
+    def test_global_subregions_include_the_requested_countries(self):
+        counts=Counter(f['properties']['country'] for f in self.features if f['properties']['level']=='subregion')
+        for code, minimum in {'DE':400,'ES':52,'RU':2000,'UA':136,'US':3100,'CA':293,
+                              'BR':5500,'AR':500,'MX':2400,'ZA':52,'NG':774,'EG':300,
+                              'KE':250,'CD':150,'AU':500,'IN':700}.items():
+            with self.subTest(country=code):
+                self.assertGreaterEqual(counts[code],minimum)
+        self.assertGreaterEqual(len(counts),150)
+        self.assertEqual(sum(f['properties']['country']=='ES' and f['properties']['level']=='region' for f in self.features),19)
+
+    def test_new_subregions_have_unique_ids_and_parents_in_the_same_country(self):
+        ids={f['properties']['id']:f['properties'] for f in self.features}
+        self.assertEqual(len(ids),len(self.features))
+        for p in ids.values():
+            if p['id'].startswith(('gb-world:', 'nuts:', 'statcan:', 'ocha:')):
+                parent=ids[p['parent_id']]
+                self.assertEqual(parent['country'],p['country'])
+                self.assertEqual(parent['level'],'region')
+        # The post-reform OCHA dataset includes the Ukrainian Crimean districts.
+        crimean=[p for p in ids.values() if p['id'].startswith('ocha:UA01')]
+        self.assertTrue(crimean)
+        self.assertTrue(all(p['country']=='UA' for p in crimean))
+
+    def test_world_cities_resolve_to_subregions_and_crimea_stays_ukrainian(self):
+        from src.admin_boundaries import subregion_at
+        country_ids={row[5]:row[0] for row in json.loads(atlas.static_bytes('mapa.json'))['panstwo']}
+        for code, lon, lat in [('DE',13.405,52.52),('ES',-3.704,40.417),('US',-122.419,37.775),
+                               ('CA',-79.383,43.653),('RU',49.106,55.796),('UA',34.1,44.95),
+                               ('KE',36.815,-1.273),('BR',-46.63,-23.55)]:
+            with self.subTest(country=code):
+                shapes=[]
+                for feature in self.features:
+                    if feature['properties']['country']==code and feature['properties']['level']=='subregion' and feature['geometry']:
+                        shapes.extend(atlas.polygon_bounds(feature['properties']['id'],feature['geometry']))
+                self.assertIsNotNone(atlas.region_at(lon,lat,shapes) or subregion_at(lon,lat,country_ids[code]))
+
     def test_subregions_are_enabled_with_independent_render_distance(self):
-        self.assertTrue(atlas.DEFAULT_VISIBILITY['subregions'])
+        self.assertFalse(atlas.DEFAULT_VISIBILITY['subregions'])
         self.assertEqual(atlas.DEFAULT_LAYOUT['render_subregions'],'6')
         self.assertIn('6.5',atlas.LAYOUT_VALUES['render_subregions'])
 

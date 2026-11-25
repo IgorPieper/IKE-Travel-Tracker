@@ -1,5 +1,13 @@
 "use strict";
 
+function diaryTripPhotos(trip, visits) {
+  const photos = new Map();
+  for (const row of [trip, ...trip.miejsca.map((key) => visits[key]).filter(Boolean)]) {
+    for (const photo of photoRefs(row.zdjecia)) if (!photos.has(photo.id)) photos.set(photo.id, photo);
+  }
+  return [...photos.values()];
+}
+
 (() => {
   const view = byId("diary-view");
   const grid = byId("diary-cards");
@@ -133,6 +141,7 @@
   function tripDateLabel(trip) {
     const first = trip.data;
     const last = trip.data_konca;
+    if (first && last && dateIsUncertain(trip) && dateIsUncertain({ data_niepewna: trip.data_konca_niepewna })) return tr("Bez daty", "Undated");
     const firstLabel = uncertaintyPrefix(first ? dayLabel(first) : "", trip);
     const lastLabel = uncertaintyPrefix(last ? dayLabel(last) : "", { data_niepewna: trip.data_konca_niepewna });
     if (first && last) return firstLabel === lastLabel ? firstLabel : firstLabel + " – " + lastLabel;
@@ -147,7 +156,7 @@
   }
 
   function cardDate(row) {
-    return row.data || row.data_konca || "";
+    return row.data || (row.kategoria === "wycieczka" ? row.data_konca : "") || "";
   }
 
   function descendingDates(a, b) {
@@ -221,13 +230,14 @@
     }
     appendPlaceReading(card, visit);
     appendCountry(card, visit);
-    const date = appendText(card, "p", visit.data ? uncertaintyPrefix(dayLabel(visit.data), visit) : tr("Bez daty", "Undated"), "diary-date");
+    const date = appendText(card, "p", tripDateLabel(visit), "diary-date");
     if (visit.ocena !== "" && visit.ocena != null) {
       const rating = String(visit.ocena);
       appendText(date, "span", " · " + tr(rating.replace(".", ","), rating) + " / 10");
     }
     const note = visit.kategoria === "pinezka" ? visit.opis_dlugi : visit.notatka;
     if (note) appendText(card, "p", note, "diary-note");
+    photoGallery(card, visit.zdjecia);
     return card;
   }
 
@@ -250,13 +260,21 @@
       list.className = "diary-members";
       for (const visit of members) {
         const item = appendText(list, "li", placeName(visit), "diary-member");
-        if (visit.data) appendText(item, "time", " · " + uncertaintyPrefix(dayLabel(visit.data), visit)).dateTime = visit.data;
+        if (visit.data || visit.data_konca) appendText(item, "time", " · " + tripDateLabel(visit)).dateTime = visit.data || visit.data_konca;
         appendPlaceReading(item, visit);
         appendCountry(item, visit);
       }
       card.append(list);
     } else appendText(card, "p", tr("Brak zapisanych wizyt w tej wycieczce.", "No saved visits in this trip."), "diary-date");
     if (trip.notatka) appendText(card, "p", trip.notatka, "diary-note");
+    const photos = diaryTripPhotos(trip, visits);
+    photoGallery(card, photos.slice(0, 1));
+    if (photos.length > 1) {
+      const more = appendText(card, "button", tr("Zobacz więcej zdjęć", "View more photos"), "diary-view-more");
+      more.type = "button";
+      more.setAttribute("aria-label", tr("Zobacz zdjęcia wycieczki: ", "View trip photos: ") + title);
+      more.addEventListener("click", () => document.dispatchEvent(new CustomEvent("atlas-open-gallery", { detail: { tripId: trip.id } })));
+    }
     return card;
   }
 
@@ -329,6 +347,7 @@
       id: trip?.id || crypto.randomUUID(), existing: Boolean(trip), members: new Set(trip?.miejsca),
       startEdited: Boolean(trip), endEdited: Boolean(trip),
     };
+    photoPicker(byId("trip-photos"), draft, trip?.zdjecia, true);
     byId("diary-form-title").textContent = trip ? tr("Edytuj wycieczkę", "Edit trip") : tr("Nowa wycieczka", "New trip");
     name.value = trip?.nazwa || "";
     start.value = trip?.data || "";
@@ -406,9 +425,12 @@
       render();
     });
   }
-  form.addEventListener("submit", (event) => {
+  form.addEventListener("submit", async (event) => {
     event.preventDefault();
     if (!draft) return;
+    const owner = draft;
+    await owner.photoUpload;
+    if (draft !== owner) return;
     if (start.value && end.value && end.value < start.value) {
       end.setCustomValidity(tr("Data końca nie może być wcześniejsza od początku.", "The end date must be on or after the start date."));
       end.reportValidity();
@@ -417,11 +439,11 @@
     commit({
       nazwa: name.value, data: start.value, data_konca: end.value,
       data_niepewna: startUncertain.checked, data_konca_niepewna: endUncertain.checked,
-      notatka: notes.value, miejsca: [...draft.members],
+      notatka: notes.value, miejsca: [...draft.members], zdjecia: draft.photos,
     });
   });
   document.querySelector('[data-section="diary-view"]').addEventListener("click", load);
   document.addEventListener("atlas-visits-change", load);
   document.addEventListener("atlas-pins-change", load);
-  visitUpdates?.addEventListener("message", (event) => { if (event.data === "journal") load(); });
+  visitUpdates?.addEventListener("message", (event) => { if (event.data === "journal" || event.data === "photos") load(); });
 })();

@@ -15,9 +15,13 @@ test('date checkbox shows a tilde without changing the date value',()=>{
   c.bindUncertainDate(date,check,prefix);
   assert.equal(prefix.hidden,false);
   assert.equal(date.value,'2026-02-03');
-  const visits=c.readVisitDates({querySelectorAll:selector=>{assert.equal(selector,'input[type="date"]');return [date];}});
+  const visits=c.readVisitDates({querySelectorAll:selector=>{assert.equal(selector,'input[type="date"][data-visit-id]');return [date];}});
   assert.equal(visits[0].data,'2026-02-03');
   assert.equal(visits[0].data_niepewna,true);
+  date.departureInput={value:'2026-02-08',uncertaintyInput:{checked:true}};
+  const ranges=c.readVisitDates({querySelectorAll:()=>[date]});
+  assert.equal(ranges[0].data_konca,'2026-02-08');
+  assert.equal(ranges[0].data_konca_niepewna,true);
   check.checked=false;check.events.change();
   assert.equal(prefix.hidden,true);
   assert.equal(c.uncertaintyPrefix('3 February 2026',{data_niepewna:'1'}),'~3 February 2026');
@@ -35,4 +39,7 @@ test('uncertain dates keep journal order and trip-range relevance',()=>{
   assert.equal(c.orderCards([...rows])[0][0],'older');
   rows[0][1].data_niepewna='1';rows[1][1].data_niepewna='';
   assert.equal(c.orderCards([...rows])[0][0],'older');
+  c.draft=null;
+  rows[0][1].data_konca='2099-01-01';assert.equal(c.orderCards([...rows])[0][0],'newer');
+  assert.equal(c.cardDate({data:'',data_konca:'2099-01-01'}),'');
 });

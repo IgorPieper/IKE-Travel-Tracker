@@ -534,7 +534,7 @@
     const freshVisits = ready ? refreshMapVisits() : Promise.resolve();
     const states = getRegionCatalogue().then(({ features }) => {
       usStateIds = new Set(features.filter(({ properties }) =>
-        properties.country === "US" && stateCodes.has(properties.alias.split(" ").at(-1).slice(3))
+        properties.country === "US" && properties.level !== "subregion" && stateCodes.has(properties.alias.split(" ").at(-1).slice(3))
       ).map(({ properties }) => properties.id));
       if (usStateIds.size !== stateCodes.size) {
         usStateIds = undefined;
@@ -926,7 +926,7 @@
     if (isHewelion() && activeCatalogue) {
       const bounds = new maplibregl.LngLatBounds();
       for (const { geometry } of activeCatalogue.data.features) bounds.extend(geometry.coordinates);
-      if (!onlineEnabled("online_hewelion") && activeCatalogue.data.boundary) {
+      if (!onlineEnabled("online_details") && activeCatalogue.data.boundary) {
         const geometry = activeCatalogue.data.boundary.geometry;
         const polygons = geometry.type === "Polygon" ? [geometry.coordinates] : geometry.coordinates;
         for (const polygon of polygons) {
@@ -998,11 +998,11 @@
       map.removeLayer(parkForestLayer);
       map.removeSource(parkForestLayer);
     }
-    for (const [id, key, active, bounds] of [
-      ["challenge-gdansk-streets", "online_hewelion", isHewelion(), gdanskMapBounds.flat()],
-      ["challenge-castle-streets", "online_castles", isCastles(), [13.5, 48.5, 25, 55.6]],
+    for (const [id, active, bounds] of [
+      ["challenge-gdansk-streets", isHewelion(), gdanskMapBounds.flat()],
+      ["challenge-castle-streets", isCastles(), [13.5, 48.5, 25, 55.6]],
     ]) {
-      if (!onlineEnabled(key)) {
+      if (!onlineEnabled("online_details")) {
         if (map.getLayer(id)) map.removeLayer(id);
         if (map.getSource(id)) map.removeSource(id);
         continue;
@@ -1011,8 +1011,8 @@
         map.addSource(id, { type: "raster", tileSize: 256, maxzoom: 19, bounds,
           tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"] });
         map.addLayer({ id, type: "raster", source: id,
-          paint: { "raster-saturation": key === "online_castles" ? -0.7 : -0.55 } },
-          key === "online_hewelion" ? "challenge-gdansk-sea" : "challenge-lions");
+          paint: { "raster-saturation": id === "challenge-castle-streets" ? -0.7 : -0.55 } },
+          id === "challenge-gdansk-streets" ? "challenge-gdansk-sea" : "challenge-lions");
       }
       if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", active && detailVisible() ? "visible" : "none");
     }
@@ -1021,12 +1021,12 @@
   function updateChallengeLayers() {
     if (!mapReady) return;
     syncChallengeOnlineLayers();
-    const showGdanskBoundary = isHewelion() && detailVisible() && !onlineEnabled("online_hewelion");
+    const showGdanskBoundary = isHewelion() && detailVisible() && !onlineEnabled("online_details");
     for (const id of ["challenge-gdansk-sea", "challenge-gdansk-area", "challenge-gdansk-outline",
       "challenge-gdansk-district-hover", "challenge-gdansk-districts", "challenge-gdansk-coastline"]) {
       map.setLayoutProperty(id, "visibility", showGdanskBoundary ? "visible" : "none");
     }
-    const showSea = isHewelion() && detailVisible() && (visibility.seas || onlineEnabled("online_hewelion"));
+    const showSea = isHewelion() && detailVisible() && (visibility.seas || onlineEnabled("online_details"));
     map.setLayoutProperty("challenge-gdansk-sea", "visibility", showSea ? "visible" : "none");
     map.setPaintProperty("challenge-gdansk-sea", "fill-color", visibility.seas ? mapColors.lake : "#fff");
     if (!detailVisible()) return;
@@ -1693,7 +1693,6 @@
   });
   byId("challenge-zoom-in").addEventListener("click", () => map?.zoomIn());
   byId("challenge-zoom-out").addEventListener("click", () => map?.zoomOut());
-  byId("challenge-reset").addEventListener("click", resetMap);
   new ResizeObserver(() => {
     if (detailVisible()) map?.resize();
   }).observe(byId("challenge-map-stage"));

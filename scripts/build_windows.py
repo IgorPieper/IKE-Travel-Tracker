@@ -50,8 +50,8 @@ def main():
     partial = destination.with_suffix(".zip.tmp")
     asset_names = {filename for filename, _ in atlas.ASSETS.values()}
     asset_names.update(("data/maps/miejscowosci.sqlite3", "data/maps/miasta-swiat.sqlite3",
-                        "data/maps/hydrografia.sqlite3", "config/osiagniecia.csv", "Tracker Wyjazdow.exe",
-                        "README.md", "LICENSE.md"))
+                        "data/maps/hydrografia.sqlite3", "data/maps/podregiony.sqlite3", "config/osiagniecia.csv", "Tracker Wyjazdow.exe",
+                        "README.md", "LICENSE.md", "CHANGELOG.md"))
     try:
         with zipfile.ZipFile(partial, "w", zipfile.ZIP_DEFLATED, compresslevel=6, allowZip64=True) as archive:
             for filename in sorted(asset_names):

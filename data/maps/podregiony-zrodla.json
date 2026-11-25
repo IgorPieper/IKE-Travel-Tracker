@@ -26,7 +26,10 @@
     "groupedCountries": {
       "IT": "region",
       "FR": "region",
-      "GB": "geonunit"
+      "GB": "geonunit",
+      "ES": "region",
+      "BE": "region",
+      "PH": "region"
     }
   },
   "sources": [
@@ -41,6 +44,2314 @@
       "license": "Open Data Commons Open Database License 1.0",
       "boundaryYearRepresented": "2017",
       "boundaryID": "POL-ADM2-97123803"
+    },
+    {
+      "name": "geoBoundaries AFG ADM2",
+      "globalSubregions": true,
+      "country": "AF",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/AFG/ADM2/geoBoundaries-AFG-ADM2_simplified.geojson",
+      "license": "Public Domain",
+      "licenseSource": "https://hub.arcgis.com/datasets/2b63527870ef416bacf83bcaf388685f_0?geometry=53.805%2C30.812%2C81.556%2C37.181",
+      "boundaryID": "AFG-ADM2-17698898",
+      "boundaryYearRepresented": "2014"
+    },
+    {
+      "name": "geoBoundaries AGO ADM2",
+      "globalSubregions": true,
+      "country": "AO",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/AGO/ADM2/geoBoundaries-AGO-ADM2_simplified.geojson",
+      "license": "Public Domain",
+      "licenseSource": "https://commons.wikimedia.org/wiki/File:Angola_municipalities.png",
+      "boundaryID": "AGO-ADM2-91424787",
+      "boundaryYearRepresented": "2006"
+    },
+    {
+      "name": "geoBoundaries ARG ADM2",
+      "globalSubregions": true,
+      "country": "AR",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/ARG/ADM2/geoBoundaries-ARG-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+      "licenseSource": "https://data.humdata.org/dataset/argentina-administrative-level-0-boundaries",
+      "boundaryID": "ARG-ADM2-61730980",
+      "boundaryYearRepresented": "2020"
+    },
+    {
+      "name": "geoBoundaries ARM ADM2",
+      "globalSubregions": true,
+      "country": "AM",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/ARM/ADM2/geoBoundaries-ARM-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+      "licenseSource": "https://data.humdata.org/dataset/armenia-administrative-boundaries",
+      "boundaryID": "ARM-ADM2-60910142",
+      "boundaryYearRepresented": "2020"
+    },
+    {
+      "name": "geoBoundaries AUS ADM2",
+      "globalSubregions": true,
+      "country": "AU",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/AUS/ADM2/geoBoundaries-AUS-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+      "licenseSource": "https://www.abs.gov.au/website-privacy-copyright-and-disclaimer#copyright-and-creative-commons",
+      "boundaryID": "AUS-ADM2-25037944",
+      "boundaryYearRepresented": "2022"
+    },
+    {
+      "name": "geoBoundaries AUT ADM2",
+      "globalSubregions": true,
+      "country": "AT",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/AUT/ADM2/geoBoundaries-AUT-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution-ShareAlike 2.0",
+      "licenseSource": "https://twitter.com/WMgeoLab/status/1253487894313959424",
+      "boundaryID": "AUT-ADM2-14549572",
+      "boundaryYearRepresented": "2017"
+    },
+    {
+      "name": "geoBoundaries BDI ADM2",
+      "globalSubregions": true,
+      "country": "BI",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/BDI/ADM2/geoBoundaries-BDI-ADM2_simplified.geojson",
+      "license": "Public Domain",
+      "licenseSource": "https://geo.nyu.edu/catalog/stanford-th822mn7301#iso-metadata-reference-info",
+      "boundaryID": "BDI-ADM2-21766830",
+      "boundaryYearRepresented": "2007"
+    },
+    {
+      "name": "geoBoundaries BEN ADM2",
+      "globalSubregions": true,
+      "country": "BJ",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/BEN/ADM2/geoBoundaries-BEN-ADM2_simplified.geojson",
+      "license": "Public Domain",
+      "licenseSource": "https://earthworks.stanford.edu/catalog/stanford-rq343zx0554",
+      "boundaryID": "BEN-ADM2-17685819",
+      "boundaryYearRepresented": "2007"
+    },
+    {
+      "name": "geoBoundaries BFA ADM3",
+      "globalSubregions": true,
+      "country": "BF",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/BFA/ADM3/geoBoundaries-BFA-ADM3_simplified.geojson",
+      "license": "Public Domain",
+      "licenseSource": "https://geo.nyu.edu/catalog/stanford-bv378fk8507",
+      "boundaryID": "BFA-ADM3-42667915",
+      "boundaryYearRepresented": "2007"
+    },
+    {
+      "name": "geoBoundaries BGD ADM2",
+      "globalSubregions": true,
+      "country": "BD",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/BGD/ADM2/geoBoundaries-BGD-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+      "licenseSource": "https://data.humdata.org/dataset/administrative-boundaries-of-bangladesh-as-of-2015",
+      "boundaryID": "BGD-ADM2-16705992",
+      "boundaryYearRepresented": "2020"
+    },
+    {
+      "name": "geoBoundaries BGR ADM2",
+      "globalSubregions": true,
+      "country": "BG",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/BGR/ADM2/geoBoundaries-BGR-ADM2_simplified.geojson",
+      "license": "Public Domain",
+      "licenseSource": "https://commons.wikimedia.org/wiki/File:Bulgaria_municipalities.svg",
+      "boundaryID": "BGR-ADM2-11073933",
+      "boundaryYearRepresented": "2019"
+    },
+    {
+      "name": "geoBoundaries BHS ADM2",
+      "globalSubregions": true,
+      "country": "BS",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/BHS/ADM2/geoBoundaries-BHS-ADM2_simplified.geojson",
+      "license": "Open Data Commons Open Database License 1.0",
+      "licenseSource": "https://www.openstreetmap.org/copyright",
+      "boundaryID": "BHS-ADM2-86173395",
+      "boundaryYearRepresented": "2017"
+    },
+    {
+      "name": "geoBoundaries BIH ADM3",
+      "globalSubregions": true,
+      "country": "BA",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/BIH/ADM3/geoBoundaries-BIH-ADM3_simplified.geojson",
+      "license": "Public Domain",
+      "licenseSource": "https://commons.wikimedia.org/wiki/File:BiH_municipality_location_Mostar.svg",
+      "boundaryID": "BIH-ADM3-43093233",
+      "boundaryYearRepresented": "2013"
+    },
+    {
+      "name": "geoBoundaries BLR ADM2",
+      "globalSubregions": true,
+      "country": "BY",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/BLR/ADM2/geoBoundaries-BLR-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 3.0 License",
+      "licenseSource": "https://creativecommons.org/licenses/by/3.0/",
+      "boundaryID": "BLR-ADM2-67162791",
+      "boundaryYearRepresented": "2005"
+    },
+    {
+      "name": "geoBoundaries BLZ ADM2",
+      "globalSubregions": true,
+      "country": "BZ",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/BLZ/ADM2/geoBoundaries-BLZ-ADM2_simplified.geojson",
+      "license": "Public Domain",
+      "licenseSource": "https://en.wikipedia.org/wiki/Public_domain",
+      "boundaryID": "BLZ-ADM2-1456440",
+      "boundaryYearRepresented": "2008"
+    },
+    {
+      "name": "geoBoundaries BOL ADM2",
+      "globalSubregions": true,
+      "country": "BO",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/BOL/ADM2/geoBoundaries-BOL-ADM2_simplified.geojson",
+      "license": "Public Domain",
+      "licenseSource": "https://geo.gob.bo/geonetwork/srv/spa/catalog.search#/metadata/aeeb85a9-23df-48d4-a4e5-dd19e8b206db",
+      "boundaryID": "BOL-ADM2-80513517",
+      "boundaryYearRepresented": "2015"
+    },
+    {
+      "name": "geoBoundaries BRA ADM2",
+      "globalSubregions": true,
+      "country": "BR",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/BRA/ADM2/geoBoundaries-BRA-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+      "licenseSource": "https://data.humdata.org/dataset/brazil-administrative-level-0-boundaries",
+      "boundaryID": "BRA-ADM2-56859067",
+      "boundaryYearRepresented": "2020"
+    },
+    {
+      "name": "geoBoundaries BWA ADM2",
+      "globalSubregions": true,
+      "country": "BW",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/BWA/ADM2/geoBoundaries-BWA-ADM2_simplified.geojson",
+      "license": "Public Domain",
+      "licenseSource": "http://geoportal.rcmrd.org/layers/servir%3Abotswana_adm2#license-more-above",
+      "boundaryID": "BWA-ADM2-55941954",
+      "boundaryYearRepresented": "2015"
+    },
+    {
+      "name": "geoBoundaries CAF ADM2",
+      "globalSubregions": true,
+      "country": "CF",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/CAF/ADM2/geoBoundaries-CAF-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 3.0 License",
+      "licenseSource": "https://data2.unhcr.org/en/documents/details/32968",
+      "boundaryID": "CAF-ADM2-33826404",
+      "boundaryYearRepresented": "2015"
+    },
+    {
+      "name": "geoBoundaries CHE ADM2",
+      "globalSubregions": true,
+      "country": "CH",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/CHE/ADM2/geoBoundaries-CHE-ADM2_simplified.geojson",
+      "license": "Federal Office of Topography swisstopo License",
+      "licenseSource": "https://www.swisstopo.admin.ch/en/home/meta/conditions/geodata/ogd.html",
+      "boundaryID": "CHE-ADM2-98125504",
+      "boundaryYearRepresented": "2022"
+    },
+    {
+      "name": "geoBoundaries CHL ADM2",
+      "globalSubregions": true,
+      "country": "CL",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/CHL/ADM2/geoBoundaries-CHL-ADM2_simplified.geojson",
+      "license": "Open Data Commons Open Database License 1.0",
+      "licenseSource": "https://www.openstreetmap.org/copyright",
+      "boundaryID": "CHL-ADM2-35621905",
+      "boundaryYearRepresented": "2017"
+    },
+    {
+      "name": "geoBoundaries CHN ADM2",
+      "globalSubregions": true,
+      "country": "CN",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/CHN/ADM2/geoBoundaries-CHN-ADM2_simplified.geojson",
+      "license": "Open Data Commons Public Domain Dedication and License (PDDL) v1.0",
+      "licenseSource": "https://revolutionarygis.wordpress.com/2014/01/18/china-prefecture-shapefile-and-china-province-shapefile/",
+      "boundaryID": "CHN-ADM2-17275852",
+      "boundaryYearRepresented": "2017"
+    },
+    {
+      "name": "geoBoundaries CIV ADM2",
+      "globalSubregions": true,
+      "country": "CI",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/CIV/ADM2/geoBoundaries-CIV-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+      "licenseSource": "https://datacatalog.worldbank.org/public-licenses#cc-by",
+      "boundaryID": "CIV-ADM2-98640826",
+      "boundaryYearRepresented": "2016"
+    },
+    {
+      "name": "geoBoundaries CMR ADM2",
+      "globalSubregions": true,
+      "country": "CM",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/CMR/ADM2/geoBoundaries-CMR-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+      "licenseSource": "https://africaopendata.org/dataset/cameroon-maps",
+      "boundaryID": "CMR-ADM2-32672807",
+      "boundaryYearRepresented": "2016"
+    },
+    {
+      "name": "geoBoundaries COD ADM2",
+      "globalSubregions": true,
+      "country": "CD",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/COD/ADM2/geoBoundaries-COD-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+      "licenseSource": "https://data.humdata.org/dataset/drc-administrative-boundaries-levels-0-2",
+      "boundaryID": "COD-ADM2-63176286",
+      "boundaryYearRepresented": "2019"
+    },
+    {
+      "name": "geoBoundaries COG ADM2",
+      "globalSubregions": true,
+      "country": "CG",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/COG/ADM2/geoBoundaries-COG-ADM2_simplified.geojson",
+      "license": "Public Domain",
+      "licenseSource": "https://geo.nyu.edu/catalog/stanford-hz799nq4536",
+      "boundaryID": "COG-ADM2-1427508",
+      "boundaryYearRepresented": "2007"
+    },
+    {
+      "name": "geoBoundaries COL ADM2",
+      "globalSubregions": true,
+      "country": "CO",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/COL/ADM2/geoBoundaries-COL-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+      "licenseSource": "https://geoportal.dane.gov.co/?descarga-marco-geoestadistico-nacional",
+      "boundaryID": "COL-ADM2-7082276",
+      "boundaryYearRepresented": "2020"
+    },
+    {
+      "name": "geoBoundaries COM ADM2",
+      "globalSubregions": true,
+      "country": "KM",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/COM/ADM2/geoBoundaries-COM-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+      "licenseSource": "https://data.humdata.org/dataset/comoros-administrative-level-0-3-boundaries",
+      "boundaryID": "COM-ADM2-10938185",
+      "boundaryYearRepresented": "2019"
+    },
+    {
+      "name": "geoBoundaries CPV ADM2",
+      "globalSubregions": true,
+      "country": "CV",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/CPV/ADM2/geoBoundaries-CPV-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+      "licenseSource": "https://data.humdata.org/dataset/cape-verde-administrative-boundaries",
+      "boundaryID": "CPV-ADM2-66160863",
+      "boundaryYearRepresented": "2020"
+    },
+    {
+      "name": "geoBoundaries CRI ADM2",
+      "globalSubregions": true,
+      "country": "CR",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/CRI/ADM2/geoBoundaries-CRI-ADM2_simplified.geojson",
+      "license": "CC0 1.0 Universal (CC0 1.0) Public Domain Dedication",
+      "licenseSource": "https://commons.wikimedia.org/wiki/File:Mapa_de_cantones_de_Costa_Rica.svg",
+      "boundaryID": "CRI-ADM2-36466004",
+      "boundaryYearRepresented": "2020"
+    },
+    {
+      "name": "geoBoundaries CUB ADM2",
+      "globalSubregions": true,
+      "country": "CU",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/CUB/ADM2/geoBoundaries-CUB-ADM2_simplified.geojson",
+      "license": "Open Data Commons Open Database License 1.0",
+      "licenseSource": "https://www.openstreetmap.org/copyright",
+      "boundaryID": "CUB-ADM2-75667366",
+      "boundaryYearRepresented": "2017"
+    },
+    {
+      "name": "geoBoundaries CZE ADM2",
+      "globalSubregions": true,
+      "country": "CZ",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/CZE/ADM2/geoBoundaries-CZE-ADM2_simplified.geojson",
+      "license": "Public Domain",
+      "licenseSource": "https://creativecommons.org/share-your-work/public-domain",
+      "boundaryID": "CZE-ADM2-57006924",
+      "boundaryYearRepresented": "2010"
+    },
+    {
+      "name": "geoBoundaries DJI ADM2",
+      "globalSubregions": true,
+      "country": "DJ",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/DJI/ADM2/geoBoundaries-DJI-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+      "licenseSource": "https://data.humdata.org/dataset/djibouti-administrative-levels-0-2-boundaries",
+      "boundaryID": "DJI-ADM2-41766387",
+      "boundaryYearRepresented": "2020"
+    },
+    {
+      "name": "geoBoundaries DNK ADM2",
+      "globalSubregions": true,
+      "country": "DK",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/DNK/ADM2/geoBoundaries-DNK-ADM2_simplified.geojson",
+      "license": "Public Domain",
+      "licenseSource": "https://commons.wikimedia.org/wiki/File:Map_DK.svg",
+      "boundaryID": "DNK-ADM2-71786716",
+      "boundaryYearRepresented": "2018"
+    },
+    {
+      "name": "geoBoundaries DOM ADM2",
+      "globalSubregions": true,
+      "country": "DO",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/DOM/ADM2/geoBoundaries-DOM-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+      "licenseSource": "https://creativecommons.org/licenses/by/4.0/",
+      "boundaryID": "DOM-ADM2-3306468",
+      "boundaryYearRepresented": "2020"
+    },
+    {
+      "name": "geoBoundaries DZA ADM3",
+      "globalSubregions": true,
+      "country": "DZ",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/DZA/ADM3/geoBoundaries-DZA-ADM3_simplified.geojson",
+      "license": "Creative Commons Attribution-ShareAlike 2.0",
+      "licenseSource": "https://www.openstreetmap.org/copyright",
+      "boundaryID": "DZA-ADM3-69997007",
+      "boundaryYearRepresented": "2021"
+    },
+    {
+      "name": "geoBoundaries ECU ADM2",
+      "globalSubregions": true,
+      "country": "EC",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/ECU/ADM2/geoBoundaries-ECU-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+      "licenseSource": "https://data.humdata.org/dataset/ecuador-admin-level-2-boundaries",
+      "boundaryID": "ECU-ADM2-8360857",
+      "boundaryYearRepresented": "2019"
+    },
+    {
+      "name": "geoBoundaries EGY ADM2",
+      "globalSubregions": true,
+      "country": "EG",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/EGY/ADM2/geoBoundaries-EGY-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+      "licenseSource": "https://data.humdata.org/dataset/egypt-administrative-boundaries-levels-0-3",
+      "boundaryID": "EGY-ADM2-37247803",
+      "boundaryYearRepresented": "2020"
+    },
+    {
+      "name": "geoBoundaries ERI ADM2",
+      "globalSubregions": true,
+      "country": "ER",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/ERI/ADM2/geoBoundaries-ERI-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+      "licenseSource": "https://data.humdata.org/dataset/eritrea-admin-level-1-boundaries",
+      "boundaryID": "ERI-ADM2-51966322",
+      "boundaryYearRepresented": "2020"
+    },
+    {
+      "name": "geoBoundaries ETH ADM2",
+      "globalSubregions": true,
+      "country": "ET",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/ETH/ADM2/geoBoundaries-ETH-ADM2_simplified.geojson",
+      "license": "Open Data Commons Open Database License 1.0",
+      "licenseSource": "https://africaopendata.org/dataset/ethiopia-shapefiles",
+      "boundaryID": "ETH-ADM2-57463737",
+      "boundaryYearRepresented": "2016"
+    },
+    {
+      "name": "geoBoundaries FIN ADM2",
+      "globalSubregions": true,
+      "country": "FI",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/FIN/ADM2/geoBoundaries-FIN-ADM2_simplified.geojson",
+      "license": "Open Data Commons Open Database License 1.0",
+      "licenseSource": "https://www.openstreetmap.org/copyright",
+      "boundaryID": "FIN-ADM2-99834313",
+      "boundaryYearRepresented": "2016"
+    },
+    {
+      "name": "geoBoundaries FJI ADM2",
+      "globalSubregions": true,
+      "country": "FJ",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/FJI/ADM2/geoBoundaries-FJI-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 4.0 (CC BY 4.0)",
+      "licenseSource": "https://pacificdata.org/data/geographic_data/2007_fji_phc_admin_boundaries/resource/5880cadb-2287-4eac-9f3d-8b321730e6cd",
+      "boundaryID": "FJI-ADM2-14151628",
+      "boundaryYearRepresented": "2020"
+    },
+    {
+      "name": "geoBoundaries GAB ADM2",
+      "globalSubregions": true,
+      "country": "GA",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/GAB/ADM2/geoBoundaries-GAB-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 3.0 License",
+      "licenseSource": "https://commons.wikimedia.org/wiki/File:Carte_des_d%C3%A9partements_du_gabon.jpg",
+      "boundaryID": "GAB-ADM2-22940354",
+      "boundaryYearRepresented": "2018"
+    },
+    {
+      "name": "geoBoundaries GEO ADM2",
+      "globalSubregions": true,
+      "country": "GE",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/GEO/ADM2/geoBoundaries-GEO-ADM2_simplified.geojson",
+      "license": "Public Domain",
+      "licenseSource": "https://commons.wikimedia.org/wiki/File:Georgia_districts.png",
+      "boundaryID": "GEO-ADM2-92138335",
+      "boundaryYearRepresented": "2007"
+    },
+    {
+      "name": "geoBoundaries GHA ADM2",
+      "globalSubregions": true,
+      "country": "GH",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/GHA/ADM2/geoBoundaries-GHA-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+      "licenseSource": "https://creativecommons.org/licenses/by/4.0/",
+      "boundaryID": "GHA-ADM2-2480657",
+      "boundaryYearRepresented": "2019"
+    },
+    {
+      "name": "geoBoundaries GIN ADM3",
+      "globalSubregions": true,
+      "country": "GN",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/GIN/ADM3/geoBoundaries-GIN-ADM3_simplified.geojson",
+      "license": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+      "licenseSource": "https://data.humdata.org/dataset/guinea-geodatabase",
+      "boundaryID": "GIN-ADM3-73739313",
+      "boundaryYearRepresented": "2021"
+    },
+    {
+      "name": "geoBoundaries GMB ADM2",
+      "globalSubregions": true,
+      "country": "GM",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/GMB/ADM2/geoBoundaries-GMB-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 4.0 (CC BY 4.0)",
+      "licenseSource": "https://datacatalog.worldbank.org/search/dataset/0038034",
+      "boundaryID": "GMB-ADM2-56634734",
+      "boundaryYearRepresented": "2020"
+    },
+    {
+      "name": "geoBoundaries GNB ADM2",
+      "globalSubregions": true,
+      "country": "GW",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/GNB/ADM2/geoBoundaries-GNB-ADM2_simplified.geojson",
+      "license": "Open Data Commons Open Database License 1.0",
+      "licenseSource": "https://www.openstreetmap.org/copyright",
+      "boundaryID": "GNB-ADM2-13655514",
+      "boundaryYearRepresented": "2017"
+    },
+    {
+      "name": "geoBoundaries GNQ ADM2",
+      "globalSubregions": true,
+      "country": "GQ",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/GNQ/ADM2/geoBoundaries-GNQ-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+      "licenseSource": "http://gnq-data.forest-atlas.org/datasets/equatorial-guinea-gis-data-2013",
+      "boundaryID": "GNQ-ADM2-11065452",
+      "boundaryYearRepresented": "2013"
+    },
+    {
+      "name": "geoBoundaries GRC ADM3",
+      "globalSubregions": true,
+      "country": "GR",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/GRC/ADM3/geoBoundaries-GRC-ADM3_simplified.geojson",
+      "license": "CC0 1.0 Universal (CC0 1.0) Public Domain Dedication",
+      "licenseSource": "https://commons.wikimedia.org/wiki/File:Kallikratis_dioikisi.png",
+      "boundaryID": "GRC-ADM3-53547021",
+      "boundaryYearRepresented": "2010"
+    },
+    {
+      "name": "geoBoundaries GTM ADM2",
+      "globalSubregions": true,
+      "country": "GT",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/GTM/ADM2/geoBoundaries-GTM-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+      "licenseSource": "https://data.humdata.org/dataset/guatemala-administrative-level-0-national-1-departments-and-2-municipalities",
+      "boundaryID": "GTM-ADM2-79465075",
+      "boundaryYearRepresented": "2021"
+    },
+    {
+      "name": "geoBoundaries GUM ADM2",
+      "globalSubregions": true,
+      "country": "GU",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/GUM/ADM2/geoBoundaries-GUM-ADM2_simplified.geojson",
+      "license": "Public Domain",
+      "licenseSource": "https://www.census.gov/about/policies/open-gov/open-data.html",
+      "boundaryID": "GUM-ADM2-77769853",
+      "boundaryYearRepresented": "2021"
+    },
+    {
+      "name": "geoBoundaries GUY ADM2",
+      "globalSubregions": true,
+      "country": "GY",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/GUY/ADM2/geoBoundaries-GUY-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+      "licenseSource": "https://data.humdata.org/dataset/guyana-administrative-level-0-1-and-2-boundaries",
+      "boundaryID": "GUY-ADM2-73187651",
+      "boundaryYearRepresented": "2019"
+    },
+    {
+      "name": "geoBoundaries HND ADM2",
+      "globalSubregions": true,
+      "country": "HN",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/HND/ADM2/geoBoundaries-HND-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+      "licenseSource": "https://datos.gob.hn/en/dataset/limites-municipales/resource/0a086bb7-1e3e-4cb0-b7d8-e21a8417dc5f",
+      "boundaryID": "HND-ADM2-96931356",
+      "boundaryYearRepresented": "2019"
+    },
+    {
+      "name": "geoBoundaries HTI ADM2",
+      "globalSubregions": true,
+      "country": "HT",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/HTI/ADM2/geoBoundaries-HTI-ADM2_simplified.geojson",
+      "license": "Open Data Commons Open Database License 1.0",
+      "licenseSource": "https://www.openstreetmap.org/copyright",
+      "boundaryID": "HTI-ADM2-57096268",
+      "boundaryYearRepresented": "2017"
+    },
+    {
+      "name": "geoBoundaries HUN ADM2",
+      "globalSubregions": true,
+      "country": "HU",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/HUN/ADM2/geoBoundaries-HUN-ADM2_simplified.geojson",
+      "license": "Open Data Commons Open Database License 1.0",
+      "licenseSource": "https://www.openstreetmap.org/copyright",
+      "boundaryID": "HUN-ADM2-29324351",
+      "boundaryYearRepresented": "2017"
+    },
+    {
+      "name": "geoBoundaries IDN ADM2",
+      "globalSubregions": true,
+      "country": "ID",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/IDN/ADM2/geoBoundaries-IDN-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+      "licenseSource": "https://data.humdata.org/dataset/indonesia-administrative-boundary-polygons-lines-and-places-levels-0-4b",
+      "boundaryID": "IDN-ADM2-22746128",
+      "boundaryYearRepresented": "2020"
+    },
+    {
+      "name": "geoBoundaries IND ADM2",
+      "globalSubregions": true,
+      "country": "IN",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/IND/ADM2/geoBoundaries-IND-ADM2_simplified.geojson",
+      "license": "Open Data Commons Open Database License 1.0",
+      "licenseSource": "https://geonode.pathwaysdata.com/layers/geonode:IND_ADM2/metadata_detail",
+      "boundaryID": "IND-ADM2-76128533",
+      "boundaryYearRepresented": "2021"
+    },
+    {
+      "name": "geoBoundaries IRN ADM2",
+      "globalSubregions": true,
+      "country": "IR",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/IRN/ADM2/geoBoundaries-IRN-ADM2_simplified.geojson",
+      "license": "Open Data Commons Open Database License 1.0",
+      "licenseSource": "https://www.openstreetmap.org/copyright",
+      "boundaryID": "IRN-ADM2-26516999",
+      "boundaryYearRepresented": "2017"
+    },
+    {
+      "name": "geoBoundaries IRQ ADM2",
+      "globalSubregions": true,
+      "country": "IQ",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/IRQ/ADM2/geoBoundaries-IRQ-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+      "licenseSource": "https://data.humdata.org/dataset/iraq-admin-level-1-boundaries",
+      "boundaryID": "IRQ-ADM2-34846034",
+      "boundaryYearRepresented": "2021"
+    },
+    {
+      "name": "geoBoundaries ISL ADM2",
+      "globalSubregions": true,
+      "country": "IS",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/ISL/ADM2/geoBoundaries-ISL-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+      "licenseSource": "https://gatt.lmi.is/geonetwork/srv/eng/catalog.search#/metadata/%7B7CF6A33E-2588-42A8-A483-0B6F729B528A%7D",
+      "boundaryID": "ISL-ADM2-244011",
+      "boundaryYearRepresented": "2016"
+    },
+    {
+      "name": "geoBoundaries JOR ADM2",
+      "globalSubregions": true,
+      "country": "JO",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/JOR/ADM2/geoBoundaries-JOR-ADM2_simplified.geojson",
+      "license": "Public Domain",
+      "licenseSource": "https://commons.wikimedia.org/wiki/File:Jordan_nahias.png",
+      "boundaryID": "JOR-ADM2-86222999",
+      "boundaryYearRepresented": "2006"
+    },
+    {
+      "name": "geoBoundaries JPN ADM2",
+      "globalSubregions": true,
+      "country": "JP",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/JPN/ADM2/geoBoundaries-JPN-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution-ShareAlike 2.0",
+      "licenseSource": "https://www.openstreetmap.org/copyright",
+      "boundaryID": "JPN-ADM2-22064153",
+      "boundaryYearRepresented": "2017"
+    },
+    {
+      "name": "geoBoundaries KAZ ADM2",
+      "globalSubregions": true,
+      "country": "KZ",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/KAZ/ADM2/geoBoundaries-KAZ-ADM2_simplified.geojson",
+      "license": "Open Data Commons Open Database License 1.0",
+      "licenseSource": "https://www.openstreetmap.org/copyright",
+      "boundaryID": "KAZ-ADM2-9891525",
+      "boundaryYearRepresented": "2017"
+    },
+    {
+      "name": "geoBoundaries KEN ADM2",
+      "globalSubregions": true,
+      "country": "KE",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/KEN/ADM2/geoBoundaries-KEN-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+      "licenseSource": "https://data.humdata.org/dataset/ken-administrative-boundaries",
+      "boundaryID": "KEN-ADM2-3690345",
+      "boundaryYearRepresented": "2020"
+    },
+    {
+      "name": "geoBoundaries KGZ ADM2",
+      "globalSubregions": true,
+      "country": "KG",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/KGZ/ADM2/geoBoundaries-KGZ-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution-ShareAlike 3.0 Unported",
+      "licenseSource": "https://creativecommons.org/licenses/by-sa/3.0/legalcode",
+      "boundaryID": "KGZ-ADM2-92254566",
+      "boundaryYearRepresented": "2010"
+    },
+    {
+      "name": "geoBoundaries KHM ADM2",
+      "globalSubregions": true,
+      "country": "KH",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/KHM/ADM2/geoBoundaries-KHM-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+      "licenseSource": "https://opendevelopmentcambodia.net/dataset/?id=administrative-boundaries-of-cambodia-2014",
+      "boundaryID": "KHM-ADM2-14789045",
+      "boundaryYearRepresented": "2014"
+    },
+    {
+      "name": "geoBoundaries KIR ADM2",
+      "globalSubregions": true,
+      "country": "KI",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/KIR/ADM2/geoBoundaries-KIR-ADM2_simplified.geojson",
+      "license": "Open Data Commons Open Database License 1.0",
+      "licenseSource": "https://www.openstreetmap.org/copyright",
+      "boundaryID": "KIR-ADM2-32618148",
+      "boundaryYearRepresented": "2017"
+    },
+    {
+      "name": "geoBoundaries KOR ADM2",
+      "globalSubregions": true,
+      "country": "KR",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/KOR/ADM2/geoBoundaries-KOR-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 3.0 License",
+      "licenseSource": "https://www.citypopulation.de/en/help/termsofuse/",
+      "boundaryID": "KOR-ADM2-91817680",
+      "boundaryYearRepresented": "2020"
+    },
+    {
+      "name": "geoBoundaries KWT ADM2",
+      "globalSubregions": true,
+      "country": "KW",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/KWT/ADM2/geoBoundaries-KWT-ADM2_simplified.geojson",
+      "license": "Open Data Commons Open Database License 1.0",
+      "licenseSource": "https://www.openstreetmap.org/relation/305099#map=9/29.3171/47.7787",
+      "boundaryID": "KWT-ADM2-36326507",
+      "boundaryYearRepresented": "2011"
+    },
+    {
+      "name": "geoBoundaries LAO ADM2",
+      "globalSubregions": true,
+      "country": "LA",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/LAO/ADM2/geoBoundaries-LAO-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+      "licenseSource": "https://data.humdata.org/dataset/lao-admin-boundaries",
+      "boundaryID": "LAO-ADM2-54806243",
+      "boundaryYearRepresented": "2019"
+    },
+    {
+      "name": "geoBoundaries LBN ADM2",
+      "globalSubregions": true,
+      "country": "LB",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/LBN/ADM2/geoBoundaries-LBN-ADM2_simplified.geojson",
+      "license": "Public Domain",
+      "licenseSource": "https://commons.wikimedia.org/wiki/File:Lebanon_municipalities.png",
+      "boundaryID": "LBN-ADM2-6925839",
+      "boundaryYearRepresented": "2021"
+    },
+    {
+      "name": "geoBoundaries LBR ADM2",
+      "globalSubregions": true,
+      "country": "LR",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/LBR/ADM2/geoBoundaries-LBR-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+      "licenseSource": "https://data.humdata.org/dataset/liberia-admin-level-2-boundaries",
+      "boundaryID": "LBR-ADM2-62588387",
+      "boundaryYearRepresented": "2021"
+    },
+    {
+      "name": "geoBoundaries LTU ADM2",
+      "globalSubregions": true,
+      "country": "LT",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/LTU/ADM2/geoBoundaries-LTU-ADM2_simplified.geojson",
+      "license": "Open Data Commons Open Database License 1.0",
+      "licenseSource": "https://www.openstreetmap.org/copyright",
+      "boundaryID": "LTU-ADM2-59024439",
+      "boundaryYearRepresented": "2017"
+    },
+    {
+      "name": "geoBoundaries MAR ADM2",
+      "globalSubregions": true,
+      "country": "MA",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/MAR/ADM2/geoBoundaries-MAR-ADM2_simplified.geojson",
+      "license": "Open Data Commons Open Database License 1.0",
+      "licenseSource": "https://www.openstreetmap.org/copyright",
+      "boundaryID": "MAR-ADM2-96644757",
+      "boundaryYearRepresented": "2017"
+    },
+    {
+      "name": "geoBoundaries MDG ADM2",
+      "globalSubregions": true,
+      "country": "MG",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/MDG/ADM2/geoBoundaries-MDG-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+      "licenseSource": "https://data.humdata.org/dataset/madagascar-administrative-level-0-4-boundaries",
+      "boundaryID": "MDG-ADM2-10022922",
+      "boundaryYearRepresented": "2020"
+    },
+    {
+      "name": "geoBoundaries MEX ADM2",
+      "globalSubregions": true,
+      "country": "MX",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/MEX/ADM2/geoBoundaries-MEX-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 4.0 (CC BY 4.0)",
+      "licenseSource": "https://datacatalog.worldbank.org/public-licenses#cc-by",
+      "boundaryID": "MEX-ADM2-50627088",
+      "boundaryYearRepresented": "2012"
+    },
+    {
+      "name": "geoBoundaries MLI ADM2",
+      "globalSubregions": true,
+      "country": "ML",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/MLI/ADM2/geoBoundaries-MLI-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+      "licenseSource": "https://data.humdata.org/dataset/mali-admin-boundaries-level-1-2-and-3-including-2017-population-desagregated-by-sexe",
+      "boundaryID": "MLI-ADM2-8926073",
+      "boundaryYearRepresented": "2017"
+    },
+    {
+      "name": "geoBoundaries MMR ADM2",
+      "globalSubregions": true,
+      "country": "MM",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/MMR/ADM2/geoBoundaries-MMR-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 4.0 (CC BY 4.0)",
+      "licenseSource": "https://data.mmanalytics.org/dataset/border-shapefiles",
+      "boundaryID": "MMR-ADM2-60261553",
+      "boundaryYearRepresented": "2019"
+    },
+    {
+      "name": "geoBoundaries MNG ADM2",
+      "globalSubregions": true,
+      "country": "MN",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/MNG/ADM2/geoBoundaries-MNG-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+      "licenseSource": "https://data.humdata.org/dataset/mongolia-administrative-boundaries-polygon-polyline",
+      "boundaryID": "MNG-ADM2-93677404",
+      "boundaryYearRepresented": "2021"
+    },
+    {
+      "name": "geoBoundaries MOZ ADM2",
+      "globalSubregions": true,
+      "country": "MZ",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/MOZ/ADM2/geoBoundaries-MOZ-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+      "licenseSource": "https://data.humdata.org/dataset/mozambique-administrative-levels-0-3",
+      "boundaryID": "MOZ-ADM2-85939544",
+      "boundaryYearRepresented": "2019"
+    },
+    {
+      "name": "geoBoundaries MRT ADM2",
+      "globalSubregions": true,
+      "country": "MR",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/MRT/ADM2/geoBoundaries-MRT-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+      "licenseSource": "https://data.humdata.org/dataset/mauritania-administrative-boundaries",
+      "boundaryID": "MRT-ADM2-47542326",
+      "boundaryYearRepresented": "2020"
+    },
+    {
+      "name": "geoBoundaries MWI ADM3",
+      "globalSubregions": true,
+      "country": "MW",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/MWI/ADM3/geoBoundaries-MWI-ADM3_simplified.geojson",
+      "license": "Open Data Commons Open Database License 1.0",
+      "licenseSource": "https://www.openstreetmap.org/copyright",
+      "boundaryID": "MWI-ADM3-60268647",
+      "boundaryYearRepresented": "2019"
+    },
+    {
+      "name": "geoBoundaries MYS ADM2",
+      "globalSubregions": true,
+      "country": "MY",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/MYS/ADM2/geoBoundaries-MYS-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 3.0 License",
+      "licenseSource": "https://www.citypopulation.de/en/help/termsofuse/",
+      "boundaryID": "MYS-ADM2-92858781",
+      "boundaryYearRepresented": "2020"
+    },
+    {
+      "name": "geoBoundaries NAM ADM2",
+      "globalSubregions": true,
+      "country": "NA",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/NAM/ADM2/geoBoundaries-NAM-ADM2_simplified.geojson",
+      "license": "Public Domain",
+      "licenseSource": "https://purl.stanford.edu/cs051py0596",
+      "boundaryID": "NAM-ADM2-8085530",
+      "boundaryYearRepresented": "2007"
+    },
+    {
+      "name": "geoBoundaries NER ADM2",
+      "globalSubregions": true,
+      "country": "NE",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/NER/ADM2/geoBoundaries-NER-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 3.0 License",
+      "licenseSource": "http://www.citypopulation.de/termsofuse.html",
+      "boundaryID": "NER-ADM2-23599985",
+      "boundaryYearRepresented": "2018"
+    },
+    {
+      "name": "geoBoundaries NGA ADM2",
+      "globalSubregions": true,
+      "country": "NG",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/NGA/ADM2/geoBoundaries-NGA-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+      "licenseSource": "https://data.grid3.org/datasets/2bb616a49ee84f409427cc2143787113_0/explore",
+      "boundaryID": "NGA-ADM2-84004449",
+      "boundaryYearRepresented": "2022"
+    },
+    {
+      "name": "geoBoundaries NIC ADM2",
+      "globalSubregions": true,
+      "country": "NI",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/NIC/ADM2/geoBoundaries-NIC-ADM2_simplified.geojson",
+      "license": "Open Data Commons Open Database License 1.0",
+      "licenseSource": "https://www.openstreetmap.org/copyright",
+      "boundaryID": "NIC-ADM2-1004716",
+      "boundaryYearRepresented": "2017"
+    },
+    {
+      "name": "geoBoundaries NLD ADM2",
+      "globalSubregions": true,
+      "country": "NL",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/NLD/ADM2/geoBoundaries-NLD-ADM2_simplified.geojson",
+      "license": "CC0 1.0 Universal (CC0 1.0) Public Domain Dedication",
+      "licenseSource": "https://nationaalgeoregister.nl/geonetwork/srv/dut/catalog.search#/metadata/208bc283-7c66-4ce7-8ad3-1cf3e8933fb5?tab=general",
+      "boundaryID": "NLD-ADM2-6326949",
+      "boundaryYearRepresented": "2022"
+    },
+    {
+      "name": "geoBoundaries NOR ADM2",
+      "globalSubregions": true,
+      "country": "NO",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/NOR/ADM2/geoBoundaries-NOR-ADM2_simplified.geojson",
+      "license": "CC0 1.0 Universal (CC0 1.0) Public Domain Dedication",
+      "licenseSource": "https://kartkatalog.geonorge.no/metadata/norske-fylker-og-kommuner-illustrasjonsdata-2021-klippet-etter-kyst/f08fca3c-33ee-49b9-be9f-028ebba5e460",
+      "boundaryID": "NOR-ADM2-32940066",
+      "boundaryYearRepresented": "2021"
+    },
+    {
+      "name": "geoBoundaries NPL ADM2",
+      "globalSubregions": true,
+      "country": "NP",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/NPL/ADM2/geoBoundaries-NPL-ADM2_simplified.geojson",
+      "license": "Public Domain",
+      "licenseSource": "https://commons.wikimedia.org/wiki/File:Nepal_districts.png",
+      "boundaryID": "NPL-ADM2-51301551",
+      "boundaryYearRepresented": "2006"
+    },
+    {
+      "name": "geoBoundaries NZL ADM2",
+      "globalSubregions": true,
+      "country": "NZ",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/NZL/ADM2/geoBoundaries-NZL-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+      "licenseSource": "https://datafinder.stats.govt.nz/layer/105153-territorial-authority-2021-generalised/",
+      "boundaryID": "NZL-ADM2-77531721",
+      "boundaryYearRepresented": "2021"
+    },
+    {
+      "name": "geoBoundaries OMN ADM2",
+      "globalSubregions": true,
+      "country": "OM",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/OMN/ADM2/geoBoundaries-OMN-ADM2_simplified.geojson",
+      "license": "Other - Direct Permission",
+      "licenseSource": "https://twitter.com/WMgeoLab/status/1253068523166765056",
+      "boundaryID": "OMN-ADM2-26346795",
+      "boundaryYearRepresented": "2020"
+    },
+    {
+      "name": "geoBoundaries PAK ADM2",
+      "globalSubregions": true,
+      "country": "PK",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/PAK/ADM2/geoBoundaries-PAK-ADM2_simplified.geojson",
+      "license": "Public Domain",
+      "licenseSource": "https://creativecommons.org/share-your-work/public-domain/",
+      "boundaryID": "PAK-ADM2-23200576",
+      "boundaryYearRepresented": "2019"
+    },
+    {
+      "name": "geoBoundaries PAN ADM2",
+      "globalSubregions": true,
+      "country": "PA",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/PAN/ADM2/geoBoundaries-PAN-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+      "licenseSource": "https://www.arcgis.com/home/item.html?id=8f1c5499d3a8423888454cfee5b45586",
+      "boundaryID": "PAN-ADM2-35544464",
+      "boundaryYearRepresented": "2012"
+    },
+    {
+      "name": "geoBoundaries PER ADM2",
+      "globalSubregions": true,
+      "country": "PE",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/PER/ADM2/geoBoundaries-PER-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+      "licenseSource": "https://data.humdata.org/dataset/limites-de-peru",
+      "boundaryID": "PER-ADM2-86281439",
+      "boundaryYearRepresented": "2020"
+    },
+    {
+      "name": "geoBoundaries PNG ADM2",
+      "globalSubregions": true,
+      "country": "PG",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/PNG/ADM2/geoBoundaries-PNG-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+      "licenseSource": "https://data.humdata.org/dataset/papua-new-guinea-admin-level-0-international-boundaries",
+      "boundaryID": "PNG-ADM2-67681753",
+      "boundaryYearRepresented": "2019"
+    },
+    {
+      "name": "geoBoundaries PRI ADM2",
+      "globalSubregions": true,
+      "country": "PR",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/PRI/ADM2/geoBoundaries-PRI-ADM2_simplified.geojson",
+      "license": "Public Domain",
+      "licenseSource": "https://www.census.gov/about/policies/open-gov/open-data.html",
+      "boundaryID": "PRI-ADM2-32010507",
+      "boundaryYearRepresented": "2021"
+    },
+    {
+      "name": "geoBoundaries PRK ADM2",
+      "globalSubregions": true,
+      "country": "KP",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/PRK/ADM2/geoBoundaries-PRK-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+      "licenseSource": "https://data.humdata.org/dataset/dpr-korea-administrative-boundaries",
+      "boundaryID": "PRK-ADM2-82179303",
+      "boundaryYearRepresented": "2019"
+    },
+    {
+      "name": "geoBoundaries PRT ADM2",
+      "globalSubregions": true,
+      "country": "PT",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/PRT/ADM2/geoBoundaries-PRT-ADM2_simplified.geojson",
+      "license": "CC0 1.0 Universal (CC0 1.0) Public Domain Dedication",
+      "licenseSource": "https://en.wikipedia.org/wiki/File:Pt(covid19.png",
+      "boundaryID": "PRT-ADM2-2272694",
+      "boundaryYearRepresented": "2020"
+    },
+    {
+      "name": "geoBoundaries PRY ADM2",
+      "globalSubregions": true,
+      "country": "PY",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/PRY/ADM2/geoBoundaries-PRY-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 4.0 (CC BY 4.0)",
+      "licenseSource": "https://twitter.com/WMgeoLab/status/1179001467669078017/photo/3",
+      "boundaryID": "PRY-ADM2-47425931",
+      "boundaryYearRepresented": "2012"
+    },
+    {
+      "name": "geoBoundaries PSE ADM2",
+      "globalSubregions": true,
+      "country": "PS",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/PSE/ADM2/geoBoundaries-PSE-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 4.0 (CC BY 4.0)",
+      "licenseSource": "https://opendatawatch.com/publications/open-data-to-support-sustainable-development-goals/",
+      "boundaryID": "PSE-ADM2-87354302",
+      "boundaryYearRepresented": "2017"
+    },
+    {
+      "name": "geoBoundaries QAT ADM2",
+      "globalSubregions": true,
+      "country": "QA",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/QAT/ADM2/geoBoundaries-QAT-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+      "licenseSource": "https://www.data.gov.qa/pages/license/annexes",
+      "boundaryID": "QAT-ADM2-91078587",
+      "boundaryYearRepresented": "2015"
+    },
+    {
+      "name": "geoBoundaries ROU ADM2",
+      "globalSubregions": true,
+      "country": "RO",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/ROU/ADM2/geoBoundaries-ROU-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+      "licenseSource": "https://data.gov.ro/pages/licence",
+      "boundaryID": "ROU-ADM2-2599482",
+      "boundaryYearRepresented": "2016"
+    },
+    {
+      "name": "geoBoundaries RUS ADM2",
+      "globalSubregions": true,
+      "country": "RU",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/RUS/ADM2/geoBoundaries-RUS-ADM2_simplified.geojson",
+      "license": "Open Data Commons Open Database License 1.0",
+      "licenseSource": "https://www.openstreetmap.org/copyright",
+      "boundaryID": "RUS-ADM2-50074027",
+      "boundaryYearRepresented": "2017"
+    },
+    {
+      "name": "geoBoundaries RWA ADM2",
+      "globalSubregions": true,
+      "country": "RW",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/RWA/ADM2/geoBoundaries-RWA-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+      "licenseSource": "http://www.statistics.gov.rw/terms-use",
+      "boundaryID": "RWA-ADM2-39286606",
+      "boundaryYearRepresented": "2012"
+    },
+    {
+      "name": "geoBoundaries SAU ADM2",
+      "globalSubregions": true,
+      "country": "SA",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/SAU/ADM2/geoBoundaries-SAU-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution-ShareAlike 2.0",
+      "licenseSource": "https://www.openstreetmap.org/copyright",
+      "boundaryID": "SAU-ADM2-3984122",
+      "boundaryYearRepresented": "2021"
+    },
+    {
+      "name": "geoBoundaries SDN ADM2",
+      "globalSubregions": true,
+      "country": "SD",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/SDN/ADM2/geoBoundaries-SDN-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+      "licenseSource": "https://data.humdata.org/dataset/sudan-administrative-boundaries-levels-0-2",
+      "boundaryID": "SDN-ADM2-16777658",
+      "boundaryYearRepresented": "2020"
+    },
+    {
+      "name": "geoBoundaries SEN ADM2",
+      "globalSubregions": true,
+      "country": "SN",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/SEN/ADM2/geoBoundaries-SEN-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+      "licenseSource": "https://data.humdata.org/dataset/senegal-administrative-boundaries",
+      "boundaryID": "SEN-ADM2-50182788",
+      "boundaryYearRepresented": "2019"
+    },
+    {
+      "name": "geoBoundaries SLB ADM2",
+      "globalSubregions": true,
+      "country": "SB",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/SLB/ADM2/geoBoundaries-SLB-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+      "licenseSource": "https://data.humdata.org/dataset/solomon-islands-administrative-level-0-1-2-and-3-boundary-polygons",
+      "boundaryID": "SLB-ADM2-97153195",
+      "boundaryYearRepresented": "2018"
+    },
+    {
+      "name": "geoBoundaries SLE ADM2",
+      "globalSubregions": true,
+      "country": "SL",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/SLE/ADM2/geoBoundaries-SLE-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+      "licenseSource": "https://data.humdata.org/dataset/sierra-leone-all-ad-min-level-boundaries",
+      "boundaryID": "SLE-ADM2-65957751",
+      "boundaryYearRepresented": "2017"
+    },
+    {
+      "name": "geoBoundaries SLV ADM2",
+      "globalSubregions": true,
+      "country": "SV",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/SLV/ADM2/geoBoundaries-SLV-ADM2_simplified.geojson",
+      "license": "Public Domain",
+      "licenseSource": "https://commons.wikimedia.org/wiki/File:El_Salvador_municipalities.png",
+      "boundaryID": "SLV-ADM2-79315794",
+      "boundaryYearRepresented": "2007"
+    },
+    {
+      "name": "geoBoundaries SOM ADM2",
+      "globalSubregions": true,
+      "country": "SO",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/SOM/ADM2/geoBoundaries-SOM-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 4.0 (CC BY 4.0)",
+      "licenseSource": "https://polioeradication.org/",
+      "boundaryID": "SOM-ADM2-84685775",
+      "boundaryYearRepresented": "2022"
+    },
+    {
+      "name": "geoBoundaries SRB ADM2",
+      "globalSubregions": true,
+      "country": "RS",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/SRB/ADM2/geoBoundaries-SRB-ADM2_simplified.geojson",
+      "license": "Open Data Commons Open Database License 1.0",
+      "licenseSource": "https://www.openstreetmap.org/copyright",
+      "boundaryID": "SRB-ADM2-33768554",
+      "boundaryYearRepresented": "2017"
+    },
+    {
+      "name": "geoBoundaries SSD ADM2",
+      "globalSubregions": true,
+      "country": "SS",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/SSD/ADM2/geoBoundaries-SSD-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+      "licenseSource": "https://data.humdata.org/dataset/south-sudan-administrative-boundaries",
+      "boundaryID": "SSD-ADM2-79223893",
+      "boundaryYearRepresented": "2020"
+    },
+    {
+      "name": "geoBoundaries SUR ADM2",
+      "globalSubregions": true,
+      "country": "SR",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/SUR/ADM2/geoBoundaries-SUR-ADM2_simplified.geojson",
+      "license": "Public Domain",
+      "licenseSource": "https://commons.wikimedia.org/wiki/File:Suriname_resorts.png",
+      "boundaryID": "SUR-ADM2-93971198",
+      "boundaryYearRepresented": "2021"
+    },
+    {
+      "name": "geoBoundaries SVK ADM2",
+      "globalSubregions": true,
+      "country": "SK",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/SVK/ADM2/geoBoundaries-SVK-ADM2_simplified.geojson",
+      "license": "Open Data Commons Open Database License 1.0",
+      "licenseSource": "https://www.openstreetmap.org/copyright",
+      "boundaryID": "SVK-ADM2-56367889",
+      "boundaryYearRepresented": "2017"
+    },
+    {
+      "name": "geoBoundaries SWE ADM2",
+      "globalSubregions": true,
+      "country": "SE",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/SWE/ADM2/geoBoundaries-SWE-ADM2_simplified.geojson",
+      "license": "CC0 1.0 Universal (CC0 1.0) Public Domain Dedication",
+      "licenseSource": "https://commons.wikimedia.org/wiki/File:2017_Sweden_population_density_per_municipality-sv.svg; https://commons.wikimedia.org/wiki/File:Municipalities_of_Stockholm.png",
+      "boundaryID": "SWE-ADM2-70781695",
+      "boundaryYearRepresented": "2017"
+    },
+    {
+      "name": "geoBoundaries SWZ ADM2",
+      "globalSubregions": true,
+      "country": "SZ",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/SWZ/ADM2/geoBoundaries-SWZ-ADM2_simplified.geojson",
+      "license": "Open Data Commons Open Database License 1.0",
+      "licenseSource": "https://www.openstreetmap.org/copyright",
+      "boundaryID": "SWZ-ADM2-25544865",
+      "boundaryYearRepresented": "2017"
+    },
+    {
+      "name": "geoBoundaries SYR ADM2",
+      "globalSubregions": true,
+      "country": "SY",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/SYR/ADM2/geoBoundaries-SYR-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+      "licenseSource": "https://data.humdata.org/dataset/syrian-arab-republic-administrative-boundaries-populated-places",
+      "boundaryID": "SYR-ADM2-27442178",
+      "boundaryYearRepresented": "2017"
+    },
+    {
+      "name": "geoBoundaries TCD ADM2",
+      "globalSubregions": true,
+      "country": "TD",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/TCD/ADM2/geoBoundaries-TCD-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+      "licenseSource": "https://data.unhcr.org/en/geoservices/",
+      "boundaryID": "TCD-ADM2-42740310",
+      "boundaryYearRepresented": "2024"
+    },
+    {
+      "name": "geoBoundaries TGO ADM2",
+      "globalSubregions": true,
+      "country": "TG",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/TGO/ADM2/geoBoundaries-TGO-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution-ShareAlike 2.0",
+      "licenseSource": "https//www.openstreetmap.org/copyright",
+      "boundaryID": "TGO-ADM2-56601680",
+      "boundaryYearRepresented": "2017"
+    },
+    {
+      "name": "geoBoundaries THA ADM2",
+      "globalSubregions": true,
+      "country": "TH",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/THA/ADM2/geoBoundaries-THA-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+      "licenseSource": "https://data.humdata.org/dataset/thailand-administrative-boundaries",
+      "boundaryID": "THA-ADM2-78962969",
+      "boundaryYearRepresented": "2019"
+    },
+    {
+      "name": "geoBoundaries TJK ADM2",
+      "globalSubregions": true,
+      "country": "TJ",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/TJK/ADM2/geoBoundaries-TJK-ADM2_simplified.geojson",
+      "license": "Open Data Commons Open Database License 1.0",
+      "licenseSource": "https://www.openstreetmap.org/copyright",
+      "boundaryID": "TJK-ADM2-16282066",
+      "boundaryYearRepresented": "2017"
+    },
+    {
+      "name": "geoBoundaries TKM ADM2",
+      "globalSubregions": true,
+      "country": "TM",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/TKM/ADM2/geoBoundaries-TKM-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution-ShareAlike 3.0 Unported",
+      "licenseSource": "https://sedac.ciesin.columbia.edu/data/set/grump-v1-population-density/maps/7",
+      "boundaryID": "TKM-ADM2-10190150",
+      "boundaryYearRepresented": "2009"
+    },
+    {
+      "name": "geoBoundaries TON ADM2",
+      "globalSubregions": true,
+      "country": "TO",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/TON/ADM2/geoBoundaries-TON-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+      "licenseSource": "https://pacificdata.org/data/geographic_data/2016_ton_phc_admin_boundaries/resource/a825b058-0932-48ac-a3e2-9ec316e89372",
+      "boundaryID": "TON-ADM2-48082658",
+      "boundaryYearRepresented": "2020"
+    },
+    {
+      "name": "geoBoundaries TUN ADM2",
+      "globalSubregions": true,
+      "country": "TN",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/TUN/ADM2/geoBoundaries-TUN-ADM2_simplified.geojson",
+      "license": "Open Data Commons Open Database License 1.0",
+      "licenseSource": "https://www.openstreetmap.org/copyright",
+      "boundaryID": "TUN-ADM2-11933810",
+      "boundaryYearRepresented": "2017"
+    },
+    {
+      "name": "geoBoundaries TUR ADM2",
+      "globalSubregions": true,
+      "country": "TR",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/TUR/ADM2/geoBoundaries-TUR-ADM2_simplified.geojson",
+      "license": "Open Data Commons Open Database License 1.0",
+      "licenseSource": "https://www.openstreetmap.org/copyright",
+      "boundaryID": "TUR-ADM2-54988432",
+      "boundaryYearRepresented": "2021"
+    },
+    {
+      "name": "geoBoundaries TWN ADM2",
+      "globalSubregions": true,
+      "country": "TW",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/TWN/ADM2/geoBoundaries-TWN-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution-ShareAlike 2.0",
+      "licenseSource": "https://www.openstreetmap.org/copyright",
+      "boundaryID": "TWN-ADM2-52511910",
+      "boundaryYearRepresented": "2017"
+    },
+    {
+      "name": "geoBoundaries TZA ADM2",
+      "globalSubregions": true,
+      "country": "TZ",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/TZA/ADM2/geoBoundaries-TZA-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+      "licenseSource": "https://data.humdata.org/dataset/tanzania-administrative-boundaries-level-1-to-3-regions-districts-and-wards-with-2012-population",
+      "boundaryID": "TZA-ADM2-72390352",
+      "boundaryYearRepresented": "2021"
+    },
+    {
+      "name": "geoBoundaries URY ADM2",
+      "globalSubregions": true,
+      "country": "UY",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/URY/ADM2/geoBoundaries-URY-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution-ShareAlike 3.0 Unported",
+      "licenseSource": "https://commons.wikimedia.org/wiki/Category:Locator_maps_of_municipalities_of_Uruguay",
+      "boundaryID": "URY-ADM2-84410073",
+      "boundaryYearRepresented": "2013"
+    },
+    {
+      "name": "geoBoundaries USA ADM2",
+      "globalSubregions": true,
+      "country": "US",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/USA/ADM2/geoBoundaries-USA-ADM2_simplified.geojson",
+      "license": "Public Domain",
+      "licenseSource": "https://www.census.gov/programs-surveys/geography/technical-documentation/naming-convention/cartographic-boundary-file.html",
+      "boundaryID": "USA-ADM2-52423323",
+      "boundaryYearRepresented": "2018"
+    },
+    {
+      "name": "geoBoundaries UZB ADM2",
+      "globalSubregions": true,
+      "country": "UZ",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/UZB/ADM2/geoBoundaries-UZB-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+      "licenseSource": "https://data.humdata.org/dataset/ubbekistan-update",
+      "boundaryID": "UZB-ADM2-79887680",
+      "boundaryYearRepresented": "2020"
+    },
+    {
+      "name": "geoBoundaries VEN ADM2",
+      "globalSubregions": true,
+      "country": "VE",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/VEN/ADM2/geoBoundaries-VEN-ADM2_simplified.geojson",
+      "license": "Open Data Commons Open Database License 1.0",
+      "licenseSource": "https://twitter.com/WMgeoLab/status/1251983690709827590",
+      "boundaryID": "VEN-ADM2-92452058",
+      "boundaryYearRepresented": "2015"
+    },
+    {
+      "name": "geoBoundaries VNM ADM2",
+      "globalSubregions": true,
+      "country": "VN",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/VNM/ADM2/geoBoundaries-VNM-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+      "licenseSource": "https://data.humdata.org/dataset/viet-nam-administrative-boundaries-polygon-polyline",
+      "boundaryID": "VNM-ADM2-81297802",
+      "boundaryYearRepresented": "2020"
+    },
+    {
+      "name": "geoBoundaries VUT ADM2",
+      "globalSubregions": true,
+      "country": "VU",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/VUT/ADM2/geoBoundaries-VUT-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 4.0 (CC BY 4.0)",
+      "licenseSource": "http://opendefinition.org/licenses/cc-by/",
+      "boundaryID": "VUT-ADM2-54233975",
+      "boundaryYearRepresented": "2016"
+    },
+    {
+      "name": "geoBoundaries WSM ADM2",
+      "globalSubregions": true,
+      "country": "WS",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/WSM/ADM2/geoBoundaries-WSM-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 4.0 (CC BY 4.0)",
+      "licenseSource": "https://pacificdata.org/data/dataset/2011_wsm_phc_admin_boundaries",
+      "boundaryID": "WSM-ADM2-51752279",
+      "boundaryYearRepresented": "2011"
+    },
+    {
+      "name": "geoBoundaries YEM ADM2",
+      "globalSubregions": true,
+      "country": "YE",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/YEM/ADM2/geoBoundaries-YEM-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+      "licenseSource": "https://data.humdata.org/dataset/yemen-admin-boundaries",
+      "boundaryID": "YEM-ADM2-15242507",
+      "boundaryYearRepresented": "2021"
+    },
+    {
+      "name": "geoBoundaries ZAF ADM2",
+      "globalSubregions": true,
+      "country": "ZA",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/ZAF/ADM2/geoBoundaries-ZAF-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+      "licenseSource": "https://data.humdata.org/dataset/south-africa-admin-level-1-boundaries",
+      "boundaryID": "ZAF-ADM2-47623444",
+      "boundaryYearRepresented": "2020"
+    },
+    {
+      "name": "geoBoundaries ZMB ADM2",
+      "globalSubregions": true,
+      "country": "ZM",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/ZMB/ADM2/geoBoundaries-ZMB-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 4.0 (CC BY 4.0)",
+      "licenseSource": "https://data.grid3.org/datasets/GRID3::grid3-zambia-administrative-boundaries-districts-2020/about",
+      "boundaryID": "ZMB-ADM2-96606910",
+      "boundaryYearRepresented": "2020"
+    },
+    {
+      "name": "geoBoundaries ZWE ADM2",
+      "globalSubregions": true,
+      "country": "ZW",
+      "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/ZWE/ADM2/geoBoundaries-ZWE-ADM2_simplified.geojson",
+      "license": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+      "licenseSource": "https://data.humdata.org/dataset/zimbabwe-administrative-levels-0-3-boundaries",
+      "boundaryID": "ZWE-ADM2-62879985",
+      "boundaryYearRepresented": "2020"
+    },
+    {
+      "name": "Eurostat GISCO NUTS 2024 level 3",
+      "country": "DE",
+      "globalSubregions": true,
+      "url": "https://gisco-services.ec.europa.eu/distribution/v2/nuts/geojson/NUTS_RG_01M_2024_4326_LEVL_3.geojson",
+      "license": "© EuroGeographics for the administrative boundaries; Eurostat GISCO reuse policy"
+    },
+    {
+      "name": "Statistics Canada census divisions 2021",
+      "country": "CA",
+      "globalSubregions": true,
+      "url": "https://www12.statcan.gc.ca/census-recensement/2021/geo/sip-pis/boundary-limites/index2021-eng.cfm",
+      "license": "Statistics Canada Open Licence",
+      "boundaryYearRepresented": "2021"
+    },
+    {
+      "name": "OCHA Ukraine COD-AB v05",
+      "country": "UA",
+      "globalSubregions": true,
+      "url": "https://data.humdata.org/dataset/cod-ab-ukr",
+      "license": "Creative Commons Attribution for Intergovernmental Organisations",
+      "boundaryYearRepresented": "2025-09-01"
     }
-  ]
+  ],
+  "coverage": {
+    "AD": {
+      "region": 7
+    },
+    "AE": {
+      "region": 9
+    },
+    "AF": {
+      "region": 34,
+      "subregion": 398
+    },
+    "AG": {
+      "region": 8
+    },
+    "AI": {
+      "region": 14
+    },
+    "AL": {
+      "subregion": 12
+    },
+    "AM": {
+      "region": 11,
+      "subregion": 39
+    },
+    "AO": {
+      "region": 18,
+      "subregion": 157
+    },
+    "AQ": {
+      "region": 1
+    },
+    "AR": {
+      "region": 24,
+      "subregion": 525
+    },
+    "AS": {
+      "region": 5
+    },
+    "AT": {
+      "region": 9,
+      "subregion": 94
+    },
+    "AU": {
+      "region": 12,
+      "subregion": 547
+    },
+    "AW": {
+      "region": 1
+    },
+    "AX": {
+      "region": 11
+    },
+    "AZ": {
+      "subregion": 78
+    },
+    "BA": {
+      "region": 18,
+      "subregion": 142
+    },
+    "BB": {
+      "region": 11
+    },
+    "BD": {
+      "region": 7,
+      "subregion": 64
+    },
+    "BE": {
+      "subregion": 11,
+      "region": 3
+    },
+    "BF": {
+      "region": 45,
+      "subregion": 351
+    },
+    "BG": {
+      "region": 28,
+      "subregion": 265
+    },
+    "BH": {
+      "region": 5
+    },
+    "BI": {
+      "region": 17,
+      "subregion": 119
+    },
+    "BJ": {
+      "region": 12,
+      "subregion": 77
+    },
+    "BL": {
+      "region": 1
+    },
+    "BM": {
+      "region": 11
+    },
+    "BN": {
+      "subregion": 4
+    },
+    "BO": {
+      "region": 9,
+      "subregion": 110
+    },
+    "BR": {
+      "region": 27,
+      "subregion": 5570
+    },
+    "BS": {
+      "region": 30,
+      "subregion": 33
+    },
+    "BT": {
+      "subregion": 20
+    },
+    "BW": {
+      "region": 15,
+      "subregion": 25
+    },
+    "BY": {
+      "region": 7,
+      "subregion": 118
+    },
+    "BZ": {
+      "region": 6,
+      "subregion": 31
+    },
+    "CA": {
+      "region": 13,
+      "subregion": 293
+    },
+    "CD": {
+      "region": 11,
+      "subregion": 189
+    },
+    "CF": {
+      "region": 17,
+      "subregion": 72
+    },
+    "CG": {
+      "region": 12,
+      "subregion": 46
+    },
+    "CH": {
+      "region": 26,
+      "subregion": 169
+    },
+    "CI": {
+      "region": 19,
+      "subregion": 33
+    },
+    "CK": {
+      "region": 11
+    },
+    "CL": {
+      "region": 16,
+      "subregion": 56
+    },
+    "CM": {
+      "region": 10,
+      "subregion": 60
+    },
+    "CN": {
+      "region": 32,
+      "subregion": 2391
+    },
+    "CO": {
+      "region": 33,
+      "subregion": 1122
+    },
+    "CR": {
+      "region": 7,
+      "subregion": 83
+    },
+    "CU": {
+      "region": 16,
+      "subregion": 168
+    },
+    "CV": {
+      "region": 22,
+      "subregion": 32
+    },
+    "CW": {
+      "region": 1
+    },
+    "CY": {
+      "subregion": 5
+    },
+    "CZ": {
+      "region": 14,
+      "subregion": 77
+    },
+    "DE": {
+      "region": 16,
+      "subregion": 400
+    },
+    "DJ": {
+      "region": 6,
+      "subregion": 11
+    },
+    "DK": {
+      "region": 5,
+      "subregion": 98
+    },
+    "DM": {
+      "region": 10
+    },
+    "DO": {
+      "region": 32,
+      "subregion": 155
+    },
+    "DZ": {
+      "region": 48,
+      "subregion": 1540
+    },
+    "EC": {
+      "region": 24,
+      "subregion": 224
+    },
+    "EE": {
+      "subregion": 15
+    },
+    "EG": {
+      "region": 27,
+      "subregion": 365
+    },
+    "EH": {
+      "region": 1
+    },
+    "ER": {
+      "region": 6,
+      "subregion": 58
+    },
+    "ES": {
+      "subregion": 52,
+      "region": 19
+    },
+    "ET": {
+      "region": 11,
+      "subregion": 64
+    },
+    "FI": {
+      "region": 18,
+      "subregion": 70
+    },
+    "FJ": {
+      "region": 5,
+      "subregion": 15
+    },
+    "FK": {
+      "region": 1
+    },
+    "FM": {
+      "region": 4
+    },
+    "FO": {
+      "region": 1
+    },
+    "FR": {
+      "subregion": 101,
+      "region": 18
+    },
+    "GA": {
+      "region": 9,
+      "subregion": 49
+    },
+    "GB": {
+      "subregion": 232,
+      "region": 4
+    },
+    "GD": {
+      "region": 7
+    },
+    "GE": {
+      "region": 12,
+      "subregion": 68
+    },
+    "GG": {
+      "region": 1
+    },
+    "GH": {
+      "region": 10,
+      "subregion": 260
+    },
+    "GI": {
+      "region": 1
+    },
+    "GL": {
+      "region": 6
+    },
+    "GM": {
+      "region": 6,
+      "subregion": 48
+    },
+    "GN": {
+      "region": 34,
+      "subregion": 340
+    },
+    "GQ": {
+      "region": 7,
+      "subregion": 28
+    },
+    "GR": {
+      "region": 14,
+      "subregion": 326
+    },
+    "GS": {
+      "region": 1
+    },
+    "GT": {
+      "region": 22,
+      "subregion": 342
+    },
+    "GU": {
+      "region": 1,
+      "subregion": 19
+    },
+    "GW": {
+      "region": 9,
+      "subregion": 39
+    },
+    "GY": {
+      "region": 10,
+      "subregion": 27
+    },
+    "HK": {
+      "region": 18
+    },
+    "HM": {
+      "region": 1
+    },
+    "HN": {
+      "region": 18,
+      "subregion": 298
+    },
+    "HR": {
+      "subregion": 21
+    },
+    "HT": {
+      "region": 10,
+      "subregion": 42
+    },
+    "HU": {
+      "region": 43,
+      "subregion": 198
+    },
+    "ID": {
+      "region": 33,
+      "subregion": 519
+    },
+    "IE": {
+      "subregion": 34
+    },
+    "IL": {
+      "subregion": 6
+    },
+    "IM": {
+      "region": 1
+    },
+    "IN": {
+      "region": 36,
+      "subregion": 735
+    },
+    "IO": {
+      "region": 1
+    },
+    "IQ": {
+      "region": 18,
+      "subregion": 101
+    },
+    "IR": {
+      "region": 31,
+      "subregion": 432
+    },
+    "IS": {
+      "region": 9,
+      "subregion": 74
+    },
+    "IT": {
+      "subregion": 110,
+      "region": 20
+    },
+    "JE": {
+      "region": 1
+    },
+    "JM": {
+      "subregion": 14
+    },
+    "JO": {
+      "region": 12,
+      "subregion": 52
+    },
+    "JP": {
+      "region": 47,
+      "subregion": 1742
+    },
+    "KE": {
+      "region": 8,
+      "subregion": 290
+    },
+    "KG": {
+      "region": 8,
+      "subregion": 41
+    },
+    "KH": {
+      "region": 24,
+      "subregion": 197
+    },
+    "KI": {
+      "region": 1,
+      "subregion": 24
+    },
+    "KM": {
+      "region": 3,
+      "subregion": 17
+    },
+    "KN": {
+      "region": 14
+    },
+    "KP": {
+      "region": 11,
+      "subregion": 179
+    },
+    "KR": {
+      "region": 17,
+      "subregion": 228
+    },
+    "KW": {
+      "region": 6,
+      "subregion": 137
+    },
+    "KY": {
+      "region": 1
+    },
+    "KZ": {
+      "region": 16,
+      "subregion": 174
+    },
+    "LA": {
+      "region": 17,
+      "subregion": 148
+    },
+    "LB": {
+      "region": 6,
+      "subregion": 26
+    },
+    "LC": {
+      "region": 11
+    },
+    "LI": {
+      "region": 11
+    },
+    "LK": {
+      "subregion": 25
+    },
+    "LR": {
+      "region": 15,
+      "subregion": 136
+    },
+    "LS": {
+      "subregion": 10
+    },
+    "LT": {
+      "region": 10,
+      "subregion": 60
+    },
+    "LU": {
+      "subregion": 3
+    },
+    "LV": {
+      "subregion": 119
+    },
+    "LY": {
+      "region": 22
+    },
+    "MA": {
+      "region": 16,
+      "subregion": 75
+    },
+    "MC": {
+      "region": 1
+    },
+    "MD": {
+      "subregion": 40
+    },
+    "ME": {
+      "subregion": 21
+    },
+    "MF": {
+      "region": 1
+    },
+    "MG": {
+      "region": 22,
+      "subregion": 119
+    },
+    "MH": {
+      "region": 2
+    },
+    "MK": {
+      "subregion": 84
+    },
+    "ML": {
+      "region": 9,
+      "subregion": 50
+    },
+    "MM": {
+      "region": 14,
+      "subregion": 71
+    },
+    "MN": {
+      "region": 22,
+      "subregion": 339
+    },
+    "MO": {
+      "region": 1
+    },
+    "MP": {
+      "region": 4
+    },
+    "MR": {
+      "region": 13,
+      "subregion": 57
+    },
+    "MS": {
+      "region": 3
+    },
+    "MT": {
+      "region": 68
+    },
+    "MU": {
+      "region": 16
+    },
+    "MV": {
+      "region": 21
+    },
+    "MW": {
+      "region": 28,
+      "subregion": 245
+    },
+    "MX": {
+      "region": 32,
+      "subregion": 2457
+    },
+    "MY": {
+      "region": 16,
+      "subregion": 159
+    },
+    "MZ": {
+      "region": 11,
+      "subregion": 159
+    },
+    "NA": {
+      "region": 13,
+      "subregion": 109
+    },
+    "NC": {
+      "region": 3
+    },
+    "NE": {
+      "region": 8,
+      "subregion": 67
+    },
+    "NF": {
+      "region": 1
+    },
+    "NG": {
+      "region": 37,
+      "subregion": 774
+    },
+    "NI": {
+      "region": 17,
+      "subregion": 153
+    },
+    "NL": {
+      "region": 15,
+      "subregion": 344
+    },
+    "NO": {
+      "region": 21,
+      "subregion": 363
+    },
+    "NP": {
+      "region": 14,
+      "subregion": 75
+    },
+    "NR": {
+      "region": 14
+    },
+    "NU": {
+      "region": 1
+    },
+    "NZ": {
+      "region": 23,
+      "subregion": 88
+    },
+    "OM": {
+      "region": 11,
+      "subregion": 61
+    },
+    "PA": {
+      "region": 12,
+      "subregion": 76
+    },
+    "PE": {
+      "region": 26,
+      "subregion": 196
+    },
+    "PF": {
+      "region": 5
+    },
+    "PG": {
+      "region": 20,
+      "subregion": 87
+    },
+    "PH": {
+      "subregion": 118,
+      "region": 17
+    },
+    "PK": {
+      "region": 8,
+      "subregion": 126
+    },
+    "PL": {
+      "region": 16,
+      "subregion": 380
+    },
+    "PM": {
+      "region": 2
+    },
+    "PN": {
+      "region": 1
+    },
+    "PR": {
+      "region": 1,
+      "subregion": 78
+    },
+    "PS": {
+      "region": 2,
+      "subregion": 16
+    },
+    "PT": {
+      "region": 20,
+      "subregion": 311
+    },
+    "PW": {
+      "region": 16
+    },
+    "PY": {
+      "region": 18,
+      "subregion": 247
+    },
+    "QA": {
+      "region": 7,
+      "subregion": 79
+    },
+    "RO": {
+      "region": 42,
+      "subregion": 3235
+    },
+    "RS": {
+      "region": 25,
+      "subregion": 145
+    },
+    "RU": {
+      "region": 83,
+      "subregion": 2327
+    },
+    "RW": {
+      "region": 5,
+      "subregion": 30
+    },
+    "SA": {
+      "region": 13,
+      "subregion": 147
+    },
+    "SB": {
+      "region": 10,
+      "subregion": 50
+    },
+    "SC": {
+      "region": 26
+    },
+    "SD": {
+      "region": 17,
+      "subregion": 189
+    },
+    "SE": {
+      "region": 21,
+      "subregion": 290
+    },
+    "SG": {
+      "region": 5
+    },
+    "SH": {
+      "region": 3
+    },
+    "SI": {
+      "subregion": 193
+    },
+    "SK": {
+      "region": 8,
+      "subregion": 79
+    },
+    "SL": {
+      "region": 4,
+      "subregion": 14
+    },
+    "SM": {
+      "region": 9
+    },
+    "SN": {
+      "region": 14,
+      "subregion": 45
+    },
+    "SO": {
+      "region": 13,
+      "subregion": 118
+    },
+    "SR": {
+      "region": 10,
+      "subregion": 62
+    },
+    "SS": {
+      "region": 10,
+      "subregion": 78
+    },
+    "ST": {
+      "region": 2
+    },
+    "SV": {
+      "region": 14,
+      "subregion": 272
+    },
+    "SX": {
+      "region": 1
+    },
+    "SY": {
+      "region": 15,
+      "subregion": 61
+    },
+    "SZ": {
+      "region": 4,
+      "subregion": 53
+    },
+    "TC": {
+      "region": 6
+    },
+    "TD": {
+      "region": 22,
+      "subregion": 70
+    },
+    "TF": {
+      "region": 4
+    },
+    "TG": {
+      "region": 5,
+      "subregion": 37
+    },
+    "TH": {
+      "region": 77,
+      "subregion": 928
+    },
+    "TJ": {
+      "region": 5,
+      "subregion": 58
+    },
+    "TK": {
+      "region": 1
+    },
+    "TL": {
+      "subregion": 13
+    },
+    "TM": {
+      "region": 5,
+      "subregion": 59
+    },
+    "TN": {
+      "region": 23,
+      "subregion": 264
+    },
+    "TO": {
+      "region": 5,
+      "subregion": 23
+    },
+    "TR": {
+      "region": 81,
+      "subregion": 973
+    },
+    "TT": {
+      "region": 16
+    },
+    "TV": {
+      "region": 1
+    },
+    "TW": {
+      "region": 21,
+      "subregion": 368
+    },
+    "TZ": {
+      "region": 30,
+      "subregion": 170
+    },
+    "UA": {
+      "region": 27,
+      "subregion": 139
+    },
+    "UG": {
+      "subregion": 112
+    },
+    "UM": {
+      "region": 8
+    },
+    "US": {
+      "region": 51,
+      "subregion": 3142
+    },
+    "UY": {
+      "region": 19,
+      "subregion": 124
+    },
+    "UZ": {
+      "region": 14,
+      "subregion": 193
+    },
+    "VA": {
+      "region": 1
+    },
+    "VC": {
+      "region": 6
+    },
+    "VE": {
+      "region": 25,
+      "subregion": 335
+    },
+    "VG": {
+      "region": 1
+    },
+    "VI": {
+      "region": 3
+    },
+    "VN": {
+      "region": 63,
+      "subregion": 708
+    },
+    "VU": {
+      "region": 6,
+      "subregion": 66
+    },
+    "WF": {
+      "region": 3
+    },
+    "WS": {
+      "region": 11,
+      "subregion": 43
+    },
+    "XK": {
+      "subregion": 30
+    },
+    "YE": {
+      "region": 21,
+      "subregion": 335
+    },
+    "ZA": {
+      "region": 9,
+      "subregion": 52
+    },
+    "ZM": {
+      "region": 10,
+      "subregion": 116
+    },
+    "ZW": {
+      "region": 10,
+      "subregion": 91
+    }
+  },
+  "geometryStorage": "podregiony.sqlite3",
+  "unnamedSubregions": 68
 }

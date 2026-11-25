@@ -12,9 +12,19 @@ def normalized(value):
 
 @lru_cache(maxsize=6)
 def local_features(filename):
+    if filename == 'rejony.json.gz':
+        return administrative_features()
     from .atlas import static_bytes
     data = static_bytes(filename)
     return json.loads(gzip.decompress(data) if filename.endswith('.gz') else data)['features']
+
+
+@lru_cache(maxsize=1)
+def administrative_features():
+    # Share the worldwide boundary geometry with the running server rather than
+    # decoding another full copy each time the area focus cache is evicted.
+    from .atlas import static_bytes
+    return json.loads(gzip.decompress(static_bytes('rejony.json.gz')))['features']
 
 
 def bounds(geometry):
@@ -57,10 +67,25 @@ def simplify_outline(geometry, tolerance):
     return {'type':'MultiPolygon','coordinates':simplified}
 
 
-def camera_bounds(geometry, category):
+def camera_bounds(geometry, category, identifier=None):
     if category != 'kontynent':
         return bounds(geometry)
     polygons = geometry['coordinates'] if geometry['type'] == 'MultiPolygon' else [geometry['coordinates']]
+    if identifier == 'europe':
+        # Frame geographic Europe, including Iceland and the Arctic islands,
+        # without the overseas Caribbean territories of European countries.
+        core=[rings for rings in polygons if any(-35 <= x <= 45 and 34 <= y <= 85 for x,y in rings[0])]
+        return bounds({'type':'MultiPolygon','coordinates':core or polygons})
+    if identifier == 'oceania':
+        # Use the shortest longitude arc across the date line, rather than
+        # cropping to mainland Australia or zooming out to the entire world.
+        points=[p for rings in polygons for p in rings[0]]
+        longitudes=sorted({p[0] % 360 for p in points})
+        gaps=[((longitudes[(i+1)%len(longitudes)]-lon)%360,i) for i,lon in enumerate(longitudes)]
+        gap,index=max(gaps)
+        west=longitudes[(index+1)%len(longitudes)]
+        if west>180:west-=360
+        return [west,min(p[1] for p in points),west+360-gap,max(p[1] for p in points)]
     def size(rings):
         points = rings[0]
         return abs(sum(a[0]*b[1]-b[0]*a[1] for a,b in zip(points, points[1:])))
@@ -73,10 +98,14 @@ def focus_area(category, id):
     from . import atlas
     regions = local_features('rejony.json.gz')
     code = ''
+    division_level = 'region'
     if category == 'panstwo':
         countries = json.loads(atlas.static_bytes('mapa.json'))['panstwo']
         country = next(item for item in countries if item[0] == id)
         name, code = country[1], country[5]
+        levels = {f['properties'].get('level','region') for f in regions if f['properties']['country']==code}
+        if 'region' not in levels and 'subregion' in levels:
+            division_level = 'subregion'
         features = [feature for feature in local_features('podklad.json.gz')
                     if feature['properties'].get('country_id') == id and feature['geometry']['type'] in ('Polygon', 'MultiPolygon')]
         polygons = [polygon for feature in features for polygon in
@@ -89,6 +118,9 @@ def focus_area(category, id):
     elif category == 'rejon':
         feature = next(feature for feature in regions if feature['properties']['id'] == id)
         name, code, geometry = feature['properties']['name'], feature['properties']['country'], feature['geometry']
+        if geometry is None:
+            from .admin_boundaries import boundary_geometry
+            geometry = boundary_geometry(id)
     elif category == 'miasto':
         feature = None
         for filename in ('miasta-polska.json.gz', 'duze-miasta.json.gz', 'stolice.json.gz'):
@@ -110,7 +142,7 @@ def focus_area(category, id):
     if geometry['type'] not in ('Polygon', 'MultiPolygon') or not geometry['coordinates']:
         raise ValueError('Missing boundary')
     extent = bounds(geometry)
-    camera = camera_bounds(geometry, category)
+    camera = camera_bounds(geometry, category, id)
     west, south, east, north = camera
     dx, dy = max(.02, east-west)*.2, max(.02, north-south)*.2
     nearby = [max(-180,west-dx), max(-85,south-dy), min(180,east+dx), min(85,north+dy)]
@@ -150,9 +182,53 @@ def focus_area(category, id):
                     (nearby[2],nearby[0],nearby[3],nearby[1])).fetchall()
             for key,label,data in rows:
                 add_locality(key,label,json.loads(zlib.decompress(data)))
-    return {'category':category, 'id':id, 'name':name, 'country':code, 'bounds':extent, 'camera_bounds':camera, 'nearby':nearby,
+    members=[f['properties'] for f in regions if (category=='panstwo' and f['properties']['country']==code)
+             or (category=='rejon' and f['properties'].get('parent_id')==id)]
+    counts={'regions':sum(p.get('level','region')=='region' for p in members),
+            'subregions':sum(p.get('level')=='subregion' for p in members)}
+    if category=='kontynent':
+        continent=next(c for c in json.loads(atlas.static_bytes('kontynenty.json')) if c['id']==id)
+        codes=set(continent['codes'].split())
+        counts['countries']=sum((row[5] or row[0]) in codes for row in json.loads(atlas.static_bytes('mapa.json'))['panstwo'])
+    return {'category':category, 'id':id, 'name':name, 'country':code, 'division_level':division_level, 'counts':counts, 'bounds':extent, 'camera_bounds':camera, 'nearby':nearby,
             'feature':{'type':'Feature','properties':{'id':id,'name':name},'geometry':geometry},
             'context':{'type':'FeatureCollection','features':context}}
+
+
+@lru_cache(maxsize=64)
+def area_counts(category,id):
+    """Count the full selected area, independently of zoom and visible layers."""
+    from . import atlas
+    area=focus_area(category,id)
+    counts=dict(area['counts'])
+    if category!='rejon':return counts
+    geometry=area['feature']['geometry']
+    west,south,east,north=area['bounds']
+    # Precompute polygon extents once; most candidates need only one small ring.
+    polygons=list(atlas.polygon_bounds('',geometry))
+    def inside(lon,lat):
+        return any(a<=lon<=c and b<=lat<=d and atlas.point_in_ring(lon,lat,rings[0])
+                   and not any(atlas.point_in_ring(lon,lat,hole) for hole in rings[1:])
+                   for (a,b,c,d),_,rings in polygons)
+    if area['country']=='PL':
+        cities=set()
+        for f in local_features('miasta-polska.json.gz'):
+            p=f['properties'];a,b,c,d=bounds(f['geometry'])
+            if inside((a+c)/2,(b+d)/2):cities.add(p['division_id'])
+        counts['cities']=len(cities)
+    else:
+        with atlas.open_database(atlas.WORLD_CITIES) as db:
+            rows=db.execute('''SELECT lon,lat FROM settlement_bounds JOIN settlements ON settlements.rowid=settlement_bounds.place
+                WHERE min_lon<=? AND max_lon>=? AND min_lat<=? AND max_lat>=? AND label=?''',
+                (east,west,north,south,area['country']))
+            counts['cities']=sum(inside(lon,lat) for lon,lat in rows)
+    counts['villages']=None
+    if area['country']=='PL':
+        with atlas.open_database(atlas.SETTLEMENTS) as db:
+            rows=db.execute('''SELECT lon,lat FROM settlement_bounds JOIN settlements ON settlements.rowid=settlement_bounds.place
+                WHERE min_lon<=? AND max_lon>=? AND min_lat<=? AND max_lat>=?''',(east,west,north,south))
+            counts['villages']=sum(inside(lon,lat) for lon,lat in rows)
+    return counts
 
 
 def search_area(category, id, query, include_villages=True):

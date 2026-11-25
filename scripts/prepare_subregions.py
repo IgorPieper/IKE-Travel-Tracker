@@ -7,7 +7,7 @@ import gzip
 import hashlib
 import json
 from pathlib import Path
-from urllib.request import urlopen
+from urllib.request import Request, urlopen
 from shapely.geometry import shape, mapping
 from shapely.ops import unary_union
 
@@ -18,13 +18,13 @@ POL_URL = 'https://www.geoboundaries.org/api/current/gbOpen/POL/ADM2/'
 # These catalogues describe local municipalities, counties or small districts,
 # rather than the larger regional tier. Federal cantons and provinces stay regions.
 LOCAL_COUNTRIES = set('SI LV ME MK MD AZ LU IE EE HR AL CY IL BN BT JM LS LK TL UG XK'.split())
-GROUPED_COUNTRIES = {'IT': 'region', 'FR': 'region', 'GB': 'geonunit'}
+GROUPED_COUNTRIES = {'IT': 'region', 'FR': 'region', 'GB': 'geonunit', 'ES': 'region', 'BE': 'region', 'PH': 'region'}
 
 
 def cached(name, url):
     path = CACHE / name
     if not path.exists():
-        with urlopen(url, timeout=120) as response:
+        with urlopen(Request(url, headers={'User-Agent': 'IKE-Travel-Tracker boundary preparation'}), timeout=120) as response:
             path.write_bytes(response.read())
     return json.loads(path.read_text(encoding='utf-8'))
 
@@ -38,7 +38,8 @@ def main():
     data = json.loads(gzip.decompress(original.read_bytes()))
     # A fresh checkout already contains the generated file. Keep its original
     # Natural Earth units and regenerate additions rather than duplicating them.
-    data['features'] = [f for f in data['features'] if not f['properties']['id'].startswith(('region:', 'gb:PL:ADM2:'))]
+    data['features'] = [f for f in data['features'] if not f['properties']['id'].startswith(
+        ('region:', 'gb:PL:ADM2:', 'gb-world:', 'nuts:', 'statcan:', 'ocha:'))]
     raw = cached('natural-earth-adm1.geojson', NE_URL)
     metadata = {f['properties']['adm1_code']: f['properties'] for f in raw['features']}
     pol_meta = cached('pol-adm2-metadata.json', POL_URL)

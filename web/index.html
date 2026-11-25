@@ -13,10 +13,13 @@
   <script src="./maplibre.js" defer></script>
   <script src="./pmtiles.js" defer></script>
   <script src="./jezyk.js" defer></script>
+  <script src="./zdjecia.js" defer></script>
   <script src="./obszar.js" defer></script>
   <script src="./mapa.js" defer></script>
   <script src="./wyzwania.js" defer></script>
   <script src="./dziennik.js" defer></script>
+  <script src="./galeria.js" defer></script>
+  <script src="./nawigacja.js" defer></script>
 </head>
 <body>
   <header class="top">
@@ -30,6 +33,7 @@
         <button type="button" data-section="challenges-view" aria-controls="challenges-view" data-en="Challenges">Wyzwania</button>
         <button type="button" data-section="diary-view" aria-controls="diary-view" data-en="Journal">Dziennik</button>
         <button type="button" data-section="achievements-view" aria-controls="achievements-view" data-en="Achievements">Osiągnięcia</button>
+        <button type="button" data-section="gallery-view" aria-controls="gallery-view" data-en="Gallery">Galeria</button>
       </nav>
     </div>
   </header>
@@ -50,11 +54,14 @@
         </div>
         <form id="place-form" class="detail-form">
           <fieldset id="place-fields" class="detail-fields">
-            <label class="place-plan-option"><input id="place-planned" type="checkbox"><span data-en="Planned">Zaplanowane</span></label>
-            <label for="place-date" id="place-date-label"></label>
-            <div class="visit-date-line"><span class="visit-date-value"><span id="place-date-approx" hidden aria-hidden="true">~</span><input id="place-date" type="date" max="9999-12-31"></span><label class="uncertain-date-option" title="Data niepewna" data-en-title="Uncertain date"><input id="place-date-uncertain" type="checkbox"><span data-en="Uncertain">Niepewna</span></label></div>
+            <div id="place-photos" class="photo-picker"></div>
+            <div class="visit-date-pair">
+              <div><label for="place-date" id="place-date-label"></label><div class="visit-date-line"><span class="visit-date-value"><span id="place-date-approx" hidden aria-hidden="true">~</span><input id="place-date" type="date" max="9999-12-31"></span><label class="uncertain-date-option"><input id="place-date-uncertain" type="checkbox"><span data-en="Approximate">Około</span></label></div></div>
+              <div><label for="place-departure" id="place-departure-label" data-en="Departure date">Data odjazdu</label><div class="visit-date-line"><span class="visit-date-value"><span id="place-departure-approx" hidden aria-hidden="true">~</span><input id="place-departure" type="date" max="9999-12-31"></span><label class="uncertain-date-option"><input id="place-departure-uncertain" type="checkbox"><span data-en="Approximate">Około</span></label></div></div>
+            </div>
             <label for="place-rating" id="place-rating-label"></label>
             <input id="place-rating" type="text" inputmode="decimal" maxlength="32" autocomplete="off">
+            <label class="place-plan-option"><input id="place-planned" type="checkbox"><span data-en="Planned">Zaplanowane</span></label>
             <label for="place-note" data-en="Note">Notatka</label>
             <textarea id="place-note" rows="3" maxlength="2000"></textarea>
             <div id="place-return-visits">
@@ -64,7 +71,7 @@
           </fieldset>
           <div class="place-detail-actions">
             <button id="save-place" type="submit" data-en="Save">Zapisz</button>
-            <button id="remove-place" type="button" data-en="Remove place">Usuń miejsce</button>
+            <button id="remove-place" type="button" data-en="Remove">Usuń</button>
           </div>
         </form>
       </section>
@@ -80,12 +87,12 @@
       <div class="categories" role="group" aria-label="Widok mapy" data-en-label="Map views">
         <button type="button" data-preset="continents" aria-pressed="false"><span aria-hidden="true" class="category-icon">◉</span><span class="preset-label">Kontynenty</span><strong id="continent-count">0</strong></button>
         <button type="button" data-preset="countries" aria-pressed="true"><span aria-hidden="true" class="category-icon">◎</span><span class="preset-label">Państwa</span><strong id="country-count">0</strong></button>
-        <button type="button" data-preset="regions" aria-pressed="false"><span aria-hidden="true" class="category-icon">◇</span><span class="preset-label">Rejony</span><strong id="region-count">0</strong></button>
-        <button type="button" data-preset="subregions" aria-pressed="false"><span aria-hidden="true" class="category-icon">⬡</span><span class="preset-label">Podregiony</span><strong id="subregion-count">0</strong></button>
+        <button type="button" data-preset="regions" aria-pressed="false" hidden><span aria-hidden="true" class="category-icon">◇</span><span class="preset-label">Rejony</span><strong id="region-count">0</strong></button>
+        <button type="button" data-preset="subregions" aria-pressed="false" hidden><span aria-hidden="true" class="category-icon">⬡</span><span class="preset-label">Podregiony</span><strong id="subregion-count">0</strong></button>
         <button type="button" data-preset="major" aria-pressed="false" hidden><span aria-hidden="true" class="category-icon">▣</span><span class="preset-label">Duże miasta</span><strong id="major-count">–</strong></button>
         <button type="button" data-preset="capital-cities" aria-pressed="false"><span aria-hidden="true" class="category-icon">♔</span><span class="preset-label">Stolice</span><strong id="capital-city-count">0</strong></button>
-        <button type="button" data-preset="cities" aria-pressed="false"><span aria-hidden="true" class="category-icon">⌑</span><span class="preset-label">Miasta</span><strong id="city-count">0</strong></button>
-        <button type="button" data-preset="settlements" aria-pressed="false"><span aria-hidden="true" class="category-icon">⌖</span><span class="preset-label">Wsie</span><strong id="settlement-count">0</strong></button>
+        <button type="button" data-preset="cities" aria-pressed="false" hidden><span aria-hidden="true" class="category-icon">⌑</span><span class="preset-label">Miasta</span><strong id="city-count">0</strong></button>
+        <button type="button" data-preset="settlements" aria-pressed="false" hidden><span aria-hidden="true" class="category-icon">⌖</span><span class="preset-label">Wsie</span><strong id="settlement-count">0</strong></button>
         <button type="button" data-preset="visited" aria-pressed="false"><span aria-hidden="true" class="category-icon">✓</span><span class="preset-label">Zaznaczone</span><strong id="visited-count">0</strong></button>
         <button type="button" data-preset="visited-only" aria-pressed="false" hidden><span aria-hidden="true" class="category-icon">✓</span><span class="preset-label">Odwiedzone</span><strong id="visited-only-count">0</strong></button>
         <button type="button" data-preset="planned-only" aria-pressed="false" hidden><span aria-hidden="true" class="category-icon">◇</span><span class="preset-label">Zaplanowane</span><strong id="planned-only-count">0</strong></button>
@@ -98,10 +105,13 @@
         </div>
         <form id="pin-form" class="detail-form">
           <fieldset id="pin-fields" class="detail-fields">
+            <div id="pin-photos" class="photo-picker"></div>
             <label for="pin-name" data-en="Name">Nazwa</label>
             <input id="pin-name" type="text" maxlength="100" required>
-            <label for="pin-date" data-en="Visit date">Data wizyty</label>
-            <div class="visit-date-line"><span class="visit-date-value"><span id="pin-date-approx" hidden aria-hidden="true">~</span><input id="pin-date" type="date" max="9999-12-31"></span><label class="uncertain-date-option" title="Data niepewna" data-en-title="Uncertain date"><input id="pin-date-uncertain" type="checkbox"><span data-en="Uncertain">Niepewna</span></label></div>
+            <div class="visit-date-pair">
+              <div><label for="pin-date" data-en="Arrival date">Data przyjazdu</label><div class="visit-date-line"><span class="visit-date-value"><span id="pin-date-approx" hidden aria-hidden="true">~</span><input id="pin-date" type="date" max="9999-12-31"></span><label class="uncertain-date-option"><input id="pin-date-uncertain" type="checkbox"><span data-en="Approximate">Około</span></label></div></div>
+              <div><label for="pin-departure" data-en="Departure date">Data odjazdu</label><div class="visit-date-line"><span class="visit-date-value"><span id="pin-departure-approx" hidden aria-hidden="true">~</span><input id="pin-departure" type="date" max="9999-12-31"></span><label class="uncertain-date-option"><input id="pin-departure-uncertain" type="checkbox"><span data-en="Approximate">Około</span></label></div></div>
+            </div>
             <div id="pin-return-visits">
               <div id="pin-visit-dates"></div>
               <button id="add-pin-visit" type="button" data-en="Add another visit">Dodaj kolejną wizytę</button>
@@ -113,7 +123,8 @@
           </fieldset>
           <div class="place-detail-actions">
             <button id="save-pin" type="submit" data-en="Save">Zapisz</button>
-            <button id="remove-pin" type="button" data-en="Remove pin" hidden>Usuń pinezkę</button>
+            <button id="cancel-pin" type="button" data-en="Cancel">Anuluj</button>
+            <button id="remove-pin" type="button" data-en="Remove" hidden>Usuń</button>
           </div>
         </form>
       </section>
@@ -123,11 +134,12 @@
       <div class="map-heading">
         <h2 id="map-title" data-en="World map">Mapa świata</h2>
         <div class="map-heading-tools">
+          <button id="focus-back" type="button" aria-label="Wróć" title="Wróć o jeden poziom lupy" data-en-label="Back" data-en-title="Go back one focus level" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 5-7 7 7 7M7 12h14"/></svg></button>
           <button id="focus-area" type="button" aria-pressed="false" aria-label="Wyodrębnij obszar" title="Wyodrębnij obszar" data-en-label="Focus on an area" data-en-title="Focus on an area" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="6.5"/><path d="m15 15 6 6"/></svg></button>
           <button id="add-pin" type="button" aria-pressed="false" aria-label="Dodaj pinezkę" title="Dodaj pinezkę" data-en-label="Add pin" data-en-title="Add pin"><span class="pin-glyph" aria-hidden="true"></span></button>
           <button id="toggle-marks" type="button" aria-pressed="false" aria-label="Ukryj zaznaczenia (H)" title="Ukryj zaznaczenia (H)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/><path class="eye-slash" d="m3 3 18 18"/></svg></button>
         </div>
-        <div id="area-focus-banner" hidden><label id="area-focus-villages-option" hidden><input id="area-focus-villages" type="checkbox"><span data-en="Villages">Wsie</span></label><label id="area-focus-detail-option" hidden title="Wymaga dostępu do internetu." data-en-title="Requires internet access."><input type="checkbox" data-online-setting="online_focus"><span data-en="Detailed map">Szczegółowa mapa</span></label><button id="leave-area-focus" type="button" data-en="Back to full map">Wróć do pełnej mapy</button></div>
+        <div id="area-focus-banner" hidden><span id="area-focus-division-counts" hidden></span><label id="area-focus-subregions-option" hidden><input id="area-focus-subregions" type="checkbox"><span data-en="Subregions">Podregiony</span><span id="area-focus-subregions-count"></span></label><label id="area-focus-cities-option" hidden><input id="area-focus-cities" type="checkbox" checked><span data-en="Cities">Miasta</span><span id="area-focus-cities-count"></span></label><label id="area-focus-villages-option" hidden><input id="area-focus-villages" type="checkbox"><span data-en="Villages">Wsie</span><span id="area-focus-villages-count"></span></label><label id="area-focus-detail-option" hidden title="Wymaga dostępu do internetu."><input type="checkbox" id="area-focus-detail"><span data-en="Detailed map">Szczegółowa mapa</span></label><button id="leave-area-focus" type="button" data-en="Back to full map">Wróć do pełnej mapy</button></div>
         <p id="map-hint">Kliknij lewym przyciskiem państwo, aby otworzyć jego szczegóły.</p>
         <button id="retry-map" type="button" data-en="Retry loading boundaries" hidden>Ponów pobieranie obrysów</button>
       </div>
@@ -141,7 +153,6 @@
         <div class="controls" role="group" aria-label="Sterowanie mapą" data-en-label="Map controls">
           <button id="zoom-in" type="button" aria-label="Przybliż" title="Przybliż" data-en-label="Zoom in" data-en-title="Zoom in">+</button>
           <button id="zoom-out" type="button" aria-label="Oddal" title="Oddal" data-en-label="Zoom out" data-en-title="Zoom out">−</button>
-          <button id="reset" type="button" aria-label="Przywróć domyślne przybliżenie" title="Przywróć domyślne przybliżenie" data-en-label="Reset zoom" data-en-title="Reset zoom">⌂</button>
         </div>
       </div>
       <div id="tooltip" hidden></div>
@@ -176,7 +187,7 @@
             <dt data-en="Drag either mouse button">Przeciąganie lewym lub prawym</dt><dd data-en="Move the map without marking places">Przesuń mapę bez zaznaczania miejsc</dd>
             <dt data-en="Left-click">Kliknięcie lewym</dt><dd data-en="Select a place or use the active pin / magnifier tool">Wybierz miejsce lub użyj włączonej pinezki / lupy</dd>
             <dt><kbd>P</kbd></dt><dd data-en="Toggle pin placement">Włącz / wyłącz dodawanie pinezki</dd>
-            <dt><kbd>F</kbd></dt><dd data-en="Toggle area selection (magnifier)">Włącz / wyłącz wybór obszaru lupą</dd>
+            <dt><kbd>F</kbd> / <span data-en="Middle mouse button">Środkowy przycisk myszy</span></dt><dd data-en="Toggle area selection (magnifier)">Włącz / wyłącz wybór obszaru lupą</dd>
             <dt><kbd>H</kbd></dt><dd data-en="Hide / show your map markings">Ukryj / pokaż swoje zaznaczenia na mapie</dd>
             <dt><kbd>Shift</kbd> + <span data-en="left-click">lewy przycisk</span></dt><dd data-en="Remove a saved place or pin">Usuń zapisane miejsce lub pinezkę</dd>
             <dt><kbd>Ctrl</kbd> + <span data-en="left-click">lewy przycisk</span></dt><dd data-en="Plan a new place">Dodaj nowe miejsce do planów</dd>
@@ -197,13 +208,16 @@
             <a href="https://overturemaps.org/attribution/" target="_blank" rel="noopener">Overture Maps</a>
             <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap</a>
             <a href="https://www.geoportal.gov.pl/pl/dane/panstwowy-rejestr-granic-prg/" target="_blank" rel="noopener">PRG</a>
-            <a href="https://www.geoboundaries.org/" target="_blank" rel="noopener">geoBoundaries · powiaty · © OpenStreetMap · ODbL</a>
+            <a href="https://www.geoboundaries.org/" target="_blank" rel="noopener">geoBoundaries · © OpenStreetMap contributors · ODbL / CC BY</a>
+            <a href="https://ec.europa.eu/eurostat/web/gisco/geodata/statistical-units" target="_blank" rel="noopener">© EuroGeographics for the administrative boundaries · Eurostat GISCO</a>
+            <span>Adapted from Statistics Canada, Census division boundaries, 2021 · OCHA Ukraine COD-AB v05, 2025</span>
             <a href="https://www.geoportal.gov.pl/pl/dane/baza-danych-obiektow-topograficznych-bdot10k/" target="_blank" rel="noopener">BDOT10k</a>
           </div>
         </section>
         <section id="data-dates-panel" class="toolbar-panel card" aria-labelledby="data-dates-title" hidden>
           <h2 id="data-dates-title" data-en="Data dates">Daty danych</h2>
           <dl class="data-dates">
+            <div><dt data-en="Global subregion data build">Przygotowanie podregionów świata</dt><dd><time datetime="2026-11-25"></time></dd></div>
             <div><dt data-en="Local basemap build">Przygotowanie lokalnego podkładu</dt><dd><time datetime="2026-11-17"></time></dd></div>
             <div><dt data-en="Local world city data build">Przygotowanie lokalnych danych o miastach świata</dt><dd><time datetime="2026-11-18"></time></dd></div>
             <div id="overture-data-date" hidden><dt data-en="Overture Maps release in use">Wczytane wydanie Overture Maps</dt><dd><time></time></dd></div>
@@ -297,7 +311,6 @@
           <div class="controls">
             <button type="button" id="challenge-zoom-in" aria-label="Przybliż mapę wyzwania" data-en-label="Zoom in on the challenge map">+</button>
             <button type="button" id="challenge-zoom-out" aria-label="Oddal mapę wyzwania" data-en-label="Zoom out on the challenge map">−</button>
-            <button type="button" id="challenge-reset" aria-label="Przywróć widok wyzwania" data-en-label="Reset challenge map view">⌂</button>
           </div>
         </div>
         <footer class="map-footer" aria-label="Pasek mapy wyzwania" data-en-label="Challenge map toolbar">
@@ -339,7 +352,7 @@
     </div>
     <dialog id="castle-options" class="card bliza-rules" aria-labelledby="castle-options-title">
       <h2 id="castle-options-title" data-en="Castle settings">Ustawienia zamków</h2>
-      <label class="island-option" title="Wymaga dostępu do internetu." data-en-title="Requires internet access."><input type="checkbox" data-online-setting="online_castles"> <span data-en="Detailed map">Szczegółowa mapa</span></label>
+      <label class="island-option" title="Wymaga dostępu do internetu." data-en-title="Requires internet access."><input type="checkbox" data-online-setting="online_details"> <span data-en="Detailed map">Szczegółowa mapa</span></label>
       <div id="castle-options-categories"></div>
       <p id="castle-options-status" role="status"></p>
       <form class="settings-actions" method="dialog">
@@ -349,7 +362,7 @@
     </dialog>
     <dialog id="hewelion-options" class="card bliza-rules" aria-labelledby="hewelion-options-title">
       <h2 id="hewelion-options-title" data-en="Hewelion options">Opcje Heweliona</h2>
-      <label class="island-option" title="Wymaga dostępu do internetu." data-en-title="Requires internet access."><input type="checkbox" data-online-setting="online_hewelion"> <span data-en="Detailed map">Szczegółowa mapa</span></label>
+      <label class="island-option" title="Wymaga dostępu do internetu." data-en-title="Requires internet access."><input type="checkbox" data-online-setting="online_details"> <span data-en="Detailed map">Szczegółowa mapa</span></label>
       <label class="island-option"><input type="checkbox" data-visibility-setting="seas"> <span data-en="Sea colour">Kolor morza</span></label>
       <p id="hewelion-options-status" role="status"></p>
       <form class="settings-actions" method="dialog">
@@ -400,6 +413,7 @@
         <fieldset id="diary-trip-fields">
           <legend id="diary-form-title"></legend>
           <div class="diary-input-grid">
+            <div id="trip-photos" class="photo-picker diary-wide-field"></div>
             <label class="diary-wide-field" for="diary-trip-name"><span data-en="Trip name">Nazwa wycieczki</span><input id="diary-trip-name" type="text" maxlength="100"></label>
             <div><label for="diary-start" data-en="Start date">Data początku</label><div class="visit-date-line"><span class="visit-date-value"><span id="diary-start-approx" hidden aria-hidden="true">~</span><input id="diary-start" type="date" max="9999-12-31"></span><label class="uncertain-date-option"><input id="diary-start-uncertain" type="checkbox"><span data-en="Uncertain">Niepewna</span></label></div></div>
             <div><label for="diary-end" data-en="End date">Data końca</label><div class="visit-date-line"><span class="visit-date-value"><span id="diary-end-approx" hidden aria-hidden="true">~</span><input id="diary-end" type="date" max="9999-12-31"></span><label class="uncertain-date-option"><input id="diary-end-uncertain" type="checkbox"><span data-en="Uncertain">Niepewna</span></label></div></div>
@@ -485,5 +499,31 @@
     </form>
   </dialog>
   <div id="achievement-notifications" class="achievement-notifications" role="status" aria-live="polite" aria-relevant="additions" aria-atomic="false"></div>
+  <section id="gallery-view" class="shell gallery-page" hidden aria-labelledby="gallery-title">
+    <div class="gallery-heading"><div><h2 id="gallery-title" data-en="Gallery">Galeria</h2><p id="gallery-count"></p></div><button id="gallery-undo" type="button" hidden data-en="Undo last deletion">Cofnij ostatnie usunięcie</button></div>
+    <details id="gallery-tag-filters" class="gallery-tag-filters"><summary data-en="Filters">Filtry</summary><div id="gallery-tag-options" class="gallery-filter-groups"></div><button id="gallery-all-tags" type="button" data-en="All photos">Wszystkie zdjęcia</button></details>
+    <p id="gallery-status" role="status"></p>
+    <div id="gallery-grid" class="gallery-grid"></div>
+  </section>
+  <dialog id="gallery-detail" class="card gallery-detail" aria-labelledby="gallery-detail-title">
+    <div class="gallery-detail-heading"><h2 id="gallery-detail-title"></h2><button id="gallery-close" type="button" class="detail-close" aria-label="Zamknij" data-en-label="Close">×</button></div>
+    <div class="gallery-detail-body">
+      <img id="gallery-detail-image" alt="">
+      <form id="gallery-edit-form">
+        <label for="gallery-description" data-en="Description">Opis</label><textarea id="gallery-description" rows="4" maxlength="500"></textarea>
+        <h3 data-en="Tags">Tagi</h3><div id="gallery-photo-tags" class="gallery-tag-options"></div>
+        <div class="gallery-add-tag"><label for="gallery-new-tag" data-en="New tag">Nowy tag</label><div><input id="gallery-new-tag" type="text" maxlength="60" placeholder="USA" autocomplete="off"><button id="gallery-add-tag" type="button" data-en="Add">Dodaj</button></div></div><p id="gallery-tag-status" role="status"></p>
+        <h3 data-en="Appears in">Występuje w</h3><ul id="gallery-uses"></ul>
+        <button id="gallery-more-info" type="button" aria-expanded="false" aria-controls="gallery-metadata" data-en="More information">Więcej informacji</button>
+        <div id="gallery-metadata" hidden>
+          <label for="gallery-photo-title" data-en="Photo title">Tytuł zdjęcia</label><input id="gallery-photo-title" type="text" maxlength="150">
+          <label for="gallery-photo-date" data-en="Date taken">Data zrobienia</label><input id="gallery-photo-date" type="date" max="9999-12-31">
+          <p id="gallery-photo-size"></p>
+        </div>
+        <p id="gallery-detail-status" role="status"></p>
+        <div class="place-detail-actions"><button type="submit" data-en="Save">Zapisz</button><button id="gallery-cancel" type="button" data-en="Cancel">Anuluj</button></div>
+      </form>
+    </div>
+  </dialog>
 </body>
 </html>

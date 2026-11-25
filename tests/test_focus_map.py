@@ -4,6 +4,25 @@ from src.focus_map import focus_area, search_area, contains, bounds
 
 
 class FocusMapTests(unittest.TestCase):
+    def test_latvia_focus_uses_subregions_while_poland_keeps_regions(self):
+        import json
+        from src import atlas
+        ids={row[5]:row[0] for row in json.loads(atlas.static_bytes('mapa.json'))['panstwo']}
+        self.assertEqual(focus_area('panstwo',ids['LV'])['division_level'],'subregion')
+        self.assertEqual(focus_area('panstwo',ids['PL'])['division_level'],'region')
+        self.assertEqual(focus_area('panstwo',ids['LV'])['counts']['regions'],0)
+        self.assertGreater(focus_area('panstwo',ids['LV'])['counts']['subregions'],0)
+        self.assertEqual(focus_area('panstwo',ids['PL'])['counts']['regions'],16)
+        self.assertEqual(focus_area('panstwo',ids['PL'])['counts']['subregions'],380)
+
+    def test_counts_cover_the_whole_region_without_viewport_limits(self):
+        from src.focus_map import area_counts
+        counts=area_counts('rejon','ne:POL-3140')
+        self.assertEqual(counts['subregions'],20)
+        self.assertGreater(counts['cities'],0)
+        self.assertGreater(counts['villages'],1000)
+        self.assertGreater(focus_area('kontynent','africa')['counts']['countries'],40)
+
     def test_country_region_locality_and_continent_boundaries(self):
         cases = [('panstwo', '1159321179', (21.01,52.23)),
                  ('rejon','ne:POL-3140',(18.65,54.35)),
@@ -43,6 +62,23 @@ class FocusMapTests(unittest.TestCase):
         self.assertLess(east, 55)
         self.assertLess(north, 39)
         self.assertEqual(area['bounds'], bounds(area['feature']['geometry']))
+
+    def test_europe_frame_includes_iceland_scandinavia_and_arctic_islands(self):
+        west,south,east,north=focus_area('kontynent','europe')['camera_bounds']
+        self.assertLessEqual(west,-25)
+        self.assertGreaterEqual(north,80)
+        self.assertGreaterEqual(east,31)
+        self.assertGreater(south,30)
+
+    def test_oceania_frame_includes_all_islands_across_the_date_line(self):
+        area=focus_area('kontynent','oceania');west,south,east,north=area['camera_bounds']
+        self.assertLess(east-west,180)
+        for rings in area['feature']['geometry']['coordinates']:
+            for lon,lat in rings[0]:
+                while lon<west:lon+=360
+                self.assertLessEqual(lon,east+1e-6)
+                self.assertLessEqual(south,lat)
+                self.assertGreaterEqual(north,lat)
 
     def test_local_search_respects_boundary_including_coastal_cities(self):
         results=search_area('rejon','ne:POL-3140','gdansk')
