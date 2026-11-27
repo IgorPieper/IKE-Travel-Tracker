@@ -6,6 +6,18 @@ const path = require('node:path');
 const source = fs.readFileSync(path.join(__dirname, '../web/js/obszar.js'), 'utf8');
 const geometry = { type: 'Polygon', coordinates: [ [[0,0],[10,0],[10,10],[0,10],[0,0]], [[4,4],[6,4],[6,6],[4,6],[4,4]] ] };
 
+test('capital districts are visible only while the detailed map is off',()=>{
+  let allowed=true;
+  const c=vm.createContext({onlineEnabled:()=>allowed});
+  vm.runInContext(source.slice(source.indexOf('const areaFocus ='),source.indexOf('function areaContainsPoint(')),c);
+  const evaluate=text=>vm.runInContext(text,c);
+  evaluate("areaFocus.area={category:'miasto',is_capital:true};areaFocus.details=false;");
+  assert.equal(evaluate('focusDistrictsVisible()'),true);
+  evaluate('areaFocus.details=true;');assert.equal(evaluate('focusDistrictsVisible()'),false);
+  allowed=false;assert.equal(evaluate('focusDistrictsVisible()'),true);
+  evaluate('areaFocus.area=null;');assert.equal(evaluate('focusDistrictsVisible()'),false);
+});
+
 test('focus excludes neighbouring areas and holes, including multipolygons', () => {
   const context = vm.createContext({});
   vm.runInContext(source.slice(source.indexOf('function areaContainsPoint('), source.indexOf('function focusContains(')), context);

@@ -52,9 +52,9 @@ test('sidebar editor hides previous content without changing view state and rest
   panel.scrollTop=0;c.editedPlace=null;c.syncEditorSidebar();
   assert.equal(places.hidden,false);assert.equal(panel.scrollTop,120);assert.equal(classes.has('editor-open'),false);
 });
-test('rapidly opening different places waits for closing and only opens the latest selection',async()=>{
+for (const autoClose of ['on','off']) test('rapidly opening different places saves the previous editor with auto close '+autoClose,async()=>{
   let release;const closing=new Promise(resolve=>release=resolve),opened=[];
-  const c=vm.createContext({ready:true,layout:{editor_auto_close:'on'},updateEditorSaveLabels:()=>{},editedPlace:{place:{id:'old'}},editedPin:null,editorRequest:0,
+  const c=vm.createContext({ready:true,layout:{editor_auto_close:autoClose},updateEditorSaveLabels:()=>{},editedPlace:{place:{id:'old'}},editedPin:null,editorRequest:0,
     consumeFocusSelection:()=>false,key:p=>p.id,closePlaceDetails:()=>closing,closePinEditor:async()=>true,
     setMapSidebarOpen:()=>{},savedPlaces:new Map([['b',{}],['c',{}]]),
     fillPlaceFields:()=>{},readPlaceChange:()=>({}),syncEditorSidebar:()=>opened.push(c.editedPlace.place.id),
@@ -64,17 +64,39 @@ test('rapidly opening different places waits for closing and only opens the late
   await Promise.all([a,b]);assert.deepEqual(opened,['c']);
 });
 
-test('manual closing mode ignores outside clicks and changing the map selection',async()=>{
+test('manual closing mode keeps the editor open on blank outside clicks',async()=>{
   let closed=0;
   const c=vm.createContext({ready:true,layout:{editor_auto_close:'off'},editedPlace:{place:{id:'old'}},editedPin:null,
     closePlaceDetails:()=>closed++,closePinEditor:()=>closed++});
-  vm.runInContext(block('function dismissEditorOutside(', 'document.addEventListener("pointerdown", dismissEditorOutside')+
-    block('async function openPlace(', 'async function closePlaceDetails('),c);
+  vm.runInContext(block('function dismissEditorOutside(', 'document.addEventListener("pointerdown", dismissEditorOutside'),c);
   c.dismissEditorOutside({target:{closest:()=>null}});
-  await c.openPlace({id:'other'});
   assert.equal(closed,0);assert.equal(c.editedPlace.place.id,'old');
   c.layout.editor_auto_close='on';c.dismissEditorOutside({target:{closest:()=>null}});
   assert.equal(closed,2);
+});
+
+test('selecting another place auto-saves the previous edits even with outside closing disabled',async()=>{
+  const {c,editor,saved}=setup('place');
+  Object.assign(c,{ready:true,layout:{editor_auto_close:'off'},editorRequest:0,consumeFocusSelection:()=>false,
+    setMapSidebarOpen:()=>{},savedPlaces:new Map([['next',{}]]),fillPlaceFields:()=>{},
+    updateEditorSaveLabels:()=>{},placeRemove:{},setPlaceEditorBusy:()=>{}});
+  vm.runInContext(block('async function openPlace(', 'async function closePlaceDetails('),c);
+  await c.openPlace({id:'next'});
+  assert.equal(saved(),1);
+  assert.notEqual(c.editedPlace,editor);
+  assert.equal(c.editedPlace.place.id,'next');
+});
+
+test('switching from a place to a pin still attempts saving when outside closing is disabled',async()=>{
+  let attempts=0;
+  const previous={place:{id:'old'}};
+  const c=vm.createContext({layout:{editor_auto_close:'off'},editedPlace:previous,editedPin:null,editorRequest:0,
+    closePlaceDetails:async()=>{attempts++;return false;}});
+  vm.runInContext(block('async function openPinEditor(', 'async function closePinEditor('),c);
+  await c.openPinEditor({id:'pin'},true);
+  assert.equal(attempts,1);
+  assert.equal(c.editedPlace,previous);
+  assert.equal(c.editedPin,null);
 });
 
 test('save label follows actual edits including photos and reverting a change',()=>{

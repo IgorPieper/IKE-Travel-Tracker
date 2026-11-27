@@ -139,7 +139,8 @@
           <button id="add-pin" type="button" aria-pressed="false" aria-label="Dodaj pinezkę" title="Dodaj pinezkę" data-en-label="Add pin" data-en-title="Add pin"><span class="pin-glyph" aria-hidden="true"></span></button>
           <button id="toggle-marks" type="button" aria-pressed="false" aria-label="Ukryj zaznaczenia (H)" title="Ukryj zaznaczenia (H)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/><path class="eye-slash" d="m3 3 18 18"/></svg></button>
         </div>
-        <div id="area-focus-banner" hidden><span id="area-focus-division-counts" hidden></span><label id="area-focus-subregions-option" hidden><input id="area-focus-subregions" type="checkbox"><span data-en="Subregions">Podregiony</span><span id="area-focus-subregions-count"></span></label><label id="area-focus-cities-option" hidden><input id="area-focus-cities" type="checkbox" checked><span data-en="Cities">Miasta</span><span id="area-focus-cities-count"></span></label><label id="area-focus-villages-option" hidden><input id="area-focus-villages" type="checkbox"><span data-en="Villages">Wsie</span><span id="area-focus-villages-count"></span></label><label id="area-focus-detail-option" hidden title="Wymaga dostępu do internetu."><input type="checkbox" id="area-focus-detail"><span data-en="Detailed map">Szczegółowa mapa</span></label><button id="leave-area-focus" type="button" data-en="Back to full map">Wróć do pełnej mapy</button></div>
+        <div id="area-focus-banner" hidden><span id="area-focus-district-status" hidden></span>
+            <span id="area-focus-division-counts" hidden></span><label id="area-focus-subregions-option" hidden><input id="area-focus-subregions" type="checkbox"><span data-en="Subregions">Podregiony</span><span id="area-focus-subregions-count"></span></label><label id="area-focus-cities-option" hidden><input id="area-focus-cities" type="checkbox" checked><span data-en="Cities">Miasta</span><span id="area-focus-cities-count"></span></label><label id="area-focus-villages-option" hidden><input id="area-focus-villages" type="checkbox"><span data-en="Villages">Wsie</span><span id="area-focus-villages-count"></span></label><label id="area-focus-detail-option" hidden title="Wymaga dostępu do internetu."><input type="checkbox" id="area-focus-detail"><span data-en="Detailed map">Szczegółowa mapa</span></label><button id="leave-area-focus" type="button" data-en="Back to full map">Wróć do pełnej mapy</button></div>
         <p id="map-hint">Kliknij lewym przyciskiem państwo, aby otworzyć jego szczegóły.</p>
         <button id="retry-map" type="button" data-en="Retry loading boundaries" hidden>Ponów pobieranie obrysów</button>
       </div>
@@ -162,8 +163,7 @@
           <button id="open-visibility-settings" type="button" aria-haspopup="dialog"><span aria-hidden="true">⚙</span><span data-en="Options">Opcje</span></button>
           <button id="toggle-legend" type="button" aria-expanded="false" aria-controls="legend-panel"><span aria-hidden="true">▤</span><span data-en="Legend">Legenda</span></button>
           <button id="toggle-shortcuts" type="button" aria-expanded="false" aria-controls="shortcuts-panel"><span aria-hidden="true">⌨</span><span data-en="Shortcuts">Skróty</span></button>
-          <button id="toggle-libraries" type="button" aria-expanded="false" aria-controls="libraries-panel"><span aria-hidden="true">▱</span><span data-en="Libraries">Biblioteki</span></button>
-          <button id="toggle-data-dates" type="button" aria-expanded="false" aria-controls="data-dates-panel"><span aria-hidden="true">◷</span><span data-en="Dates">Daty</span></button>
+          <button type="button" data-main-settings><span aria-hidden="true">⚙</span><span data-en="Settings">Ustawienia</span></button>
         </div>
         <div class="map-scale" aria-label="Skala mapy" data-en-label="Map scale">
           <div id="scale-bar" class="scale-bar" aria-hidden="true"></div>
@@ -202,6 +202,11 @@
         <section id="libraries-panel" class="toolbar-panel card" aria-labelledby="libraries-title" hidden>
           <h2 id="libraries-title" data-en="Libraries and data sources">Biblioteki i źródła danych</h2>
           <div class="library-links">
+            <a href="/stolice-zrodla.json" target="_blank" rel="noopener" data-en="Capital outlines and districts · sources and coverage">Obrysy i dzielnice stolic · źródła i pokrycie</a>
+            <a href="https://www.marineregions.org/sources.php" target="_blank" rel="noopener" data-en="World Seas · Marine Regions, IHO and SeaVoX">Morza świata · Marine Regions, IHO i SeaVoX</a>
+            <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener" data-en="Sea location markers · OpenStreetMap contributors (ODbL)">Lokalizacje mórz · autorzy OpenStreetMap (ODbL)</a>
+            <a href="https://data.grid3.org/" target="_blank" rel="noopener">GRID3 / CIESIN · CC BY-SA 4.0</a>
+            <a href="https://github.com/andilabs/warszawa-dzielnice-geojson" target="_blank" rel="noopener" data-en="Warsaw districts · andilabs">Dzielnice Warszawy · andilabs</a>
             <a href="https://maplibre.org/" target="_blank" rel="noopener">MapLibre GL JS</a>
             <a href="https://docs.protomaps.com/pmtiles/" target="_blank" rel="noopener">PMTiles</a>
             <a href="https://www.naturalearthdata.com/" target="_blank" rel="noopener">Natural Earth</a>
@@ -277,6 +282,15 @@
           </button>
           <button class="challenge-pin" type="button" data-pin-challenge="castles" aria-pressed="false" disabled>☆</button>
         </div>
+        <div class="challenge-card">
+          <button class="challenge-choice" type="button" data-challenge="seas">
+            <span class="challenge-choice-icon" aria-hidden="true">🌊</span>
+            <strong class="challenge-choice-name" data-en="Seas of the World">Morza Świata</strong>
+            <span data-en="Dip a toe in 90% of the seas on the list to complete the challenge.">Zanurz nogę w 90% mórz z listy, aby zaliczyć wyzwanie.</span>
+            <span id="seas-card-progress" class="challenge-card-progress"></span>
+          </button>
+          <button class="challenge-pin" type="button" data-pin-challenge="seas" aria-pressed="false" disabled>☆</button>
+        </div>
       </div>
     </section>
     <div id="challenge-detail" hidden>
@@ -321,9 +335,10 @@
             <button id="island-options-button" type="button" aria-haspopup="dialog" aria-controls="island-options" hidden><span aria-hidden="true">⚙</span><span data-en="Options">Opcje</span></button>
             <button id="hewelion-options-button" type="button" aria-haspopup="dialog" aria-controls="hewelion-options" hidden><span aria-hidden="true">⚙</span><span data-en="Options">Opcje</span></button>
             <button id="castle-options-button" type="button" aria-haspopup="dialog" aria-controls="castle-options" hidden><span aria-hidden="true">⚙</span><span data-en="Settings">Ustawienia</span></button>
+            <button id="seas-options-button" type="button" aria-haspopup="dialog" aria-controls="seas-options" hidden><span aria-hidden="true">⚙</span><span data-en="Options">Opcje</span></button>
             <button id="challenge-rules-button" type="button" aria-haspopup="dialog" aria-controls="bliza-rules" hidden><span aria-hidden="true">▤</span><span data-en="Rules">Zasady</span></button>
             <button id="castle-legend-button" type="button" aria-controls="castle-legend" aria-expanded="false" hidden><span aria-hidden="true">◫</span><span data-en="Legend">Legenda</span></button>
-            <button id="challenge-source-button" type="button" aria-controls="challenge-sources" aria-expanded="false"><span aria-hidden="true">▱</span><span data-en="Libraries">Biblioteki</span></button>
+            <button type="button" data-main-settings><span aria-hidden="true">⚙</span><span data-en="Settings">Ustawienia</span></button>
           </div>
           <section id="castle-legend" class="toolbar-panel card" aria-labelledby="castle-legend-title" hidden>
             <h2 id="castle-legend-title" data-en="Legend">Legenda</h2>
@@ -350,13 +365,22 @@
       </section>
       </div>
     </div>
+    <dialog id="seas-options" class="card bliza-rules" aria-labelledby="seas-options-title">
+      <h2 id="seas-options-title" data-en="Sea challenge options">Opcje wyzwania mórz</h2>
+      <label class="island-option"><input id="seas-simple" type="checkbox" checked> <span data-en="Simplified outlines">Uproszczone obrysy</span></label>
+      <p id="seas-options-status" role="status"></p>
+      <form class="settings-actions" method="dialog">
+        <button type="button" class="main-settings-link" data-main-settings data-en="Settings">Ustawienia</button>
+        <button type="submit" class="save-settings" data-en="Close">Zamknij</button>
+      </form>
+    </dialog>
     <dialog id="castle-options" class="card bliza-rules" aria-labelledby="castle-options-title">
       <h2 id="castle-options-title" data-en="Castle settings">Ustawienia zamków</h2>
       <label class="island-option" title="Wymaga dostępu do internetu." data-en-title="Requires internet access."><input type="checkbox" data-online-setting="online_details"> <span data-en="Detailed map">Szczegółowa mapa</span></label>
       <div id="castle-options-categories"></div>
       <p id="castle-options-status" role="status"></p>
       <form class="settings-actions" method="dialog">
-        <button type="button" class="main-settings-link" data-main-settings data-en="Main settings">Ustawienia główne</button>
+        <button type="button" class="main-settings-link" data-main-settings data-en="Settings">Ustawienia</button>
         <button type="submit" class="save-settings" data-en="Close">Zamknij</button>
       </form>
     </dialog>
@@ -366,7 +390,7 @@
       <label class="island-option"><input type="checkbox" data-visibility-setting="seas"> <span data-en="Sea colour">Kolor morza</span></label>
       <p id="hewelion-options-status" role="status"></p>
       <form class="settings-actions" method="dialog">
-        <button type="button" class="main-settings-link" data-main-settings data-en="Main settings">Ustawienia główne</button>
+        <button type="button" class="main-settings-link" data-main-settings data-en="Settings">Ustawienia</button>
         <button type="submit" class="save-settings" data-en="Close">Zamknij</button>
       </form>
     </dialog>
@@ -375,7 +399,7 @@
       <label class="island-option"><input id="enable-cyprus" type="checkbox" checked> <span data-en="Cyprus">Cypr</span></label>
       <p id="island-options-status" role="status"></p>
       <form class="settings-actions" method="dialog">
-        <button type="button" class="main-settings-link" data-main-settings data-en="Main settings">Ustawienia główne</button>
+        <button type="button" class="main-settings-link" data-main-settings data-en="Settings">Ustawienia</button>
         <button type="submit" class="save-settings" data-en="Close">Zamknij</button>
       </form>
     </dialog>
@@ -403,11 +427,11 @@
         <h2 id="diary-title" data-en="Journal">Dziennik</h2>
         <button id="diary-new-trip" type="button" data-en="Add trip" disabled>Dodaj wycieczkę</button>
       </div>
+      <p id="diary-user" class="diary-user" hidden></p>
       <p id="diary-status" role="status"></p>
       <details class="diary-filters">
         <summary data-en="Filters">Filtry</summary>
-        <div id="diary-filter-options" class="diary-filter-options" role="group" aria-label="Typy wpisów" data-en-label="Entry types"></div>
-        <button id="diary-show-all" type="button" data-en="Show all">Pokaż wszystkie</button>
+        <div id="diary-filter-options" class="gallery-filter-groups" role="group" aria-label="Typy wpisów" data-en-label="Entry types"></div>
       </details>
       <form id="diary-trip-form" hidden>
         <fieldset id="diary-trip-fields">
@@ -444,13 +468,12 @@
     <section class="card main-settings-panel">
       <header class="settings-heading">
         <div>
-          <h2 id="main-settings-title" tabindex="-1" data-en="Main settings">Ustawienia główne</h2>
-          <p class="settings-intro" data-en="Adjust app settings.">Dostosuj ustawienia aplikacji.</p>
+          <h2 id="main-settings-title" tabindex="-1" data-en="Settings">Ustawienia</h2>
         </div>
         <span class="settings-local"><span aria-hidden="true">✓</span><span data-en="Saved automatically">Automatyczny zapis</span></span>
       </header>
       <div class="settings-layout">
-        <nav id="settings-category-nav" class="settings-category-nav" aria-label="Kategorie ustawień" data-en-label="Settings categories"></nav>
+        <nav id="settings-category-nav" class="settings-category-nav" aria-label="Podstrony ustawień" data-en-label="Settings pages"></nav>
         <div id="main-settings-categories" class="main-settings-categories"></div>
       </div>
       <p id="main-settings-status" role="status"></p>
@@ -473,9 +496,10 @@
     </div>
     <fieldset id="visible-layers"><legend data-en="Map layers">Warstwy</legend></fieldset>
     <fieldset id="visible-presets"><legend data-en="View buttons">Przyciski widoków</legend></fieldset>
+    <div class="option-row"><label><input id="map-simple-outlines" type="checkbox"><span data-en="Simplified land outlines">Uproszczone obrysy lądów</span></label></div>
     <p id="visibility-message" role="status"></p>
     <div class="settings-actions">
-      <button type="button" class="main-settings-link" data-main-settings data-en="Main settings">Ustawienia główne</button>
+      <button type="button" class="main-settings-link" data-main-settings data-en="Settings">Ustawienia</button>
       <button id="close-visibility-settings" class="save-settings" type="button" data-en="Close">Zamknij</button>
     </div>
   </dialog>
@@ -505,6 +529,11 @@
     <p id="gallery-status" role="status"></p>
     <div id="gallery-grid" class="gallery-grid"></div>
   </section>
+  <dialog id="diary-place-editor" class="card diary-place-editor">
+    <button id="diary-close-place-editor" type="button" class="diary-editor-close" aria-label="Zamknij edytor" data-en-label="Close editor">×</button>
+    <div id="diary-place-editor-body"></div>
+    <p id="diary-place-editor-status" role="status"></p>
+  </dialog>
   <dialog id="gallery-detail" class="card gallery-detail" aria-labelledby="gallery-detail-title">
     <div class="gallery-detail-heading"><h2 id="gallery-detail-title"></h2><button id="gallery-close" type="button" class="detail-close" aria-label="Zamknij" data-en-label="Close">×</button></div>
     <div class="gallery-detail-body">

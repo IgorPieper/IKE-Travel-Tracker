@@ -14,9 +14,10 @@ function photoGallery(container, value) {
   for (const photo of refs) {
     const figure = document.createElement("figure");
     const image = document.createElement("img");
-    image.src = "/photos/" + photo.id + ".jpg";
+    image.src = "/photos/" + photo.id + ".jpg?thumbnail=1";
     image.alt = photo.caption || tr("Zdjęcie z podróży", "Travel photo");
     image.loading = "lazy";
+    image.decoding = "async";
     figure.append(image);
     if (photo.caption) {
       const caption = document.createElement("figcaption");

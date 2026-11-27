@@ -4,11 +4,12 @@
   const byId = (id) => document.getElementById(id);
   const catalogues = new Map();
   const loadedCatalogues = new Map();
-  const selected = { parks: "", bliza: "", islands: "", hewelion: "", castles: "" };
+  const selected = { parks: "", bliza: "", islands: "", hewelion: "", castles: "", seas: "" };
   const catalogueUrls = {
     parks: "/parki-wyzwanie.json", bliza: "/latarnie-wyzwanie.json", islands: "/wyspy-greckie.json",
     hewelion: "/heweliony.json",
     castles: "/polskie-zamki.json",
+    seas: "/morza-proste.json",
   };
   let lighthouseQuery = "";
   // The 13 locations in the BLIZA passport, plus Rozewie II added as the 14th in 2022 (NMM).
@@ -40,7 +41,7 @@
     Q7282904 Q7339790 Q7396104 Q7559769 Q790659 Q8960918 Q983738 Q98925433
   `.trim().split(/\s+/));
   const progress = { atrakcja_parku: new Set(), park_narodowy: new Set(), latarnia: new Set(),
-    wyspa_grecka: new Set(), cypr: new Set(), hewelion: new Set(), zamek: new Set() };
+    wyspa_grecka: new Set(), cypr: new Set(), hewelion: new Set(), zamek: new Set(), morze: new Set() };
   const pending = new Set();
   const achievementsView = byId("achievements-view");
   const stateCodes = new Set("AL AK AZ AR CA CO CT DE FL GA HI ID IL IN IA KS KY LA ME MD MA MI MN MS MO MT NE NV NH NJ NM NY NC ND OH OK OR PA RI SC SD TN TX UT VT VA WA WV WI WY".split(" "));
@@ -65,6 +66,7 @@
   let achievementStatsTimer;
   const achievementTiersSeen = new Map();
   const collapsedAchievementGroups = new Set();
+  const expandedAchievementLists = new Set();
   const achievementToastQueue = [];
   const achievementToastDuration = 6000;
   let visitedChallengeData = false;
@@ -99,7 +101,6 @@
   const pinnedChallenges = new Set();
   let pinSettingsRequest;
   const sources = byId("challenge-sources");
-  const sourceButton = byId("challenge-source-button");
   const castleLegend = byId("castle-legend");
   const castleLegendButton = byId("castle-legend-button");
   const sidebar = byId("challenge-sidebar");
@@ -111,7 +112,17 @@
   let map;
   let mapReady = false;
   let challengeBaseData;
-  let usesHewelionBase = false;
+  let usesEmptyBase = false;
+  let seaLandRequest;
+  let seaOverviewRequest;
+  let seaDetailRequest;
+  let seaOverview;
+  let seaDetail;
+  let seaGeometryKey;
+  let hoveredArea;
+  let areaTooltip;
+  const seaSimpleInput = byId('seas-simple');
+  const seaOptions = byId('seas-options');
   let castleTooltip;
   let hewelionTooltip;
   let hoveredCastle;
@@ -149,17 +160,30 @@
     return promise;
   }
 
+  let summariesRequest;
+  function loadChallengeSummaries() {
+    summariesRequest ||= getData('/api/challenge-catalogues').then((summaries) => {
+      for (const [challenge, loaded] of Object.entries(summaries)) {
+        if (loadedCatalogues.has(challenge)) continue;
+        loaded.entries = new Map(loaded.data.features.map((feature) => [feature.properties.id, feature]));
+        loadedCatalogues.set(challenge, loaded);
+      }
+    }).catch((error) => { summariesRequest = undefined; throw error; });
+    return summariesRequest;
+  }
+
   let activeCatalogue;
   const isPark = () => current === "parks";
   const isBliza = () => current === "bliza";
   const isIslands = () => current === "islands";
   const isHewelion = () => current === "hewelion";
   const isCastles = () => current === "castles";
+  const isSeas = () => current === "seas";
   const normalize = (name) => name.toLowerCase().normalize("NFD").replace(/\p{M}/gu, "").replaceAll("ł", "l");
   const nameOf = (entry) => tr(entry.properties.name, entry.properties.english || entry.properties.name);
 
   function recordProgress(data) {
-    for (const category of Object.keys(progress)) progress[category] = new Set(data[category]);
+    for (const category of Object.keys(progress)) progress[category] = new Set(data[category] || []);
     visitedChallengeData = true;
   }
 
@@ -202,6 +226,17 @@
     const label = Math.min(count, target) + " / " + target + tr(" zdobytych wysp", " islands visited")
       + (complete ? tr(" · Ukończono", " · Completed") : "");
     return { count, target, complete, label };
+  }
+
+  function seasProgress(seas) {
+    const required = new Set([...seas.entries].filter(([,entry]) => !entry.properties?.optional).map(([id]) => id));
+    const total = required.size;
+    const target = Math.ceil(total * .9);
+    const count = [...progress.morze].filter(id => required.has(id)).length;
+    const complete = target > 0 && count >= target;
+    return {count, target, total, complete, label: `${count} / ${total}` + tr(" odwiedzonych mórz", " seas visited")
+      + tr(` · Cel: ${target} (90%)`, ` · Goal: ${target} (90%)`)
+      + (complete ? tr(" · Ukończono", " · Completed") : "")};
   }
 
   function completedParks(parks) {
@@ -271,6 +306,12 @@
       byId("castles-card-progress").textContent = label;
       picker.querySelector('[data-challenge="castles"]').classList.toggle("is-complete", complete);
     }
+    const seas = loadedCatalogues.get("seas");
+    if (seas) {
+      const state = seasProgress(seas);
+      byId("seas-card-progress").textContent = state.label;
+      picker.querySelector('[data-challenge="seas"]').classList.toggle("is-complete", state.complete);
+    }
     orderChallengeCards();
     renderAchievements();
   }
@@ -330,6 +371,8 @@
     const lights = loadedCatalogues.get("bliza");
     const islands = loadedCatalogues.get("islands");
     if (parks) result.parks = { count: completedParks(parks) };
+    const seas = loadedCatalogues.get("seas");
+    if (seas) result.seas = seasProgress(seas);
     if (lights) {
       const state = blizaProgress(lights);
       result.bliza = { count: state.count, target: state.target,
@@ -353,7 +396,8 @@
     if (separator < 0) return metrics[rule] || {};
     const kind = rule.slice(0, separator);
     const location = rule.slice(separator + 1);
-    if (kind === "panstwo") return { count: Number(visitedCodes.includes(location)) };
+    if (kind === "panstwo") return { count: [...new Set(location.split("|"))].filter((code) => visitedCodes.includes(code)).length };
+    if (kind === "rejony") return { count: [...new Set(location.split("|"))].filter((id) => regionsVisited.has(id)).length };
     if (kind === "kontynent") return { count: Number(continentsVisited.has(location)) };
     if (kind === "zamek") {
       if (!visitedChallengeData) return {};
@@ -397,7 +441,10 @@
       title.textContent = tr(...definition.title);
       const goal = document.createElement("p");
       goal.className = "achievement-toast-goal";
-      goal.textContent = (definition.levels.length > 1 ? tr(...tier.label) + " · " : "") + tr(...tier.goal);
+      const requirementText = tr(...tier.goal);
+      const compactGoal = ["kashubia", "biblical-countries"].includes(definition.id) && requirementText.includes(": ")
+        ? requirementText.slice(0, requirementText.indexOf(": ")) + "." : requirementText;
+      goal.textContent = (definition.levels.length > 1 ? tr(...tier.label) + " · " : "") + compactGoal;
       copy.append(label, title, goal);
       const close = document.createElement("button");
       close.type = "button";
@@ -431,6 +478,33 @@
       }
     }
     showAchievementToasts();
+  }
+
+  function appendAchievementList(card, id, requirement) {
+    if (!["kashubia", "biblical-countries"].includes(id)) return;
+    const separator = requirement.textContent.indexOf(": ");
+    if (separator < 0) return;
+    const text = requirement.textContent.slice(separator + 2);
+    requirement.textContent = requirement.textContent.slice(0, separator) + ".";
+    const details = document.createElement("details");
+    details.className = "achievement-place-list";
+    details.open = expandedAchievementLists.has(id);
+    const toggle = document.createElement("summary");
+    const updateLabel = () => {
+      toggle.textContent = id === "kashubia"
+        ? (details.open ? tr("Ukryj powiaty", "Hide counties") : tr("Pokaż powiaty", "Show counties"))
+        : (details.open ? tr("Ukryj kraje", "Hide countries") : tr("Pokaż kraje", "Show countries"));
+    };
+    updateLabel();
+    const list = document.createElement("p");
+    list.textContent = text;
+    details.append(toggle, list);
+    details.addEventListener("toggle", () => {
+      if (details.open) expandedAchievementLists.add(id);
+      else expandedAchievementLists.delete(id);
+      updateLabel();
+    });
+    card.append(details);
   }
 
   function achievementGroup(id, pl, en, cards) {
@@ -491,6 +565,7 @@
       const story = document.createElement("p");
       story.textContent = tr(...description);
       card.append(header, requirement, story);
+      appendAchievementList(card, id, requirement);
       if (levels.length > 1) {
         const milestones = document.createElement("ol");
         milestones.className = "achievement-tiers";
@@ -532,7 +607,7 @@
     renderAchievements();
     const configuration = getData("/api/osiagniecia");
     const freshVisits = ready ? refreshMapVisits() : Promise.resolve();
-    const states = getRegionCatalogue().then(({ features }) => {
+    const states = getData('/api/rejony?catalogue=1&country=US&levels=region').then(({ features }) => {
       usStateIds = new Set(features.filter(({ properties }) =>
         properties.country === "US" && properties.level !== "subregion" && stateCodes.has(properties.alias.split(" ").at(-1).slice(3))
       ).map(({ properties }) => properties.id));
@@ -546,7 +621,7 @@
       return loadProgress();
     });
     const [config, ...results] = await Promise.allSettled([
-      configuration, states, freshVisits, freshProgress, ...Object.keys(catalogueUrls).map(catalogue),
+      configuration, states, freshVisits, freshProgress, loadChallengeSummaries(),
     ]);
     if (sequence !== achievementLoad) return;
     if (config.status === "rejected") {
@@ -761,6 +836,23 @@
         panel.append(location);
       }
       addCheckbox(panel, "zamek", id, tr("Odwiedzony zamek", "Castle visited"));
+    } else if (isSeas()) {
+      const {boundary_kind} = entry.properties;
+      if (boundary_kind === "location") {
+        const note = document.createElement("p");
+        note.textContent = tr("Znacznik orientacyjny — brak obrysu w źródle danych.", "Reference marker — no outline available in the source data.");
+        panel.append(note);
+      }
+      if (boundary_kind === 'approximate') {
+        const note = document.createElement('p');
+        note.textContent = tr('Przybliżony obrys.', 'Approximate outline.');
+        panel.append(note);
+      }
+      if (entry.properties.optional) {
+        const note = document.createElement('p');
+        note.textContent = tr('Opcjonalne — poza licznikiem wyzwania.', 'Optional — does not count toward completion.');
+        panel.append(note);
+      }
     } else if (!isPark()) {
       const { id, country, poland } = entry.properties;
       addCheckbox(panel, "latarnia", id, tr("Odwiedzona latarnia", "Lighthouse visited"),
@@ -838,7 +930,7 @@
       counter.textContent = castleProgress(activeCatalogue).label;
       entries = entries.filter(castleVisible);
     } else {
-      counter.textContent = islandProgress(activeCatalogue).label;
+      counter.textContent = isSeas() ? seasProgress(activeCatalogue).label : islandProgress(activeCatalogue).label;
     }
     const matches = entries.filter((entry) => {
       const { name, english, country } = entry.properties;
@@ -846,14 +938,20 @@
     }).sort((a, b) => nameOf(a).localeCompare(nameOf(b), document.documentElement.lang));
     const tiers = Object.keys(castleCategories);
     if (isCastles()) matches.sort((a, b) => tiers.indexOf(a.properties.tier) - tiers.indexOf(b.properties.tier));
+    if (isSeas()) matches.sort((a,b) => Number(Boolean(a.properties.optional))-Number(Boolean(b.properties.optional)));
     const limit = isCastles() ? matches.length : 100;
     note.textContent = matches.length > limit
       ? tr("Pierwsze 100 wyników. Użyj wyszukiwarki, aby zawęzić listę.", "First 100 results. Use search to narrow the list.")
       : matches.length === 0 ? (isCastles() ? tr("Wszystkie kategorie są ukryte.", "All categories are hidden.")
         : tr("Brak wyników.", "No results.")) : "";
-    let previousTier;
+    let previousTier, optionalHeading = false;
     for (const feature of matches.slice(0, limit)) {
       const id = feature.properties.id;
+      if (isSeas() && feature.properties.optional && !optionalHeading) {
+        optionalHeading = true;
+        const heading = document.createElement("li");heading.className = "castle-list-heading";
+        heading.textContent = tr("Opcjonalne · poza licznikiem", "Optional · outside the total");list.append(heading);
+      }
       if (isCastles() && feature.properties.tier !== previousTier) {
         previousTier = feature.properties.tier;
         const heading = document.createElement("li");
@@ -880,7 +978,7 @@
         const state = parkProgress(feature);
         counter.textContent = state.seen + "/" + state.attractions.length;
       } else {
-        const category = isCastles() ? "zamek" : isHewelion() ? "hewelion" : isIslands() ? "wyspa_grecka" : "latarnia";
+        const category = isSeas() ? "morze" : isCastles() ? "zamek" : isHewelion() ? "hewelion" : isIslands() ? "wyspa_grecka" : "latarnia";
         counter.textContent = progress[category].has(id) ? "✓" : "";
       }
       button.append(description, counter);
@@ -896,12 +994,18 @@
     if (!mapReady || !activeCatalogue) return;
     const ids = isPark()
       ? activeCatalogue.data.features.filter((feature) => parkProgress(feature).visited).map((feature) => feature.properties.id)
-      : [...progress[isIslands() ? "wyspa_grecka" : "latarnia"]];
+      : [...progress[isSeas() ? "morze" : isIslands() ? "wyspa_grecka" : "latarnia"]];
     const done = ["in", ["get", "id"], ["literal", ids]];
     const selectedFeature = ["==", ["get", "id"], selected[current]];
     const passportFeature = ["in", ["get", "id"], ["literal", passportLighthouses]];
     const lionsFound = ["in", ["get", "id"], ["literal", [...progress.hewelion]]];
     const castlesVisited = ["in", ["get", "id"], ["literal", [...progress.zamek]]];
+    if (isSeas()) {
+      map.setPaintProperty('challenge-seas-fill', 'fill-color', ['case', done, '#b695e5', '#cae5f6']);
+      map.setPaintProperty('challenge-seas-borders', 'line-color', ['case', selectedFeature, '#3a5939', done, '#8057b6', '#477a9d']);
+      map.setPaintProperty('challenge-seas-borders', 'line-width', ['case', selectedFeature, 2.6, 1.15]);
+      return;
+    }
     map.setPaintProperty("challenge-castles", "circle-color", ["case", selectedFeature, "#30214e", "#fff"]);
     map.setLayoutProperty("challenge-castle-icons", "icon-image", ["concat",
       ["case", castlesVisited, "castle-visited-", "castle-"], ["get", "tier"]]);
@@ -909,10 +1013,10 @@
       ["case", lionsFound, "#8057b6", ["==", ["get", "lastKnown"], true], "#74717a", "#bd711d"]);
     map.setPaintProperty("challenge-lions", "circle-stroke-width", ["case", selectedFeature, 3, 1.5]);
     map.setPaintProperty("challenge-cyprus", "fill-color", progress.cypr.has("cyprus") ? "#dfb579" : "#eee2d7");
-    map.setPaintProperty("challenge-parks", "fill-color", ["case", done, "#edc65a", isIslands() ? "#cae5f6" : "#dcebd9"]);
+    map.setPaintProperty("challenge-parks", "fill-color", ["case", done, isSeas() ? "#b695e5" : "#edc65a", isIslands() || isSeas() ? "#cae5f6" : "#dcebd9"]);
     map.setPaintProperty("challenge-park-borders", "line-color", ["case",
       ["all", done, selectedFeature], "#785008", done, "#a27316",
-      selectedFeature, "#3a5939", isIslands() ? "#477a9d" : "#6c9067"]);
+      selectedFeature, "#3a5939", isIslands() || isSeas() ? "#477a9d" : "#6c9067"]);
     map.setPaintProperty("challenge-park-borders", "line-width", ["case", selectedFeature, 2.6, 1.15]);
     map.setPaintProperty("challenge-lighthouses", "circle-color", ["case", done, "#8057b6", "#df9c45"]);
     map.setPaintProperty("challenge-lighthouses", "circle-stroke-color", ["case",
@@ -923,6 +1027,7 @@
 
   function resetMap() {
     if (!map || !detailVisible()) return;
+    map.setRenderWorldCopies(false);
     if (isHewelion() && activeCatalogue) {
       const bounds = new maplibregl.LngLatBounds();
       for (const { geometry } of activeCatalogue.data.features) bounds.extend(geometry.coordinates);
@@ -937,7 +1042,7 @@
     } else if (isIslands()) {
       map.fitBounds(greeceAndCyprusBounds,
         { padding: { top: 22, bottom: 22, left: 22, right: 55 }, duration: 0 });
-    } else if (isBliza() && extent === "world") {
+    } else if (isSeas() || isBliza() && extent === "world") {
       map.jumpTo({ center: [0, 20], zoom: 0.5 });
     } else {
       map.fitBounds(polandBounds, { padding: 22, duration: 0 });
@@ -946,9 +1051,11 @@
 
   function updateChallengeSea() {
     if (!mapReady || !detailVisible()) return;
-    const blueSea = isBliza() && extent === "world" && visibility.seas;
+    const blueSea = isSeas() || isBliza() && extent === "world" && visibility.seas;
     map.setPaintProperty("challenge-background", "background-color", blueSea ? mapColors.lake : "#fff");
-    map.setLayoutProperty("challenge-land", "visibility", blueSea ? "visible" : "none");
+    map.setLayoutProperty("challenge-land", "visibility", blueSea && !isSeas() ? "visible" : "none");
+    for (const layer of ['challenge-sea-land', 'challenge-coastline'])
+      map.setLayoutProperty(layer, 'visibility', isSeas() ? 'visible' : 'none');
   }
 
   function ensureParkForests() {
@@ -1041,16 +1148,53 @@
     hideCastleTooltip();
     const { data } = activeCatalogue;
     const filter = isCastles() ? castleVisible : isBliza() ? lighthouseVisible : null;
-    map.getSource("challenge-items").setData(filter ? { ...data, features: data.features.filter(filter) } : data);
+    map.getSource("challenge-items").setData(isSeas() ? loadingEmpty : filter ? { ...data, features: data.features.filter(filter) } : data);
+  }
+
+  function ensureSeaLand() {
+    seaLandRequest ||= getData('/morza-lady.json').then((data) => {
+      map.getSource('challenge-sea-land').setData(data);
+    }).catch((error) => { seaLandRequest = undefined; console.error(error); });
+  }
+
+  function updateSeaGeometry() {
+    if (!mapReady || !isSeas() || !activeCatalogue || !detailVisible()) return;
+    ensureSeaLand();
+    const simple = seaSimpleInput.checked;
+    const detailed = !simple && map.getZoom() >= 6;
+    if (detailed && !seaDetail) {
+      seaDetailRequest ||= getData('/morza-wyzwanie.json').then((data) => {
+        seaDetail = data; updateSeaGeometry();
+      }).catch((error) => { seaDetailRequest = undefined; console.error(error); });
+    } else if (!simple && !detailed && !seaOverview) {
+      seaOverviewRequest ||= getData('/morza-mapa.json').then((data) => {
+        seaOverview = data; updateSeaGeometry();
+      }).catch((error) => { seaOverviewRequest = undefined; console.error(error); });
+    }
+    let data = detailed && seaDetail || !simple && seaOverview || activeCatalogue.data;
+    let key = simple ? 'simple' : detailed && seaDetail ? 'detail' : seaOverview ? 'overview' : 'simple';
+    if (key === 'detail') {
+      const bounds = map.getBounds();
+      const west = bounds.getWest(), east = bounds.getEast(), south = bounds.getSouth(), north = bounds.getNorth();
+      const features = data.features.filter((f) => {
+        const [w,s,e,n] = f.properties.bounds;
+        return s <= north && n >= south && [-360,0,360].some((offset) => w + offset <= east && e + offset >= west);
+      });
+      key += ':' + features.map((f) => f.properties.id).join(',');
+      data = {...data, features};
+    }
+    if (seaGeometryKey === key) return;
+    seaGeometryKey = key;
+    map.getSource('challenge-seas').setData(data);
   }
 
   function showFeatures(reset = false) {
     if (!mapReady || !activeCatalogue || !detailVisible()) return;
-    if (usesHewelionBase !== isHewelion()) {
-      usesHewelionBase = isHewelion();
-      map.getSource("challenge-base").setData(usesHewelionBase ? loadingEmpty : challengeBaseData);
+    if (usesEmptyBase !== (isHewelion() || isSeas())) {
+      usesEmptyBase = isHewelion() || isSeas();
+      map.getSource("challenge-base").setData(usesEmptyBase ? loadingEmpty : challengeBaseData);
     }
-    const world = isBliza() && extent === "world";
+    const world = isSeas() || isBliza() && extent === "world";
     const bounds = isHewelion() ? gdanskMapBounds : isIslands() ? [[10, 26], [44, 49]] : [[10, 46], [28, 58]];
     map.setMaxBounds(world ? null : bounds);
     const country = ["==", ["get", "kind"], "country"];
@@ -1072,8 +1216,9 @@
     map.setPaintProperty("challenge-parks", "fill-opacity", isPark() ? 0.55 : 0.95);
     updateChallengeItems();
     for (const [layer, visible] of Object.entries({
-      "challenge-countries": !isHewelion(),
+      "challenge-countries": !isHewelion() && !isSeas(),
       "challenge-parks": isPark() || isIslands(), "challenge-park-borders": isPark() || isIslands(),
+      'challenge-seas-fill': isSeas(), 'challenge-seas-borders': isSeas(),
       "challenge-lighthouses": isBliza(), "challenge-lions": isHewelion(),
       "challenge-castles": isCastles(), "challenge-castle-icons": isCastles(),
     })) {
@@ -1081,6 +1226,7 @@
     }
     map.resize();
     if (reset) resetMap();
+    updateSeaGeometry();
     if (pendingFeaturePan) {
       pendingFeaturePan = false;
       const feature = selectedInScope();
@@ -1096,6 +1242,7 @@
       map.jumpTo({ center: feature.geometry.coordinates, zoom: Math.max(map.getZoom(), zoom) });
     } else {
       const [west, south, east, north] = feature.properties.bounds;
+      if (isSeas()) map.setRenderWorldCopies(west < -180 || east > 180);
       map.fitBounds([[west, south], [east, north]], { padding: 32, maxZoom: 12, duration: 0 });
     }
   }
@@ -1137,8 +1284,8 @@
 
   function createMap(basemap) {
     if (map || !detailVisible()) return;
-    challengeBaseData = basemapWithParkMask(basemap);
-    usesHewelionBase = isHewelion();
+    challengeBaseData = basemap ? basemapWithParkMask(basemap) : null;
+    usesEmptyBase = isHewelion() || isSeas();
     const base = { source: "challenge-base" };
     const items = { source: "challenge-items" };
     const waterLayer = (id, kind, type, source) => ({
@@ -1158,7 +1305,9 @@
       style: {
         version: 8,
         sources: {
-          "challenge-base": { type: "geojson", data: usesHewelionBase ? loadingEmpty : challengeBaseData, maxzoom: 10 },
+          "challenge-base": { type: "geojson", data: usesEmptyBase ? loadingEmpty : challengeBaseData, maxzoom: 10 },
+          'challenge-sea-land': {type: 'geojson', data: loadingEmpty, maxzoom: 9, tolerance: .8},
+          'challenge-seas': {type: 'geojson', data: loadingEmpty, maxzoom: 9, tolerance: .8},
           "challenge-greek-mainland": { type: "geojson", data: loadingEmpty, maxzoom: 10 },
           "challenge-gdansk-boundary": { type: "geojson", data: loadingEmpty, maxzoom: 14, tolerance: 0 },
           "challenge-gdansk-details": { type: "geojson", data: loadingEmpty, maxzoom: 14, tolerance: 0 },
@@ -1169,6 +1318,8 @@
           { id: "challenge-background", type: "background", paint: { "background-color": "#fff" } },
           { id: "challenge-land", type: "fill", ...base, layout: { visibility: "none" },
             filter: ["==", ["get", "kind"], "country"], paint: { "fill-color": "#fff", "fill-antialias": false } },
+          {id: 'challenge-sea-land', type:'fill', source:'challenge-sea-land', layout:{visibility:'none'},
+            paint:{'fill-color':'#fff','fill-antialias':false}},
           { id: "challenge-cyprus", type: "fill", ...base, layout: { visibility: "none" },
             filter: ["all", ["==", ["get", "kind"], "country"],
               ["in", ["get", "country_id"], ["literal", cyprusCountryIds]]],
@@ -1186,6 +1337,12 @@
             layout: { visibility: "none" }, paint: { "line-width": 1, "line-color": "#a19aab" } },
           { id: "challenge-parks", type: "fill", ...items, paint: { "fill-color": "#dcebd9", "fill-opacity": 0.95 } },
           { id: "challenge-park-borders", type: "line", ...items, paint: { "line-color": "#6c9067", "line-width": 1 } },
+          {id:'challenge-seas-fill',type:'fill',source:'challenge-seas',layout:{visibility:'none'},
+            paint:{'fill-color':'#cae5f6','fill-opacity':.38,'fill-antialias':false}},
+          {id:'challenge-seas-borders',type:'line',source:'challenge-seas',layout:{visibility:'none'},
+            paint:{'line-color':'#477a9d','line-width':1.15}},
+          {id:'challenge-coastline',type:'line',source:'challenge-sea-land',layout:{visibility:'none'},
+            paint:{'line-color':'#aaa4b2','line-width':.8}},
           { id: "challenge-gdansk-sea", type: "fill", source: "challenge-gdansk-details",
             filter: ["==", ["get", "kind"], "sea"], layout: { visibility: "none" }, paint: { "fill-color": "#edf6fa" } },
           { id: "challenge-gdansk-area", type: "fill", source: "challenge-gdansk-boundary",
@@ -1220,6 +1377,7 @@
     hewelionTooltip = new maplibregl.Popup({
       closeButton: false, closeOnClick: false, focusAfterOpen: false, offset: 12, className: "castle-tooltip",
     });
+    areaTooltip = new maplibregl.Popup({closeButton:false, closeOnClick:false, focusAfterOpen:false, offset:12, className:'castle-tooltip'});
     map.on("mousemove", (event) => {
       if (!mapReady || !isHewelion() || !detailVisible() || map.isMoving()) {
         hewelionTooltip.remove();
@@ -1279,10 +1437,11 @@
       mapReady = true;
       showFeatures(true);
     });
-    map.on("moveend", () => { if (isPark()) updateParkWater(); });
+    map.on("moveend", () => { if (isPark()) updateParkWater(); if (isSeas()) updateSeaGeometry(); });
     for (const layer of ["challenge-parks", "challenge-lighthouses", "challenge-cyprus", "challenge-lions", "challenge-castles"]) {
       map.on("click", layer, (event) => {
         if (!activeCatalogue) return;
+        if (isSeas()) return;
         if (layer === "challenge-cyprus") {
           toggleCyprus();
           return;
@@ -1295,9 +1454,35 @@
       map.on("mouseenter", layer, () => { map.getCanvas().style.cursor = "pointer"; });
       map.on("mouseleave", layer, () => { map.getCanvas().style.cursor = ""; });
     }
+    map.on("click", event => {
+      if (!isSeas() || !activeCatalogue) return;
+      const ids = [...new Set(map.queryRenderedFeatures(event.point,{layers:["challenge-seas-fill"]})
+        .map(f => f.properties.id))];
+      if (ids.length) toggleSea(ids[0]);
+    });
+    map.on('mousemove', 'challenge-seas-fill', showAreaHover);
+    map.on('mouseleave', 'challenge-seas-fill', hideAreaHover);
+    map.on('mousemove', 'challenge-parks', showAreaHover);
+    map.on('mouseleave', 'challenge-parks', hideAreaHover);
+    map.on('mouseenter','challenge-seas-fill',() => { map.getCanvas().style.cursor = 'pointer'; });
+    map.on('mouseleave','challenge-seas-fill',() => { map.getCanvas().style.cursor = ''; });
+  }
+
+  function showAreaHover(event) {
+    if (!(isSeas() || isIslands() || isPark()) || map.isMoving() || !event.features?.length) return;
+    const entry = activeCatalogue?.entries.get(event.features[0].properties.id);
+    if (!entry || hoveredArea === entry) return;
+    hoveredArea = entry;
+    areaTooltip.setText(nameOf(entry)).trackPointer().addTo(map);
+  }
+
+  function hideAreaHover() {
+    hoveredArea = null;
+    areaTooltip?.remove();
   }
 
   function hideCastleTooltip() {
+    hideAreaHover();
     hoveredCastle = undefined;
     castleTooltip?.remove();
     hewelionTooltip?.remove();
@@ -1311,7 +1496,7 @@
       syncSidebar();
     }
     const title = document.createElement("h4");
-    title.textContent = isHewelion() ? tr("Wybierz lwa", "Choose a lion")
+    title.textContent = isSeas() ? tr("Wybierz morze", "Choose a sea") : isHewelion() ? tr("Wybierz lwa", "Choose a lion")
       : isCastles() ? tr("Wybierz zamek", "Choose a castle") : tr("Wybierz latarnię", "Choose a lighthouse");
     panel.replaceChildren(title);
     for (const id of ids) {
@@ -1330,6 +1515,12 @@
     if (activeCatalogue.entries.has(id) && !pending.has(id)) {
       saveProgress("wyspa_grecka", id, !progress.wyspa_grecka.has(id));
     }
+  }
+
+  function toggleSea(id) {
+    if (!isSeas() || !activeCatalogue?.entries.has(id) || pending.has(id)) return;
+    selectFeature(id, false);
+    saveProgress('morze', id, !progress.morze.has(id));
   }
 
   function toggleCyprus() {
@@ -1369,7 +1560,7 @@
     });
   }
 
-  const toolbarPanels = [[sources, sourceButton], [castleLegend, castleLegendButton]];
+  const toolbarPanels = [[castleLegend, castleLegendButton]];
 
   function setChallengePanel(next) {
     for (const [panel, button] of toolbarPanels) {
@@ -1395,7 +1586,7 @@
     hideCastleTooltip();
     renderChallengePins();
     loadChallengePins();
-    Promise.allSettled([...Object.keys(catalogueUrls).map(catalogue), loadProgress()]).then(renderChallengeCards);
+    Promise.allSettled([loadChallengeSummaries(), loadProgress()]).then(renderChallengeCards);
     if (restoreFocus) picker.querySelector('[data-challenge="' + current + '"]').focus();
   }
 
@@ -1424,6 +1615,7 @@
     byId("hewelion-options-button").hidden = !hewelion;
     byId("island-options-button").disabled = islands;
     byId("castle-options-button").hidden = !castles;
+    byId('seas-options-button').hidden = !isSeas();
     castleLegendButton.hidden = !castles;
     byId("castle-options-button").disabled = castles;
     byId("park-credit").hidden = !parks;
@@ -1439,7 +1631,7 @@
     byId("castle-pwr-credit").hidden = !castles;
     byId("challenge-panel-title").textContent = parks ? tr("Lista parków", "National parks")
       : bliza ? tr("Lista latarni", "Lighthouses") : hewelion ? tr("Lista lwów", "Lions")
-      : castles ? tr("Lista zamków", "Castles") : tr("Lista wysp", "Islands");
+      : castles ? tr("Lista zamków", "Castles") : isSeas() ? tr("Lista mórz", "Seas") : tr("Lista wysp", "Islands");
     byId("challenge-hint").textContent = parks
       ? tr("Wybierz park. Zaznacz dowolną atrakcję, aby móc go zaliczyć.",
         "Select a park. Check any attraction to enable park completion.")
@@ -1449,6 +1641,8 @@
         "Select a lion on the map or list to see its address and clue.")
       : castles ? tr("Wybierz zamek na mapie lub liście, aby oznaczyć go jako odwiedzony.",
         "Select a castle on the map or list to mark it as visited.")
+      : isSeas() ? tr("Kliknij morze, aby zaznaczyć lub cofnąć odwiedzenie.",
+        "Click a sea to mark or unmark your visit.")
       : tr("Wybierz nazwę, aby znaleźć wyspę. Kliknij obrys na mapie, aby ją zaliczyć.",
         "Select a name to find the island. Click its outline on the map to mark it as visited.");
     byId("lighthouse-search").hidden = !bliza;
@@ -1481,11 +1675,13 @@
       renderBliza();
       renderChallengeCards();
       try {
-        if (!map) {
-          const basemap = await getData(geographyUrl);
+        let basemap = null;
+        if (!isSeas() && !isHewelion() && !challengeBaseData) {
+          basemap = await getData(geographyUrl);
           if (sequence !== requestNumber) return;
-          createMap(basemap);
+          if (map) challengeBaseData = basemapWithParkMask(basemap);
         }
+        if (!map) createMap(basemap);
         showFeatures(true);
       } catch {
         byId("challenge-status").textContent = tr("Mapa jest niedostępna. Skorzystaj z listy.", "Map unavailable. Use the list.");
@@ -1610,6 +1806,7 @@
   }
   document.addEventListener("atlas-achievement-notifications-change", showAchievementToasts);
   document.addEventListener("atlas-settings-loaded", ({ detail: settings }) => {
+    seaSimpleInput.checked = settings.layout.seas_simple !== 'off';
     cyprusOption.checked = settings.layout.cyprus !== "hide";
     for (const [tier, { checkbox }] of castleOptionsInputs) {
       const visible = settings.layout["castle_" + tier] !== "hide";
@@ -1618,6 +1815,25 @@
     }
     document.dispatchEvent(new Event("atlas-settings-sync"));
     showAchievements();
+  });
+  byId('seas-options-button').addEventListener('click', () => seaOptions.showModal());
+  seaSimpleInput.addEventListener('change', async () => {
+    const simple = seaSimpleInput.checked;
+    seaSimpleInput.disabled = true;
+    byId('seas-options-status').textContent = '';
+    updateSeaGeometry();
+    try {
+      await getData('/api/ustawienia', {method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({layout:{seas_simple:simple ? 'on' : 'off'}})});
+      layout.seas_simple = simple ? 'on' : 'off';
+    } catch {
+      seaSimpleInput.checked = !simple;
+      updateSeaGeometry();
+      byId('seas-options-status').textContent = tr('Nie udało się zapisać ustawienia.', 'Could not save this setting.');
+    } finally {
+      seaSimpleInput.disabled = false;
+      document.dispatchEvent(new Event('atlas-settings-sync'));
+    }
   });
   document.addEventListener("atlas-language-change", () => {
     for (const [tier, { text }] of castleOptionsInputs) text.textContent = tr(...castleCategories[tier].title);
@@ -1654,7 +1870,9 @@
     byId("castle-legend-keys").replaceChildren(...keys);
   });
   for (const [panel, button] of toolbarPanels) {
-    button.addEventListener("click", () => setChallengePanel(panel.hidden ? panel : undefined));
+    button.addEventListener("click", () => {
+      setChallengePanel(panel.hidden ? panel : undefined);
+    });
   }
   document.addEventListener("click", (event) => {
     const open = toolbarPanels.find(([panel]) => !panel.hidden);

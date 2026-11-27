@@ -4,6 +4,7 @@ import json
 import unicodedata
 import zlib
 from functools import lru_cache
+from .geometry_codec import decode_geometry
 
 
 def normalized(value):
@@ -98,6 +99,7 @@ def focus_area(category, id):
     from . import atlas
     regions = local_features('rejony.json.gz')
     code = ''
+    is_capital = False
     division_level = 'region'
     if category == 'panstwo':
         countries = json.loads(atlas.static_bytes('mapa.json'))['panstwo']
@@ -123,8 +125,9 @@ def focus_area(category, id):
             geometry = boundary_geometry(id)
     elif category == 'miasto':
         feature = None
-        for filename in ('miasta-polska.json.gz', 'duze-miasta.json.gz', 'stolice.json.gz'):
-            feature = next((item for item in local_features(filename) if item['properties']['division_id'] in (id, id.removeprefix('overture:'))), None)
+        for filename in ('stolice.json.gz', 'miasta-polska.json.gz', 'duze-miasta.json.gz'):
+            feature = next((item for item in local_features(filename) if item['properties']['division_id'] in (id, id.removeprefix('overture:'))
+                            or item['properties'].get('legacy_id') == id), None)
             if feature:
                 break
         if feature:
@@ -136,7 +139,12 @@ def focus_area(category, id):
                 row = database.execute('SELECT name, label, geometry FROM settlements WHERE id = ?', (id,)).fetchone()
             if row is None:
                 raise ValueError('Unknown locality boundary')
-            name, code, geometry = row[0], 'PL' if source == atlas.SETTLEMENTS else row[1], json.loads(zlib.decompress(row[2]))
+            name, code, geometry = row[0], 'PL' if source == atlas.SETTLEMENTS else row[1], decode_geometry(row[2])
+        is_capital = any(f['properties']['division_id'] in (id, id.removeprefix('overture:')) or
+                         (f['properties'].get('country') == code and normalized(f['properties'].get('name', '')) == normalized(name))
+                         for f in local_features('stolice.json.gz'))
+        is_capital = is_capital or any(row[8] and row[5] == code and normalized(name) in
+            {normalized(row[1]), normalized(row[7] or '')} for row in json.loads(atlas.static_bytes('mapa.json'))['miasto'])
     else:
         raise ValueError('Unknown area type')
     if geometry['type'] not in ('Polygon', 'MultiPolygon') or not geometry['coordinates']:
@@ -181,7 +189,7 @@ def focus_area(category, id):
                     WHERE min_lon <= ? AND max_lon >= ? AND min_lat <= ? AND max_lat >= ? LIMIT 500''',
                     (nearby[2],nearby[0],nearby[3],nearby[1])).fetchall()
             for key,label,data in rows:
-                add_locality(key,label,json.loads(zlib.decompress(data)))
+                add_locality(key,label,decode_geometry(data))
     members=[f['properties'] for f in regions if (category=='panstwo' and f['properties']['country']==code)
              or (category=='rejon' and f['properties'].get('parent_id')==id)]
     counts={'regions':sum(p.get('level','region')=='region' for p in members),
@@ -190,7 +198,7 @@ def focus_area(category, id):
         continent=next(c for c in json.loads(atlas.static_bytes('kontynenty.json')) if c['id']==id)
         codes=set(continent['codes'].split())
         counts['countries']=sum((row[5] or row[0]) in codes for row in json.loads(atlas.static_bytes('mapa.json'))['panstwo'])
-    return {'category':category, 'id':id, 'name':name, 'country':code, 'division_level':division_level, 'counts':counts, 'bounds':extent, 'camera_bounds':camera, 'nearby':nearby,
+    return {'category':category, 'id':id, 'name':name, 'country':code, 'is_capital':is_capital, 'division_level':division_level, 'counts':counts, 'bounds':extent, 'camera_bounds':camera, 'nearby':nearby,
             'feature':{'type':'Feature','properties':{'id':id,'name':name},'geometry':geometry},
             'context':{'type':'FeatureCollection','features':context}}
 

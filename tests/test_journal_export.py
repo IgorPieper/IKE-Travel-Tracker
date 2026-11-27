@@ -39,6 +39,38 @@ def fixture():
 
 
 class JournalExportTests(unittest.TestCase):
+    def test_profile_name_appears_on_export_cover_and_in_author_metadata(self):
+        from docx import Document
+        from pypdf import PdfReader
+        server,rows=fixture()
+        author='Żeglarz <Igor> & rodzina'
+        model=atlas.journal_model(rows,server,'pl','Rodzinny dziennik',author)
+        self.assertEqual(model['author'],author)
+        document=Document(io.BytesIO(build_journal(model,atlas.country_shapes(),'docx')))
+        self.assertEqual(document.core_properties.author,author)
+        self.assertIn(author,'\n'.join(p.text for p in document.paragraphs))
+        pdf=PdfReader(io.BytesIO(build_journal(model,atlas.country_shapes(),'pdf')))
+        self.assertEqual(pdf.metadata.author,author)
+        self.assertIn(author,pdf.pages[0].extract_text())
+
+    def test_planned_export_is_opt_in_and_handles_mixed_and_planned_only_trips(self):
+        server, rows = fixture()
+        rows.append({'kategoria':'wycieczka','id':'planned-trip','nazwa':'Future only',
+                     'miejsca':json.dumps(['miasto:osm:3'])})
+        model = atlas.journal_model(rows, server)
+        self.assertEqual(model['trips'], 1)
+        self.assertNotIn('Future only', str(model))
+        self.assertNotIn('Planned place must not appear', str(model))
+        included = atlas.journal_model(rows, server, include_planned=True)
+        self.assertEqual(included['trips'], 2)
+        self.assertIn('Planned place must not appear · Planned', str(included))
+        self.assertEqual(included['countries'], model['countries'])
+        rows[-1]['miejsca'] = json.dumps(['miasto:osm:3', 'pinezka:11111111-1111-4111-8111-111111111111'])
+        mixed = atlas.journal_model(rows, server)
+        trip = next(e for _, entries in mixed['years'] for e in entries if e['title']=='Future only')
+        self.assertEqual(len(trip['members']), 1)
+        self.assertNotIn('Planned', trip['members'][0]['title'])
+
     def test_diary_order_trips_and_repeat_visits(self):
         server, rows = fixture()
         before = json.dumps(rows)

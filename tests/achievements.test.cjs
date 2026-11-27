@@ -49,7 +49,7 @@ function setup() {
     developerAllAchievements: false, notificationsEnabled:true,
     metrics: { countries: { count: 10 }, castle: { count: 0 }, secret: { count: 0 } },
     achievementMetric: (rule, metrics) => metrics[rule] || {},
-    achievementTiersSeen: new Map(), collapsedAchievementGroups: new Set(),
+    achievementTiersSeen: new Map(), collapsedAchievementGroups: new Set(), expandedAchievementLists: new Set(),
     achievementToastQueue: [], achievementToastDuration: 6000,
     achievementsView: { hidden: false },
   });
@@ -58,6 +58,28 @@ function setup() {
   vm.runInContext(production, context);
   return { context, elements, timers };
 }
+
+test('long achievement lists are collapsed, toggle their labels and remain open after progress refresh', () => {
+  const {context:c,elements}=setup();
+  c.achievementDefinitions.push({id:'biblical-countries',rule:'biblical-countries',title:['Ziemia','Land'],levels:[{
+    target:2,goal:['Odwiedź 2 kraje: Egipt i Izrael.','Visit 2 countries: Egypt and Israel.'],description:['Morze','Sea']} ]});
+  c.metrics['biblical-countries']={count:1};
+  const card=()=>elements['achievement-cards'].children[0].children[1].children.find(e=>e.dataset.achievement==='biblical-countries');
+  const disclosure=()=>card().children.find(e=>e.className==='achievement-place-list');
+  c.renderAchievements();
+  assert.equal(card().children[1].textContent,'Visit 2 countries.');
+  assert.equal(disclosure().open,false);
+  assert.equal(disclosure().children[0].textContent,'Show countries');
+  assert.equal(disclosure().children[1].textContent,'Egypt and Israel.');
+  disclosure().open=true;disclosure().events.toggle();
+  assert.equal(disclosure().children[0].textContent,'Hide countries');
+  c.renderAchievements();assert.equal(disclosure().open,true);
+  c.tr=(pl,en)=>pl;c.renderAchievements();
+  assert.equal(disclosure().children[0].textContent,'Ukryj kraje');
+  assert.equal(disclosure().children[1].textContent,'Egipt i Izrael.');
+  disclosure().open=false;disclosure().events.toggle();c.renderAchievements();
+  assert.equal(disclosure().open,false);
+});
 
 test('partial tiers stay in progress; completed group appears only with a full completion', () => {
   const { context: c, elements } = setup();

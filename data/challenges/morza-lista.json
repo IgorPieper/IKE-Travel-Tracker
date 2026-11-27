@@ -1,0 +1,266 @@
+[
+  {
+    "id": "andamanskie",
+    "name": "Morze Andamańskie",
+    "english": "Andaman Sea"
+  },
+  {
+    "id": "arabskie",
+    "name": "Morze Arabskie",
+    "english": "Arabian Sea"
+  },
+  {
+    "id": "arafura",
+    "name": "Morze Arafura",
+    "english": "Arafura Sea"
+  },
+  {
+    "id": "argentynskie",
+    "name": "Morze Argentyńskie",
+    "english": "Argentine Sea"
+  },
+  {
+    "id": "balijskie",
+    "name": "Morze Balijskie",
+    "english": "Bali Sea"
+  },
+  {
+    "id": "baltyckie",
+    "name": "Morze Bałtyckie",
+    "english": "Baltic Sea"
+  },
+  {
+    "id": "banda",
+    "name": "Morze Banda",
+    "english": "Banda Sea"
+  },
+  {
+    "id": "barentsa",
+    "name": "Morze Barentsa",
+    "english": "Barents Sea"
+  },
+  {
+    "id": "bismarcka",
+    "name": "Morze Bismarcka",
+    "english": "Bismarck Sea"
+  },
+  {
+    "id": "celebes",
+    "name": "Morze Celebes",
+    "english": "Celebes Sea"
+  },
+  {
+    "id": "celtyckie",
+    "name": "Morze Celtyckie",
+    "english": "Celtic Sea"
+  },
+  {
+    "id": "chilijskie",
+    "name": "Morze Chilijskie",
+    "english": "Chilean Sea"
+  },
+  {
+    "id": "czarne",
+    "name": "Morze Czarne",
+    "english": "Black Sea"
+  },
+  {
+    "id": "czerwone",
+    "name": "Morze Czerwone",
+    "english": "Red Sea"
+  },
+  {
+    "id": "fidzi",
+    "name": "Morze Fidżi",
+    "english": "Fiji Sea",
+    "optional": true
+  },
+  {
+    "id": "filipinskie",
+    "name": "Morze Filipińskie",
+    "english": "Philippine Sea"
+  },
+  {
+    "id": "flores",
+    "name": "Morze Flores",
+    "english": "Flores Sea"
+  },
+  {
+    "id": "halmahera",
+    "name": "Morze Halmahera",
+    "english": "Halmahera Sea"
+  },
+  {
+    "id": "hebrydzkie",
+    "name": "Morze Hebrydzkie",
+    "english": "Sea of the Hebrides"
+  },
+  {
+    "id": "irlandzkie",
+    "name": "Morze Irlandzkie",
+    "english": "Irish Sea"
+  },
+  {
+    "id": "irmingera",
+    "name": "Morze Irmingera",
+    "english": "Irminger Sea"
+  },
+  {
+    "id": "japonskie",
+    "name": "Morze Japońskie",
+    "english": "Japan Sea"
+  },
+  {
+    "id": "jawajskie",
+    "name": "Morze Jawajskie",
+    "english": "Java Sea"
+  },
+  {
+    "id": "kantabryjskie",
+    "name": "Morze Kantabryjskie",
+    "english": "Cantabrian Sea"
+  },
+  {
+    "id": "karaibskie",
+    "name": "Morze Karaibskie",
+    "english": "Caribbean Sea"
+  },
+  {
+    "id": "koralowe",
+    "name": "Morze Koralowe",
+    "english": "Coral Sea"
+  },
+  {
+    "id": "koro",
+    "name": "Morze Koro",
+    "english": "Koro Sea"
+  },
+  {
+    "id": "korteza",
+    "name": "Morze Korteza",
+    "english": "Gulf of California"
+  },
+  {
+    "id": "labradorskie",
+    "name": "Morze Labradorskie",
+    "english": "Labrador Sea"
+  },
+  {
+    "id": "lakkadiwskie",
+    "name": "Morze Lakkadiwskie",
+    "english": "Laccadive Sea"
+  },
+  {
+    "id": "marmara",
+    "name": "Morze Marmara",
+    "english": "Sea of Marmara"
+  },
+  {
+    "id": "moluckie",
+    "name": "Morze Moluckie",
+    "english": "Molucca Sea"
+  },
+  {
+    "id": "norweskie",
+    "name": "Morze Norweskie",
+    "english": "Norwegian Sea"
+  },
+  {
+    "id": "ochockie",
+    "name": "Morze Ochockie",
+    "english": "Sea of Okhotsk"
+  },
+  {
+    "id": "poludniowochinskie",
+    "name": "Morze Południowochińskie",
+    "english": "South China Sea"
+  },
+  {
+    "id": "polnocne",
+    "name": "Morze Północne",
+    "english": "North Sea"
+  },
+  {
+    "id": "salish",
+    "name": "Morze Salish",
+    "english": "Salish Sea"
+  },
+  {
+    "id": "salomona",
+    "name": "Morze Salomona",
+    "english": "Solomon Sea"
+  },
+  {
+    "id": "sawu",
+    "name": "Morze Sawu",
+    "english": "Savu Sea"
+  },
+  {
+    "id": "seram",
+    "name": "Morze Seram",
+    "english": "Ceram Sea"
+  },
+  {
+    "id": "seto",
+    "name": "Morze Seto",
+    "english": "Seto Inland Sea"
+  },
+  {
+    "id": "sulu",
+    "name": "Morze Sulu",
+    "english": "Sulu Sea"
+  },
+  {
+    "id": "srodziemne",
+    "name": "Morze Śródziemne",
+    "english": "Mediterranean Sea"
+  },
+  {
+    "id": "tasmana",
+    "name": "Morze Tasmana",
+    "english": "Tasman Sea"
+  },
+  {
+    "id": "timor",
+    "name": "Morze Timor",
+    "english": "Timor Sea"
+  },
+  {
+    "id": "wschodniochinskie",
+    "name": "Morze Wschodniochińskie",
+    "english": "East China Sea"
+  },
+  {
+    "id": "zolte",
+    "name": "Morze Żółte",
+    "english": "Yellow Sea"
+  },
+  {
+    "id": "beringa",
+    "name": "Morze Beringa",
+    "english": "Bering Sea"
+  },
+  {
+    "id": "grenlandzkie",
+    "name": "Morze Grenlandzkie",
+    "english": "Greenland Sea"
+  },
+  {
+    "id": "sargassowe",
+    "name": "Morze Sargassowe",
+    "english": "Sargasso Sea",
+    "optional": true
+  },
+  {
+    "id": "kaspijskie",
+    "name": "Morze Kaspijskie",
+    "english": "Caspian Sea",
+    "optional": true
+  },
+  {
+    "id": "martwe",
+    "name": "Morze Martwe",
+    "english": "Dead Sea",
+    "optional": true
+  }
+]

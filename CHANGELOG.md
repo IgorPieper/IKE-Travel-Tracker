@@ -1,5 +1,42 @@
 # Changelog
 
+## 1.2 — 2026-11-27
+
+### Seas of the World
+
+- Add the Seas of the World challenge: visit 90% of 48 required seas (44 seas). Fiji, Sargasso, Caspian and Dead Seas are optional and do not affect completion.
+- Mark or unmark a sea directly by clicking its area. Show names on hover, without point markers or a sidebar checkbox.
+- Include outlines for every sea, with approximate boundaries identified where applicable, and land outlines without political borders.
+- Enable simplified sea outlines by default, load detailed geometry only when needed, and preserve visits from earlier sea catalogues.
+- Add the Poseidon achievement for completing the challenge.
+
+### Settings, journal and achievements
+
+- Split Settings into User, General, Import and export, and Information pages. Move language selection to User and support a name or nickname in the journal.
+- Improve import/export layout, collect library and data-source information in Settings, and add Settings to map toolbars.
+- Keep the top navigation visible while scrolling.
+- Group journal filters by map views, trips and pins, dates, and visited/planned status. Show planned entries with a pale yellow background and allow adding them to trips.
+- Make journal places editable through their cards and add matching square delete controls. Save the previous place when selecting another on the map.
+- Exclude planned visits from journal exports by default, with an option to include them.
+- Add achievements for Kashubian counties, all NATO countries and the listed modern countries associated with biblical locations. Keep long requirements behind expandable lists.
+
+### Map fixes and performance
+
+- Improve capital outlines and district coverage, including corrections for Lisbon, Algiers, Dhaka and Hanoi, and keep districts hidden in detailed-map mode.
+- Show Greek island and national park names when hovering over their areas.
+- Use zoom-dependent country and continent outlines, with an optional Simplified land outlines setting, off by default.
+- Reduce three offline map databases by 116 MB without removing features or changing coordinates and place IDs.
+- Add compressed HTTP responses, conditional caching, lazy map and challenge loading, photo thumbnails and reduced map redraw work.
+
+### Updating from an earlier release
+
+1. Close the application and back up its folder.
+2. Extract the new Windows ZIP into a new folder.
+3. Copy the entire old `data/user` folder into the new application, replacing the empty files. This preserves progress, settings and photos.
+4. Open `Tracker Wyjazdow.exe` in the new folder.
+
+The release includes updated achievement definitions. If you customized `config/osiagniecia.csv`, merge your edits into the new file to retain the new achievements.
+
 ## 1.1 — 2026-11-25
 
 ### Photos and gallery

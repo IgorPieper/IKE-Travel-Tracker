@@ -13,6 +13,7 @@ function setup(preset, focusCategory = null, villages = false) {
   ]);
   const context = vm.createContext({
     activePreset: preset, markingsHidden:false, compactCountries:new Set(['SM']), places:{panstwo:[]}, savedRows: rows, tr:(pl,en)=>en, layout:{},tabs:[],byId:()=>({classList:{toggle:()=>{}}}), visitColor: 'purple', planColor: 'orange',
+    ensurePolishCities:()=>{},
     areaFocusActive: () => Boolean(focusCategory), syncAreaFocusLayers: () => {}, syncRegionViewport: () => {},
     focusShowsCountries: () => focusCategory === 'kontynent', focusShowsSubregions: () => false,
     focusShowsRegions: () => focusCategory === 'panstwo',

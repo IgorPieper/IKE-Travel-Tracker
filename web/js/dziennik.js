@@ -37,12 +37,34 @@ function diaryTripPhotos(trip, visits) {
     subregions: ["Podregiony", "Subregions"],
     major: ["Duże miasta", "Major cities"], cities: ["Pozostałe miasta", "Other cities"], villages: ["Wsie", "Villages"],
     pins: ["Pinezki", "Pins"], trips: ["Wycieczki", "Trips"],
+    visited: ["Odwiedzone", "Visited"], planned: ["Zaplanowane", "Planned"],
   };
+  const filterGroups = new Map();
+  for (const [id, pl, en] of [["presets", "Widoki mapy", "Map views"], ["other", "Wycieczki i pinezki", "Trips and pins"],
+    ["dates", "Daty", "Dates"], ["status", "Status miejsc", "Place status"]]) {
+    const group = document.createElement("fieldset");group.className = "gallery-filter-group";
+    const legend = document.createElement("legend");legend.dataset.en = en;legend.textContent = tr(pl, en);
+    const options = document.createElement("div");options.className = "gallery-tag-options";
+    group.append(legend, options);byId("diary-filter-options").append(group);filterGroups.set(id, options);
+  }
+  const dateFilters = {};
+  for (const [key, pl, en] of [["from", "Od", "From"], ["until", "Do", "Until"]]) {
+    const label = document.createElement("label");label.className = "diary-date-filter";
+    const text = document.createElement("span");text.dataset.en = en;text.textContent = tr(pl, en);
+    const input = document.createElement("input");input.type = "date";input.max = "9999-12-31";
+    label.append(text, input);filterGroups.get("dates").append(label);dateFilters[key] = input;
+    input.addEventListener("input", render);
+  }
+  const undatedLabel = document.createElement("label");undatedLabel.className = "gallery-tag";
+  const undated = document.createElement("input");undated.type = "checkbox";undated.checked = true;
+  const undatedText = document.createElement("span");undatedText.dataset.en = "Undated";undatedText.textContent = tr("Bez daty", "Undated");
+  undatedLabel.append(undated, undatedText);filterGroups.get("dates").append(undatedLabel);undated.addEventListener("change", render);
   const filterInputs = new Map();
   const filterRevisions = new Map();
   let savedFilters = Object.fromEntries(Object.keys(filterLabels).map((key) => [key, "on"]));
   for (const [key, labels] of Object.entries(filterLabels)) {
     const label = document.createElement("label");
+    label.className = "gallery-tag" + (key === "planned" ? " is-planned" : "");
     const input = document.createElement("input");
     input.type = "checkbox";
     input.checked = layout["diary_filter_" + key] !== "off";
@@ -50,7 +72,7 @@ function diaryTripPhotos(trip, visits) {
     const text = document.createElement("span");
     text.textContent = tr(...labels);
     label.append(input, text);
-    byId("diary-filter-options").append(label);
+    filterGroups.get(["pins", "trips"].includes(key) ? "other" : ["visited", "planned"].includes(key) ? "status" : "presets").append(label);
     filterInputs.set(key, { input, text });
     input.addEventListener("change", () => saveFilters({ [key]: input.checked ? "on" : "off" }));
   }
@@ -101,11 +123,19 @@ function diaryTripPhotos(trip, visits) {
   }
 
   function visitVisible(visit) {
-    return layout["diary_filter_" + visitType(visit)] !== "off";
+    if (layout["diary_filter_" + visitType(visit)] === "off") return false;
+    if (visit.kategoria === "wycieczka") return true;
+    return layout["diary_filter_" + (visit.tryb === "plan" ? "planned" : "visited")] !== "off" && matchesDates(visit);
+  }
+
+  function matchesDates(row) {
+    const day = cardDate(row);
+    if (!day) return undated.checked;
+    return (!dateFilters.from.value || day >= dateFilters.from.value) && (!dateFilters.until.value || day <= dateFilters.until.value);
   }
 
   function tripVisible(trip) {
-    if (!visitVisible(trip)) return false;
+    if (!visitVisible(trip) || !matchesDates(trip)) return false;
     const members = trip.miejsca.map((key) => visits[key]).filter(Boolean);
     return !members.length || members.some(visitVisible);
   }
@@ -203,9 +233,9 @@ function diaryTripPhotos(trip, visits) {
     start.syncUncertainty(); end.syncUncertainty();
   }
 
-  function visitCard(key, visit) {
+  function visitCard(key, visit, compact = false) {
     const card = document.createElement("article");
-    card.className = "diary-card";
+    card.className = "diary-card" + (visit.tryb === "plan" ? " is-planned" : "");
     if (draft) {
       const label = document.createElement("label");
       label.className = "diary-select-visit";
@@ -228,6 +258,7 @@ function diaryTripPhotos(trip, visits) {
     } else {
       appendText(card, "h3", placeName(visit));
     }
+    if (visit.tryb === "plan") appendText(card, "span", tr("Zaplanowane", "Planned"), "diary-planned-label");
     appendPlaceReading(card, visit);
     appendCountry(card, visit);
     const date = appendText(card, "p", tripDateLabel(visit), "diary-date");
@@ -236,9 +267,110 @@ function diaryTripPhotos(trip, visits) {
       appendText(date, "span", " · " + tr(rating.replace(".", ","), rating) + " / 10");
     }
     const note = visit.kategoria === "pinezka" ? visit.opis_dlugi : visit.notatka;
-    if (note) appendText(card, "p", note, "diary-note");
-    photoGallery(card, visit.zdjecia);
+    if (!compact && note) appendText(card, "p", note, "diary-note");
+    if (!compact) photoGallery(card, visit.zdjecia);
+    if (!draft) addVisitActions(card,key,visit);
     return card;
+  }
+
+  const editorDialog = byId("diary-place-editor");
+  let mountedEditor;
+  function restoreEditor() {
+    if (!mountedEditor) return;
+    const { panel, anchor, observer, statusObserver, key: visitKey } = mountedEditor;
+    mountedEditor = undefined;
+    observer.disconnect();statusObserver.disconnect();
+    anchor.replaceWith(panel);
+    if (editorDialog.open) editorDialog.close();
+    if (!view.hidden) [...grid.querySelectorAll("[data-edit-diary-visit]")]
+      .find((button) => button.dataset.editDiaryVisit === visitKey)?.focus({preventScroll:true});
+  }
+  async function closeVisitEditor() {
+    if (await closePlaceDetails() && await closePinEditor()) restoreEditor();
+  }
+  byId("diary-close-place-editor").addEventListener("click", closeVisitEditor);
+  editorDialog.addEventListener("cancel", (event) => {event.preventDefault();closeVisitEditor();});
+  editorDialog.addEventListener("click", (event) => {
+    if (event.target !== editorDialog) return;
+    const box = editorDialog.getBoundingClientRect();
+    if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) closeVisitEditor();
+  });
+  function diaryPlace(visit) {
+    const known = visit.kategoria === "panstwo" ? places.panstwo.find(p => p.id === visit.id)
+      : visit.kategoria === "kontynent" ? continentsById.get(visit.id)
+      : visit.kategoria === "rejon" ? adminRegions.get(visit.id)
+      : capitalOutlines.get(visit.id) || capitalRecords.get(visit.id) || majorCities.get(visit.id);
+    const position = visit.lon !== "" && visit.lat !== "" && visit.lon != null && visit.lat != null
+      ? [Number(visit.lon),Number(visit.lat)] : null;
+    return {...known, id:visit.id, category:visit.kategoria, name:known?.name || visit.nazwa,
+      country:known?.country || visit.country_code,
+      getPosition:position && position.every(Number.isFinite) ? () => position : known?.getPosition};
+  }
+  function diaryPin(visit) {
+    return pinMarkers.find(({pin}) => pin.id === visit.id)?.pin || {...visit,
+      position:[Number(visit.lon),Number(visit.lat)],
+      kolejne_wizyty:Array.isArray(visit.kolejne_wizyty) ? visit.kolejne_wizyty : JSON.parse(visit.kolejne_wizyty || "[]")};
+  }
+  async function openVisitEditor(visitKey, visit) {
+    if (saving || draft || mountedEditor) return;
+    if (!await closePlaceDetails() || !await closePinEditor()) return;
+    const isPin = visit.kategoria === "pinezka";
+    const panel = byId(isPin ? "pin-details" : "place-details");
+    const anchor = document.createComment("Journal editor origin");
+    panel.before(anchor);byId("diary-place-editor-body").append(panel);
+    try {
+      if (isPin) await openPinEditor(diaryPin(visit),true);
+      else await openPlace(diaryPlace(visit),{fromJournal:true});
+      if (panel.hidden) {anchor.replaceWith(panel);return;}
+      const observer = new MutationObserver(() => {if (panel.hidden) restoreEditor();});
+      observer.observe(panel,{attributes:true,attributeFilter:["hidden"]});
+      const message = byId("diary-place-editor-status");message.textContent = "";
+      const statusObserver = new MutationObserver(() => {message.textContent = byId("status").textContent;});
+      statusObserver.observe(byId("status"),{childList:true,characterData:true,subtree:true});
+      mountedEditor = {panel,anchor,observer,statusObserver,key:visitKey};
+      editorDialog.setAttribute("aria-labelledby",isPin ? "pin-details-title" : "place-details-title");
+      editorDialog.showModal();
+      const repeatId = visitKey.includes(":visit:") ? visitKey.split(":visit:").at(-1) : null;
+      const input = repeatId ? [...panel.querySelectorAll("[data-visit-id]")].find(el => el.dataset.visitId === repeatId)
+        : byId(isPin ? "pin-date" : "place-date");
+      input?.focus();
+      input?.closest(".place-return-visit")?.classList.add("diary-current-visit");
+    } catch {
+      if (mountedEditor) restoreEditor();else anchor.replaceWith(panel);
+      status.textContent = tr("Nie udało się otworzyć miejsca.", "Could not open the place.");
+    }
+  }
+  async function removeVisit(visit) {
+    if (saving) return;
+    const row = visit.kategoria === "pinezka" ? diaryPin(visit) : savedPlaces.get(visit.kategoria+":"+visit.id);
+    const additional = Array.isArray(row?.kolejne_wizyty) ? row.kolejne_wizyty : JSON.parse(row?.kolejne_wizyty || "[]");
+    const count = 1+additional.length;
+    if (count > 1 && !window.confirm(tr(
+      `${placeName(visit)} — liczba zapisanych wizyt: ${count}. Czy usunąć je wszystkie?`,
+      `${placeName(visit)} has ${count} saved visits. Delete them all?`))) return;
+    saving = true;let success = false;
+    try {
+      if (!await closePlaceDetails() || !await closePinEditor()) return;
+      if (visit.kategoria === "pinezka") success = await saveCustomPin({usun:true},{pin:row});
+      else {
+        const pending = visitQueue.then(() => saveVisit(diaryPlace(visit),{odwiedzone:false}));
+        visitQueue = pending.catch(() => false);success = await pending;
+      }
+      if (!success) throw new Error();
+    } catch {status.textContent = tr("Nie udało się usunąć miejsca.", "Could not remove the place.");}
+    finally {saving = false;if (success) await load();}
+  }
+  function addVisitActions(card, visitKey, visit) {
+    const open = document.createElement("button");open.type = "button";open.className = "diary-open-place";
+    open.dataset.editDiaryVisit = visitKey;
+    open.setAttribute("aria-label",tr("Edytuj miejsce: ","Edit place: ")+placeName(visit));
+    open.addEventListener("click",(event) => {event.stopPropagation();openVisitEditor(visitKey,visit);});
+    const remove = document.createElement("button");remove.type = "button";remove.className = "gallery-delete diary-delete";
+    remove.textContent = "×";remove.title = tr("Usuń miejsce", "Remove place");
+    remove.setAttribute("aria-label",tr("Usuń miejsce: ","Remove place: ")+placeName(visit));
+    remove.disabled = saving;
+    remove.addEventListener("click",(event) => {event.stopPropagation();removeVisit(visit);});
+    card.classList.add("is-editable");card.append(open,remove);
   }
 
   function tripCard(trip) {
@@ -257,15 +389,16 @@ function diaryTripPhotos(trip, visits) {
     const members = trip.miejsca.map((key) => visits[key]).filter((visit) => visit && visitVisible(visit)).sort(descendingDates);
     if (members.length) {
       const list = document.createElement("ul");
-      list.className = "diary-members";
+      list.className = "diary-members diary-trip-places";
       for (const visit of members) {
-        const item = appendText(list, "li", placeName(visit), "diary-member");
-        if (visit.data || visit.data_konca) appendText(item, "time", " · " + tripDateLabel(visit)).dateTime = visit.data || visit.data_konca;
-        appendPlaceReading(item, visit);
-        appendCountry(item, visit);
+        const visitKey = trip.miejsca.find(key => visits[key] === visit);
+        const item = document.createElement("li");item.append(visitCard(visitKey,visit,true));list.append(item);
       }
       card.append(list);
     } else appendText(card, "p", tr("Brak zapisanych wizyt w tej wycieczce.", "No saved visits in this trip."), "diary-date");
+    card.addEventListener("click",(event) => {
+      if (!event.target.closest("button, input, textarea, label, .diary-trip-places")) openForm(trip);
+    });
     if (trip.notatka) appendText(card, "p", trip.notatka, "diary-note");
     const photos = diaryTripPhotos(trip, visits);
     photoGallery(card, photos.slice(0, 1));
@@ -313,7 +446,7 @@ function diaryTripPhotos(trip, visits) {
     } else {
       appendText(grid, "p", draft ? tr("Brak wizyt do dodania.", "No visits to add.")
         : Object.keys(visits).length || trips.length ? tr("Brak wpisów dla wybranych filtrów.", "No entries match the selected filters.")
-          : tr("Dziennik zapełni się, gdy oznaczysz miejsca jako odwiedzone.", "Mark places as visited to start your journal."));
+          : tr("Oznacz miejsca jako odwiedzone lub zaplanowane, aby zapełnić dziennik.", "Mark places as visited or planned to start your journal."));
     }
     if (focusedVisit) [...grid.querySelectorAll("[data-diary-visit]")]
       .find((checkbox) => checkbox.dataset.diaryVisit === focusedVisit)?.focus({ preventScroll: true });
@@ -406,7 +539,6 @@ function diaryTripPhotos(trip, visits) {
   }
 
   newTrip.addEventListener("click", () => openForm());
-  byId("diary-show-all").addEventListener("click", () => saveFilters(Object.fromEntries(Object.keys(filterLabels).map((key) => [key, "on"]))));
   document.addEventListener("atlas-settings-loaded", ({ detail: settings }) => {
     savedFilters = Object.fromEntries(Object.keys(filterLabels).map((key) => [key, settings.layout["diary_filter_" + key] || "on"]));
     syncFilters();

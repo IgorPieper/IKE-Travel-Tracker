@@ -174,9 +174,10 @@ function galleryMatchesTags(photo, selectedTags) {
       preview.className = "gallery-preview";
       preview.setAttribute("aria-label", tr("Szczegóły zdjęcia: ", "Photo details: ") + title(photo));
       const image = document.createElement("img");
-      image.src = "/photos/" + photo.id + ".jpg";
+      image.src = "/photos/" + photo.id + ".jpg?thumbnail=1";
       image.alt = photo.description || title(photo);
       image.loading = "lazy";
+      image.decoding = "async";
       preview.append(image);
       preview.addEventListener("click", () => open(photo));
       const caption = document.createElement("div");

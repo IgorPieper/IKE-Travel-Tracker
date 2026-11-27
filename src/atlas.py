@@ -28,7 +28,9 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 from urllib.request import build_opener
 from .branding import APP_NAME
-from .photos import photo_refs, encoded_refs, photo_path, store_photo, archive_photos, gallery, update_gallery
+from .http_assets import accepts_gzip, send_asset, basemap_layer
+from .geometry_codec import decode_geometry
+from .photos import photo_refs, encoded_refs, photo_path, photo_thumbnail, store_photo, archive_photos, gallery, update_gallery
 
 ROOT = Path(sys.executable).resolve().parent if getattr(sys, "frozen", False) else Path(__file__).resolve().parents[1]
 INSTANCE_KEY = hashlib.sha256(os.fsencode(str(ROOT).casefold())).hexdigest()
@@ -71,6 +73,8 @@ DEFAULT_VISIBILITY["visited-only"] = False
 DEFAULT_VISIBILITY["planned-only"] = False
 DEFAULT_LAYOUT = {"language": "en", "sidebar": "auto", "cyprus": "show"}
 LAYOUT_VALUES = {"language": ("pl", "en"), "sidebar": ("auto", "open", "closed"), "cyprus": ("show", "hide")}
+DEFAULT_LAYOUT["user_name"] = ""
+LAYOUT_VALUES["user_name"] = ()
 DEFAULT_LAYOUT["editor_auto_close"] = "on"
 LAYOUT_VALUES["editor_auto_close"] = ("off", "on")
 for section in ("map-view", "challenges-view", "diary-view", "achievements-view", "gallery-view"):
@@ -80,16 +84,20 @@ for kind, value in (("regions", "3"), ("subregions", "6"), ("cities", "7"), ("vi
     DEFAULT_LAYOUT["render_" + kind] = value
     LAYOUT_VALUES["render_" + kind] = tuple(f"{step / 2:g}" for step in range(33))
 DEFAULT_LAYOUT["achievement_notifications"] = "on"
+DEFAULT_LAYOUT['seas_simple'] = 'on'
+LAYOUT_VALUES['seas_simple'] = ('off', 'on')
+DEFAULT_LAYOUT['map_simple'] = 'off'
+LAYOUT_VALUES['map_simple'] = ('off', 'on')
 LAYOUT_VALUES["achievement_notifications"] = ("off", "on")
 DEFAULT_LAYOUT["developer_panel"] = "off"
 LAYOUT_VALUES["developer_panel"] = ("off", "on")
 for feature in ("online_water", "online_details"):
     DEFAULT_LAYOUT[feature] = "on"
     LAYOUT_VALUES[feature] = ("off", "on")
-for kind in ("continents", "countries", "regions", "subregions", "major", "cities", "villages", "pins", "trips"):
+for kind in ("continents", "countries", "regions", "subregions", "major", "cities", "villages", "pins", "trips", "visited", "planned"):
     DEFAULT_LAYOUT[f"diary_filter_{kind}"] = "on"
     LAYOUT_VALUES[f"diary_filter_{kind}"] = ("off", "on")
-for challenge in ("parks", "bliza", "islands", "hewelion", "castles"):
+for challenge in ("parks", "bliza", "islands", "hewelion", "castles", "seas"):
     DEFAULT_LAYOUT[f"pin_{challenge}"] = "off"
     LAYOUT_VALUES[f"pin_{challenge}"] = ("off", "on")
 CASTLE_TIERS = ("outstanding", "open", "irregular", "ruins")
@@ -97,9 +105,11 @@ for tier in CASTLE_TIERS:
     DEFAULT_LAYOUT[f"castle_{tier}"] = "show"
     LAYOUT_VALUES[f"castle_{tier}"] = ("show", "hide")
 ASSETS = {
+    "/LICENSE.md": ("LICENSE.md", "text/plain; charset=utf-8"),
     "/": ("web/index.html", "text/html; charset=utf-8"),
     "/mapa.css": ("web/css/mapa.css", "text/css; charset=utf-8"),
     "/mapa.js": ("web/js/mapa.js", "text/javascript; charset=utf-8"),
+    "/stolice-dzielnice.json.gz": ("data/maps/stolice-dzielnice.json.gz", "application/gzip"),
     "/obszar.js": ("web/js/obszar.js", "text/javascript; charset=utf-8"),
     "/jezyk.js": ("web/js/jezyk.js", "text/javascript; charset=utf-8"),
     "/zdjecia.js": ("web/js/zdjecia.js", "text/javascript; charset=utf-8"),
@@ -112,13 +122,22 @@ ASSETS = {
     "/latarnie-wyzwanie.json": ("data/challenges/latarnie-wyzwanie.json.gz", "application/geo+json"),
     "/wyspy-greckie.json": ("data/challenges/wyspy-greckie.json", "application/geo+json"),
     "/heweliony.json": ("data/challenges/heweliony.json", "application/geo+json"),
+    "/morza-wyzwanie.json": ("data/challenges/morza-wyzwanie.json", "application/geo+json"),
+    '/morza-mapa.json': ('data/challenges/morza-mapa.json.gz', 'application/geo+json'),
+    '/morza-proste.json': ('data/challenges/morza-proste.json.gz', 'application/geo+json'),
+    '/morza-lady.json': ('data/challenges/morza-lady.json.gz', 'application/geo+json'),
     "/polskie-zamki.json": ("data/challenges/polskie-zamki.json", "application/geo+json"),
     "/mapa.json": ("data/maps/mapa.json", "application/json"),
     "/kontynenty.json": ("data/maps/kontynenty.json", "application/json"),
     "/kontynenty-obrysy.json": ("data/maps/kontynenty-obrysy.json.gz", "application/geo+json"),
+    '/panstwa-lekkie.json': ('data/maps/panstwa-lekkie.json.gz', 'application/geo+json'),
+    '/panstwa-proste.json': ('data/maps/panstwa-proste.json.gz', 'application/geo+json'),
+    '/kontynenty-lekkie.json': ('data/maps/kontynenty-lekkie.json.gz', 'application/geo+json'),
+    '/kontynenty-proste.json': ('data/maps/kontynenty-proste.json.gz', 'application/geo+json'),
     "/podklad.json": ("data/maps/podklad.json.gz", "application/geo+json"),
     "/rejony.json": ("data/maps/rejony.json.gz", "application/geo+json"),
     "/podregiony-zrodla.json": ("data/maps/podregiony-zrodla.json", "application/json"),
+    "/stolice-zrodla.json": ("data/maps/stolice-zrodla.json", "application/json; charset=utf-8"),
     "/stolice.json": ("data/maps/stolice.json.gz", "application/geo+json"),
     "/miasta-polska.json": ("data/maps/miasta-polska.json.gz", "application/geo+json"),
     "/duze-miasta.json": ("data/maps/duze-miasta.json.gz", "application/geo+json"),
@@ -166,7 +185,7 @@ def read_water(params):
         return {
             "type": "FeatureCollection",
             "features": [
-                {"type": "Feature", "properties": {"kind": kind}, "geometry": json.loads(zlib.decompress(geometry))}
+                {"type": "Feature", "properties": {"kind": kind}, "geometry": decode_geometry(geometry)}
                 for kind, geometry in rows
             ],
         }
@@ -202,7 +221,7 @@ def read_settlements(params, world=False):
             props = {"division_id": place_id, "name": name, "country": label if world else "PL",
                      "label": None if world else label, "lon": lon, "lat": lat}
             features.append({"type": "Feature", "properties": props,
-                             "geometry": json.loads(zlib.decompress(geometry))})
+                             "geometry": decode_geometry(geometry)})
             if not world:
                 features.append(village_marker(props, west, east, south, north))
         return {"type": "FeatureCollection", "features": features}
@@ -235,7 +254,7 @@ def read_visited_outlines(static_cities):
                     "type": "Feature",
                     "properties": {"division_id": id, "name": name, "country": label if path == WORLD_CITIES else "PL",
                                    "lon": lon, "lat": lat},
-                    "geometry": json.loads(zlib.decompress(geometry)),
+                    "geometry": decode_geometry(geometry),
                 } for id, name, label, lon, lat, geometry in rows)
     return {"type": "FeatureCollection", "features": features}
 
@@ -243,7 +262,13 @@ def read_visited_outlines(static_cities):
 def read_visits():
     if not CSV.exists():
         return []
-    with CSV.open(encoding="utf-8-sig", newline="") as file:
+    stat = CSV.stat()
+    return [row.copy() for row in _visit_rows(CSV, stat.st_mtime_ns, stat.st_size, stat.st_ino)]
+
+
+@lru_cache(maxsize=1)
+def _visit_rows(path, modified, size, inode):
+    with path.open(encoding="utf-8-sig", newline="") as file:
         rows = list(csv.DictReader(file))
     for row in rows:
         for field in csv_text_fields(row):
@@ -357,10 +382,10 @@ def additional_visits(row):
         return []
 
 
-def diary_visits(rows):
+def diary_visits(rows, include_planned=False):
     visits = {}
     for row in rows:
-        if row["kategoria"] not in (*MAP_CATEGORIES, "pinezka") or row.get("tryb") in ("plan", "auto", SKIP_LINKED):
+        if row["kategoria"] not in (*MAP_CATEGORIES, "pinezka") or row.get("tryb") in ("auto", SKIP_LINKED) or (row.get("tryb") == "plan" and not include_planned):
             continue
         key = row["kategoria"] + ":" + row["id"]
         visits[key] = row
@@ -392,7 +417,7 @@ def trip_record(change, trip_id, members):
             "zdjecia": encoded_refs(change.get("zdjecia"), multiple=True)}
 
 
-def journal_model(rows, server, language="en", title=""):
+def journal_model(rows, server, language="en", title="", user_name="", include_planned=False):
     """Match journal ordering and trip membership, including separate repeat visits."""
     from .journal_export import day_label, WORDS
     names = json.loads(static_bytes("journal-locales.json"))[language]
@@ -401,7 +426,8 @@ def journal_model(rows, server, language="en", title=""):
     continents = {item["id"]: item for item in json.loads(static_bytes("kontynenty.json"))}
     visited_countries = {row["id"] for row in rows if row["kategoria"] == "panstwo" and row.get("tryb") not in ("plan", SKIP_LINKED)}
     visits = {}
-    for key, row in diary_visits(rows).items():
+    all_visits = diary_visits(rows, include_planned=True)
+    for key, row in diary_visits(rows, include_planned=include_planned).items():
         category = row["kategoria"]
         country_id = row.get("panstwo_id")
         if category == "miasto":
@@ -410,7 +436,7 @@ def journal_model(rows, server, language="en", title=""):
             country_id = row["id"]
         elif category == "rejon" and not country_id:
             country_id = server.places.get((category, row["id"]), {}).get("panstwo_id")
-        if country_id in server.countries:
+        if country_id in server.countries and row.get("tryb") != "plan":
             visited_countries.add(country_id)
         code = country_codes.get(country_id, "")
         name = row.get("nazwa") or server.places.get((category, row["id"]), {}).get("nazwa") or row["id"]
@@ -421,7 +447,7 @@ def journal_model(rows, server, language="en", title=""):
         reading = ""
         if category == "miasto":
             reading = readings.get("byCountry", {}).get(code, {}).get(name, "") or readings.get("byName", {}).get(name, "")
-        visits[key] = {"kind": "visit", "title": name, "date": row.get("data") or "", "uncertain": uncertain_date(row.get("data_niepewna", "")), "rating": row.get("ocena") or "",
+        visits[key] = {"kind": "visit", "title": name + ((" · Planned" if language == "en" else " · Zaplanowane") if row.get("tryb") == "plan" else ""), "date": row.get("data") or "", "uncertain": uncertain_date(row.get("data_niepewna", "")), "rating": row.get("ocena") or "",
                        "end": row.get("data_konca") or "", "end_uncertain": uncertain_date(row.get("data_konca_niepewna", "")),
                        "note": (row.get("opis_dlugi") if category == "pinezka" else row.get("notatka")) or "",
                        "reading": reading, "country": names.get(code, "") if category in ("miasto", "rejon") else "",
@@ -430,7 +456,10 @@ def journal_model(rows, server, language="en", title=""):
     for row in rows:
         if row["kategoria"] != "wycieczka":
             continue
-        keys = [key for key in trip_members(row) if key in visits]
+        raw_keys = trip_members(row)
+        keys = [key for key in raw_keys if key in visits]
+        if not include_planned and not keys and any(key in all_visits and all_visits[key].get("tryb") == "plan" for key in raw_keys):
+            continue
         claimed.update(keys)
         members = sorted((visits[key] for key in keys), key=lambda visit: visit["date"], reverse=True)
         trips.append({"kind": "trip", "title": row.get("nazwa") or WORDS["trip"][language == "en"],
@@ -456,14 +485,15 @@ def journal_model(rows, server, language="en", title=""):
     span = day_label(dates[0], language, dates[0] in approximate) if dates else ""
     if len(dates) > 1:
         span += " - " + day_label(dates[-1], language, dates[-1] in approximate)
-    return {"language": language, "title": title or WORDS["title"][language == "en"], "years": list(years.items()),
+    return {"language": language, "title": title or WORDS["title"][language == "en"], "author": user_name.strip(), "years": list(years.items()),
             "range": span, "trips": len(trips), "visits": len(visits), "countries": len(visited_countries), "country_ids": visited_countries}
 
 
-CHALLENGE_CATEGORIES = ("atrakcja_parku", "park_narodowy", "latarnia", "wyspa_grecka", "cypr", "hewelion", "zamek")
+CHALLENGE_CATEGORIES = ("atrakcja_parku", "park_narodowy", "latarnia", "wyspa_grecka", "cypr", "hewelion", "zamek", "morze")
 DEVELOPER_CHALLENGES = {
     "parks": ("atrakcja_parku", "park_narodowy"), "bliza": ("latarnia",),
     "islands": ("wyspa_grecka", "cypr"), "hewelion": ("hewelion",), "castles": ("zamek",),
+    "seas": ("morze",),
 }
 
 
@@ -472,6 +502,7 @@ def developer_achievements_unlocked(rows):
 
 
 def update_developer_challenges(rows, challenge, action):
+    rows = migrate_sea_visits(rows)
     categories = tuple(category for key, values in DEVELOPER_CHALLENGES.items()
                        if challenge in (key, "all") for category in values)
     if action == "reset":
@@ -497,8 +528,34 @@ def update_developer_challenges(rows, challenge, action):
     return result, added
 
 
+@lru_cache(maxsize=1)
+def sea_catalogue():
+    data = json.loads(static_bytes('morza-wyzwanie.json'))
+    return {f['properties']['id']:f['properties'] for f in data['features']},data.get('aliases',{})
+
+
+def migrate_sea_visits(rows):
+    if not any(row['kategoria'] == 'morze' for row in rows):return rows
+    catalogue,aliases = sea_catalogue()
+    existing = {r['id']:r for r in rows if r['kategoria'] == 'morze' and r['id'] not in aliases}
+    result=[];seen=set()
+    for row in rows:
+        if row['kategoria'] != 'morze':result.append(row);continue
+        identifier=aliases.get(row['id'],row['id'])
+        if identifier in seen:continue
+        seen.add(identifier)
+        if identifier != row['id']:
+            props=catalogue[identifier]
+            row={**existing.get(identifier,row),'id':identifier,'nazwa':props['name'],'lon':props['lon'],'lat':props['lat']}
+        result.append(row)
+    return result
+
+
 @lru_cache(maxsize=len(CHALLENGE_CATEGORIES))
 def challenge_places(category):
+    if category == "morze":
+        catalogue,_ = sea_catalogue()
+        return {id:(p['name'],p['lon'],p['lat']) for id,p in catalogue.items()}
     if category == "cypr":
         return {"cyprus": ("Cypr", 33.2, 35.05)}
     if category == "wyspa_grecka":
@@ -525,6 +582,25 @@ def challenge_places(category):
     }
 
 
+@lru_cache(maxsize=1)
+def challenge_summaries():
+    """Cards and achievements need properties, not millions of outline coordinates."""
+    result = {}
+    for key, filename in (
+        ('parks', 'parki-wyzwanie.json.gz'), ('bliza', 'latarnie-wyzwanie.json.gz'),
+        ('islands', 'wyspy-greckie.json'), ('hewelion', 'heweliony.json'),
+        ('castles', 'polskie-zamki.json'), ('seas', 'morza-wyzwanie.json'),
+    ):
+        raw = static_bytes(filename)
+        data = json.loads(gzip.decompress(raw) if filename.endswith('.gz') else raw)
+        result[key] = {'data': {'type': 'FeatureCollection', 'features': [
+            {'type': 'Feature', 'properties': {name: value for name, value in feature['properties'].items()
+                 if name in ('id', 'key', 'tier', 'lastKnown', 'optional', 'country', 'poland', 'name', 'english')}, 'geometry': None}
+            for feature in data['features']]},
+            'attractions': json.loads(static_bytes('atrakcje-parkow.json')) if key == 'parks' else None}
+    return json.dumps(result, ensure_ascii=False, separators=(',', ':')).encode()
+
+
 def write_csv(path, fields, rows):
     temporary = None
     try:
@@ -536,12 +612,15 @@ def write_csv(path, fields, rows):
             writer.writeheader()
             writer.writerows(rows)
         os.replace(temporary, path)
+        if path == CSV:
+            _visit_rows.cache_clear()
     finally:
         if temporary is not None:
             temporary.unlink(missing_ok=True)
 
 
 def write_visits(rows):
+    rows = migrate_sea_visits(rows)
     def encoded_row(row):
         escaped = {field: "'" + row[field] for field in csv_text_fields(row)
                    if csv_note_needs_escape(row.get(field) or "")}
@@ -607,7 +686,8 @@ def import_progress(content, format, server):
             if row["panstwo_id"] and row["panstwo_id"] not in server.countries:
                 raise ValueError
         elif category in CHALLENGE_CATEGORIES:
-            if id not in challenge_places(category) or row["tryb"]:
+            legacy_sea = category == 'morze' and id in sea_catalogue()[1]
+            if (id not in challenge_places(category) and not legacy_sea) or row["tryb"]:
                 raise ValueError
         elif category in ("pinezka", "wycieczka"):
             if not re.fullmatch(uuid_pattern, id) or row["tryb"]:
@@ -636,7 +716,7 @@ def import_progress(content, format, server):
         elif row["miejsca"]:
             raise ValueError
         result.append(row)
-    valid_visits = diary_visits(result)
+    valid_visits = diary_visits(result, include_planned=True)
     claimed = set()
     for row in result:
         if row["kategoria"] == "wycieczka":
@@ -644,7 +724,7 @@ def import_progress(content, format, server):
             if not members.issubset(valid_visits) or claimed.intersection(members):
                 raise ValueError
             claimed.update(members)
-    return result
+    return migrate_sea_visits(result)
 
 
 def export_progress(rows, format, server):
@@ -761,6 +841,12 @@ def validate_zoom(minimum, maximum):
     return {"min": minimum, "max": maximum}
 
 
+def valid_layout_value(key, value):
+    if key == "user_name":
+        return isinstance(value, str) and len(value) <= 80 and not any(ord(c) < 32 or ord(c) == 127 or 0xD800 <= ord(c) <= 0xDFFF for c in value)
+    return key in LAYOUT_VALUES and value in LAYOUT_VALUES[key]
+
+
 def read_settings():
     ranges = {name: dict(value) for name, value in DEFAULT_ZOOMS.items()}
     visibility = DEFAULT_VISIBILITY.copy()
@@ -777,8 +863,8 @@ def read_settings():
                     has_legacy_details = True
                 if name == "online_details" and value in ("on", "off"):
                     has_details = True
-                if name in layout and row.get("wartosc") in LAYOUT_VALUES[name]:
-                    layout[name] = row["wartosc"]
+                if name in layout and valid_layout_value(name, row.get("wartosc")):
+                    layout[name] = row["wartosc"].strip() if name == "user_name" else row["wartosc"]
                 if name in visibility and row.get("widoczny") in ("0", "1"):
                     visibility[name] = row["widoczny"] == "1"
                 if name in ranges:
@@ -794,7 +880,7 @@ def read_settings():
 
 
 def read_achievements():
-    rules = {"parks", "bliza", "islands", "hewelion", "castles", "castles-all", "countries", "settlements", "us-states", "continents",
+    rules = {"parks", "bliza", "islands", "hewelion", "castles", "castles-all", "seas", "countries", "settlements", "us-states", "continents",
              "antarctica", "chornobyl", "krolewiec", "trip-countries"}
     rules.update(f"castles-{tier}" for tier in CASTLE_TIERS)
     required_fields = {"id", "regula", "cel", "ukryte", "ikona", "nazwa_pl", "wymog_pl", "opis_pl", "poziom_pl"}
@@ -822,7 +908,7 @@ def read_achievements():
             if id not in definitions:
                 rule = row["regula"]
                 location = re.fullmatch(
-                    r"panstwo:[A-Z]{2}|kontynent:[a-z-]+|rejon:[a-zA-Z0-9_:-]+(?:\|[a-zA-Z0-9_:-]+)*"
+                    r"panstwo:[A-Z]{2}(?:\|[A-Z]{2})*|kontynent:[a-z-]+|(?:rejon|rejony):[a-zA-Z0-9_:-]+(?:\|[a-zA-Z0-9_:-]+)*"
                     r"|zamek:[a-z0-9-]+(?:\|[a-z0-9-]+)*",
                     rule,
                 )
@@ -1053,7 +1139,7 @@ def developer_candidates(server, preset):
         def add_feature(feature):
             props = feature["properties"]
             id = props["division_id"]
-            if ":" not in id:
+            if ":" not in id and props.get("legacy_id") != id:
                 id = "overture:" + id
             lon, lat = props.get("lon"), props.get("lat")
             if lon is None or lat is None:
@@ -1150,6 +1236,14 @@ class AtlasServer(ThreadingHTTPServer):
             self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
         super().server_bind()
 
+    def linked_visits(self):
+        stat = CSV.stat() if CSV.exists() else None
+        version = (str(CSV), stat.st_mtime_ns, stat.st_size, stat.st_ino) if stat else None
+        if not hasattr(self, '_linked_version') or self._linked_version != version:
+            self._linked_rows = add_linked_visits(read_visits(), self)
+            self._linked_version = version
+        return self._linked_rows
+
 
 class App(BaseHTTPRequestHandler):
     timeout = 15
@@ -1163,16 +1257,27 @@ class App(BaseHTTPRequestHandler):
         if sys.stderr is not None:
             super().log_message(format, *args)
 
-    def send_data(self, data, media_type, *, encoding=None, cache="no-store", filename=None):
+    def send_data(self, data, media_type, *, encoding=None, cache="no-store", filename=None, etag=None):
+        if etag and self.headers.get('If-None-Match') == etag:
+            self.send_response(304)
+            self.send_header('ETag', etag)
+            self.send_header('Cache-Control', cache)
+            self.end_headers()
+            return
+        if not encoding and not filename and len(data) >= 2048 and ('json' in media_type or media_type.startswith('text/')) and accepts_gzip(self.headers.get('Accept-Encoding', '')):
+            data = gzip.compress(data, compresslevel=3, mtime=0)
+            encoding = 'gzip'
         self.send_response(200)
         self.send_header("Content-Type", media_type)
         self.send_header("Content-Length", str(len(data)))
         self.send_header("Cache-Control", cache)
+        if etag:
+            self.send_header('ETag', etag)
         if filename:
             self.send_header("Content-Disposition", f'attachment; filename="{filename}"')
         if encoding:
             self.send_header("Content-Encoding", encoding)
-        if media_type == "application/geo+json":
+        if encoding or 'json' in media_type or media_type.startswith('text/'):
             self.send_header("Vary", "Accept-Encoding")
         self.end_headers()
         self.wfile.write(data)
@@ -1190,7 +1295,7 @@ class App(BaseHTTPRequestHandler):
         self.send_data(json.dumps(pins, ensure_ascii=False).encode(), "application/json")
 
     def send_diary(self, rows):
-        visits = {key: row.copy() for key, row in diary_visits(rows).items()}
+        visits = {key: row.copy() for key, row in diary_visits(rows, include_planned=True).items()}
         for row in visits.values():
             if row["kategoria"] == "rejon" and row["id"] in getattr(self.server, "subregion_ids", ()):
                 row["diary_type"] = "subregions"
@@ -1235,7 +1340,7 @@ class App(BaseHTTPRequestHandler):
                     or len(members) != len(set(members)) or (not exists and len(members) < 1)):
                 raise ValueError
             claimed = {key for row in remaining if row["kategoria"] == "wycieczka" for key in trip_members(row)}
-            if not set(members).issubset(diary_visits(rows)) or claimed.intersection(members):
+            if not set(members).issubset(diary_visits(rows, include_planned=True)) or claimed.intersection(members):
                 self.send_error(409)
                 return
             remaining.append(trip_record(change, trip_id, members))
@@ -1243,6 +1348,7 @@ class App(BaseHTTPRequestHandler):
         self.send_diary(remaining)
 
     def send_challenges(self, rows):
+        rows = migrate_sea_visits(rows)
         progress = {
             category: [row["id"] for row in rows if row["kategoria"] == category]
             for category in CHALLENGE_CATEGORIES
@@ -1256,12 +1362,29 @@ class App(BaseHTTPRequestHandler):
     def do_GET(self):
         try:
             parsed = urlsplit(self.path)
+            if parsed.path == '/api/podklad':
+                kind = parse_qs(parsed.query).get('kind', [''])[0]
+                if kind not in ('country', 'water'):
+                    self.send_error(400)
+                    return
+                path = ASSET_FILES['podklad.json.gz']
+                stat = path.stat()
+                encoded = accepts_gzip(self.headers.get('Accept-Encoding', ''))
+                etag = f'"base-{kind}-{stat.st_mtime_ns:x}-{stat.st_size:x}-{int(encoded)}"'
+                body = b'' if self.headers.get('If-None-Match') == etag else basemap_layer(path, stat.st_mtime_ns, stat.st_size, kind)[int(encoded)]
+                self.send_data(body, 'application/geo+json', encoding='gzip' if encoded else None, cache='no-cache', etag=etag)
+                return
+            if parsed.path == '/api/challenge-catalogues':
+                self.send_data(challenge_summaries(), 'application/json')
+                return
             if parsed.path == "/api/rejony":
                 params = parse_qs(parsed.query, keep_blank_values=True)
                 if params.get("catalogue") == ["1"]:
                     data = {"type": "FeatureCollection", "features": [
                         {"type": "Feature", "properties": f["properties"], "geometry": None}
-                        for f, _ in self.server.admin_boundary_index]}
+                        for f, _ in self.server.admin_boundary_index
+                        if (not params.get('country', [''])[0] or f['properties']['country'] == params['country'][0])
+                        and (not params.get('levels', [''])[0] or f['properties'].get('level', 'region') in params['levels'][0].split(','))]}
                 else:
                     from .admin_boundaries import viewport_features, hydrate_features
                     try:
@@ -1285,7 +1408,13 @@ class App(BaseHTTPRequestHandler):
                 if not path.is_file():
                     self.send_error(404)
                     return
-                self.send_data(path.read_bytes(), "image/jpeg", cache="private, no-cache")
+                if parse_qs(parsed.query).get('thumbnail') == ['1']:
+                    stat = path.stat()
+                    etag = f'"thumb-{stat.st_mtime_ns:x}-{stat.st_size:x}"'
+                    body = b'' if self.headers.get('If-None-Match') == etag else photo_thumbnail(path, stat.st_mtime_ns, stat.st_size)
+                    self.send_data(body, 'image/jpeg', cache='private, no-cache', etag=etag)
+                    return
+                send_asset(self, path, 'image/jpeg', cache='private, no-cache')
                 return
             if parsed.path == "/api/eksport-zdjec":
                 with self.server.write_lock:
@@ -1305,6 +1434,18 @@ class App(BaseHTTPRequestHandler):
                 return
             if parsed.path == "/api/instance":
                 self.send_data(json.dumps({"application": "travel-tracker", "instance": INSTANCE_KEY}).encode(), "application/json")
+                return
+            if parsed.path == "/api/stolica-dzielnice":
+                from .capital_districts import capital_districts
+                try:
+                    identifier = parse_qs(parsed.query)["id"][0]
+                    if len(identifier) > 250:
+                        raise ValueError
+                    data = capital_districts(identifier, read_settings()[2]["online_details"] != "off")
+                except (ValueError, KeyError, StopIteration):
+                    self.send_error(400)
+                    return
+                self.send_data(json.dumps(data, ensure_ascii=False).encode(), "application/json")
                 return
             if parsed.path in ("/api/obszar", "/api/obszar-szukaj", "/api/obszar-liczniki"):
                 from .focus_map import focus_area, search_area, area_counts
@@ -1330,13 +1471,14 @@ class App(BaseHTTPRequestHandler):
                 format = params.get("format", [""])[0]
                 language = params.get("language", [read_settings()[2]["language"]])[0]
                 title = params.get("title", [""])[0].strip()
-                if (format not in ("pdf", "docx") or language not in ("pl", "en") or len(title) > 100
+                include_planned = params.get("include_planned", ["0"])[0]
+                if (format not in ("pdf", "docx") or language not in ("pl", "en") or include_planned not in ("0", "1") or len(title) > 100
                         or any(ord(character) < 32 for character in title)):
                     self.send_error(400)
                     return
                 with self.server.write_lock:
                     rows = read_visits()
-                model = journal_model(rows, self.server, language, title)
+                model = journal_model(rows, self.server, language, title, read_settings()[2]["user_name"], include_planned == "1")
                 try:
                     data = build_journal(model, country_shapes(), format)
                 except Exception:
@@ -1370,12 +1512,13 @@ class App(BaseHTTPRequestHandler):
                     self.send_error(400)
                     return
                 body = json.dumps(data, ensure_ascii=False, separators=(",", ":")).encode()
-                if "gzip" in self.headers.get("Accept-Encoding", ""):
+                if accepts_gzip(self.headers.get("Accept-Encoding", "")):
                     self.send_data(gzip.compress(body, compresslevel=4), "application/json", encoding="gzip")
                 else:
                     self.send_data(body, "application/json")
             elif self.path == "/api/odwiedzone":
-                self.send_visits(add_linked_visits(read_visits(), self.server))
+                with self.server.write_lock:
+                    self.send_visits(self.server.linked_visits())
             elif self.path == "/api/pinezki":
                 self.send_pins(read_visits())
             elif self.path == "/api/dziennik":
@@ -1404,15 +1547,9 @@ class App(BaseHTTPRequestHandler):
             elif self.path in ("/odwiedzone.csv", "/ustawienia.csv", "/osiagniecia.csv"):
                 path = {"/odwiedzone.csv": CSV, "/ustawienia.csv": SETTINGS, "/osiagniecia.csv": ACHIEVEMENTS}[self.path]
                 self.send_data(path.read_bytes(), "text/plain; charset=utf-8")
-            elif self.path in ASSETS:
-                filename, media_type = ASSETS[self.path]
-                if filename.endswith(".gz"):
-                    compressed = static_bytes(filename)
-                    accepts_gzip = "gzip" in self.headers.get("Accept-Encoding", "")
-                    data = compressed if accepts_gzip else gzip.decompress(compressed)
-                    self.send_data(data, media_type, encoding="gzip" if accepts_gzip else None, cache="max-age=3600")
-                else:
-                    self.send_data((ROOT / filename).read_bytes(), media_type)
+            elif parsed.path in ASSETS:
+                filename, media_type = ASSETS[parsed.path]
+                send_asset(self, ROOT / filename, media_type)
             else:
                 self.send_error(404)
         except (OSError, sqlite3.Error):
@@ -1543,8 +1680,9 @@ class App(BaseHTTPRequestHandler):
                 category, place_id, selected = change["kategoria"], change["id"], change["odwiedzone"]
                 if category not in CHALLENGE_CATEGORIES or not isinstance(place_id, str) or type(selected) is not bool:
                     raise ValueError
+                if category == 'morze':place_id=sea_catalogue()[1].get(place_id,place_id)
                 name, lon, lat = challenge_places(category)[place_id]
-                rows = read_visits()
+                rows = migrate_sea_visits(read_visits())
                 if category == "park_narodowy" and selected:
                     attractions = challenge_places("atrakcja_parku")
                     if not any(row["kategoria"] == "atrakcja_parku" and row["id"].startswith(place_id + ":")
@@ -1575,9 +1713,9 @@ class App(BaseHTTPRequestHandler):
                 if "layout" in change:
                     updated = change["layout"]
                     if (not isinstance(updated, dict) or updated.keys() - LAYOUT_VALUES.keys()
-                            or any(value not in LAYOUT_VALUES[key] for key, value in updated.items())):
+                            or any(not valid_layout_value(key, value) for key, value in updated.items())):
                         raise ValueError
-                    layout.update(updated)
+                    layout.update({key: value.strip() if key == "user_name" else value for key, value in updated.items()})
                 write_settings(ranges, visibility, layout)
                 self.send_settings(ranges, visibility, layout)
                 return
@@ -1715,6 +1853,15 @@ def run_atlas(instance_file):
             if ":" not in id:
                 id = "overture:" + id
             server.static_cities[id] = feature
+        for feature in json.loads(gzip.decompress(static_bytes("stolice.json.gz")))["features"]:
+            props = feature["properties"]
+            id = props["division_id"]
+            if ":" not in id and props.get("legacy_id") != id:
+                id = "overture:" + id
+            server.static_cities.setdefault(id, feature)
+            server.city_codes[id] = props.get("country", "")
+            server.places.setdefault(("miasto", id), {"kategoria":"miasto", "id":id,
+                "nazwa":props.get("@name") or props["name"], "panstwo_id":server.country_codes.get(props.get("country"), "")})
         province_teryt = dict(zip(
             ("PL-DS", "PL-KP", "PL-LU", "PL-LB", "PL-LD", "PL-MA", "PL-MZ", "PL-OP",
              "PL-PK", "PL-PD", "PL-PM", "PL-SL", "PL-SK", "PL-WN", "PL-WP", "PL-ZP"),
@@ -1753,7 +1900,13 @@ def run_atlas(instance_file):
             for feature in polish_cities
         })
         visits = read_visits()
-        updated = add_linked_visits(visits, server)
+        merged = migrate_sea_visits(visits)
+        if merged != visits and CSV.exists():
+            backup = USER_DATA/'backups'/'before-seas-merge.csv'
+            if not backup.exists():
+                backup.parent.mkdir(parents=True,exist_ok=True)
+                backup.write_bytes(CSV.read_bytes())
+        updated = add_linked_visits(merged, server)
         if updated != visits:
             write_visits(updated)
         address = f"http://127.0.0.1:{server.server_port}"

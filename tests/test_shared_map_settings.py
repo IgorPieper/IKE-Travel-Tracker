@@ -7,6 +7,14 @@ from src import atlas
 
 
 class SharedMapSettingsTests(unittest.TestCase):
+    def test_profile_name_is_optional_validated_and_persisted_locally(self):
+        for value in ('', 'Igor', '  Żeglarz & rodzina  ', '旅人'):
+            self.assertTrue(atlas.valid_layout_value('user_name',value))
+            self.assertEqual(self.read_layout({'user_name':value})['user_name'],value.strip())
+        for value in ('x'*81,'name\nsecond line','name\x00',123,None,'\ud800'):
+            self.assertFalse(atlas.valid_layout_value('user_name',value))
+        self.assertEqual(self.read_layout({})['user_name'],'')
+
     def read_layout(self, values):
         with tempfile.TemporaryDirectory() as folder, patch.object(atlas, 'SETTINGS', Path(folder) / 'settings.csv'):
             atlas.write_csv(atlas.SETTINGS, atlas.SETTINGS_FIELDS,

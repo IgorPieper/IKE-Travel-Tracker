@@ -291,7 +291,7 @@ function paintRegions() {
 }
 
 function getRegionCatalogue() {
-  regionCatalogueRequest ||= request("/api/rejony?catalogue=1", { cache: "reload" }).then((data) => ({ ...data,
+  regionCatalogueRequest ||= request("/api/rejony?catalogue=1").then((data) => ({ ...data,
     features: data.features.filter((feature) => !compactCountries.has(feature.properties.country)),
   })).catch((error) => {
     regionCatalogueRequest = undefined;
@@ -337,11 +337,17 @@ function syncRegionViewport() {
   if (!cityMap?.getSource("admin-regions")) return;
   const focused = areaFocusActive();
   const details = densityState();
+  // Do not decode and re-tile saved administrative outlines in unrelated views.
+  if (!(isSavedPreset() || ["regions", "subregions"].includes(activePreset) || focusShowsRegions() || focusShowsSubregions())) {
+    regionViewportRequest?.abort();
+    regionViewportKey = undefined;
+    return;
+  }
   const levels = [];
   if ((focused ? focusShowsRegions() && !focusShowsSubregions() : activePreset === "regions") && details.regions) levels.push("region");
   if ((focused ? focusShowsSubregions() : activePreset === "subregions") && (focused && focusShowsRegions() ? details.regions : details.subregions)) levels.push("subregion");
   const ids = savedRows.filter((row) => row.kategoria === "rejon" && rowInSavedPreset(row)).map((row) => row.id).sort();
-  const bounds = mapBounds().map((value) => Math.round(value * 1000) / 1000);
+  const bounds = (levels.length ? mapBounds() : [-180, -90, 180, 90]).map((value) => Math.round(value * 1000) / 1000);
   const params = new URLSearchParams({ bbox: bounds.join(","), levels: levels.join(","), ids: ids.join(","),
     country: focused ? areaFocus.area.country : "", parent: focused && focusShowsSubregions() && areaFocus.area.category === "rejon" ? areaFocus.area.id : "" });
   const key = params.toString();
@@ -379,6 +385,8 @@ async function loadVisitedOutlines() {
 }
 
 function savedCityPosition(row) {
+  const capital = capitalOutlines.get(row.id);
+  if (capital) return capital.getPosition();
   if (row.lon != null && row.lat != null && row.lon !== "" && row.lat !== "") {
     return [Number(row.lon), Number(row.lat)];
   }
@@ -454,16 +462,16 @@ function cityFromFeature(feature) {
   const code = props.country;
   const region = props.label || (/^[A-Z]{2}$/.test(code) ? regions.of(code) || code : "");
   const alias = capitalAliases.get(normalize(name + " " + region));
-  return { id: id.includes(":") ? id : "overture:" + id, name, region,
+  return { id: id.includes(":") || props.legacy_id === id ? id : "overture:" + id, name, region,
     country: code, major: props.major === true, category: "miasto",
-    searchText: normalize([name, placeReading({ category: "miasto", name, country: code }), region, englishRegion(code), alias].filter(Boolean).join(" ")),
+    searchText: normalize([name, props.original, placeReading({ category: "miasto", name, country: code }), region, englishRegion(code), alias].filter(Boolean).join(" ")),
     getPosition: () => Number.isFinite(props.lon) && Number.isFinite(props.lat)
       ? [props.lon, props.lat] : outlineCenter(feature) };
 }
 
 function eligibleCityFeature(feature) {
   const id = feature.properties.division_id;
-  return polishCities.has(id) || /^(simc|overture|osm|ne|jp):/.test(id) ||
+  return polishCities.has(id) || capitalOutlines.has(id) || /^(simc|overture|osm|ne|jp):/.test(id) ||
     majorCities.has("overture:" + id);
 }
 
@@ -485,6 +493,53 @@ const pinZoom = {
 };
 const pinLayers = [...Object.keys(pinZoom), visitedPinLayer, "area-capital-pins"];
 const geographyUrl = "/podklad.json";
+const worldOutlineRequests = new Map();
+let worldOutlineApplied;
+let fallbackOutlineApplied;
+
+function worldOutlineLevel(zoom, simple) {
+  return simple ? 'simple' : zoom >= 5 ? 'detail' : 'overview';
+}
+
+function currentWorldOutlineLevel() {
+  return worldOutlineLevel(cityMap ? cityMap.getZoom() : Math.log2(view.zoom), layout.map_simple === 'on');
+}
+
+function loadWorldOutlines(level) {
+  if (!worldOutlineRequests.has(level)) {
+    const urls = level === 'detail' ? ['/api/podklad?kind=country', '/kontynenty-obrysy.json']
+      : level === 'simple' ? ['/panstwa-proste.json', '/kontynenty-proste.json']
+        : ['/panstwa-lekkie.json', '/kontynenty-lekkie.json'];
+    worldOutlineRequests.set(level, Promise.all(urls.map((url) => request(url))).then(([countries, continents]) => ({countries, continents}))
+      .catch((error) => {worldOutlineRequests.delete(level);throw error;}));
+  }
+  return worldOutlineRequests.get(level);
+}
+
+async function syncWorldOutlines() {
+  const level = currentWorldOutlineLevel();
+  const needsMap = basemapReady && worldOutlineApplied !== level;
+  const needsFallback = !hasInteractiveMap() && fallbackOutlineApplied !== level;
+  if (!needsMap && !needsFallback) return;
+  try {
+    const data = await loadWorldOutlines(level);
+    // A late response must not overwrite a newer zoom or checkbox choice.
+    if (level !== currentWorldOutlineLevel()) return;
+    if (basemapReady && worldOutlineApplied !== level) {
+      cityMap.getSource('basemap').setData(data.countries);
+      cityMap.getSource('continents').setData(data.continents);
+      worldOutlineApplied = level;
+    }
+    if (!hasInteractiveMap() && fallbackOutlineApplied !== level) {
+      const countries = new Map(data.countries.features.map((f) => [f.properties.country_id, f.geometry]));
+      const continents = new Map(data.continents.features.map((f) => [f.properties.id, f.geometry]));
+      for (const place of places.panstwo) if (countries.has(place.id)) place.path = projectedPolygon(countries.get(place.id));
+      for (const place of places.kontynent) if (continents.has(place.id)) place.path = projectedPolygon(continents.get(place.id));
+      fallbackOutlineApplied = level;
+      scheduleDraw();
+    }
+  } catch (error) { console.error(error); }
+}
 const mapColors = { river: "#93bed8", lake: "#dceef8", lakeBorder: "#9ac3db" };
 const retryMap = byId("retry-map");
 const waterView = {};
@@ -636,6 +691,7 @@ function syncPresetLayers() {
   const wantedSubregions = focused ? focusShowsSubregions() : activePreset === "subregions";
   const showVillages = (focused ? focusShowsVillages() : activePreset === "settlements") && details.villages;
   const showCities = (focused ? focusShowsCities() : ["cities", "settlements"].includes(activePreset)) && details.cities;
+  if (onlyMajor || showCities) ensurePolishCities();
   const savedCities = visited || wantsCityDetails();
   const showWorld = showCities && !viewportInsidePoland();
   const viewBounds = visibleWorldBounds();
@@ -787,11 +843,20 @@ async function loadPolishWater(bounds, zoom, map = cityMap, viewCache = waterVie
 function updateMapWater() {
   if (!basemapReady) return;
   const zoom = cityMap.getZoom();
+  if (presetShowsWater() && (visibility.rivers || visibility.lakes) && zoom >= worldWaterZoom) loadLocalWater();
   if (presetShowsWater() && (visibility.rivers || visibility.lakes) && zoom >= polishWaterZoom) {
     loadPolishWater(mapBounds(), zoom);
   }
   ensureWorldBasemap();
   updateWaterFallback();
+}
+
+let localWaterRequest;
+function loadLocalWater() {
+  if (localWaterRequest) return;
+  localWaterRequest = request('/api/podklad?kind=water').then((data) => {
+    cityMap.getSource('local-water').setData(data);
+  }).catch((error) => { localWaterRequest = undefined; console.error(error); });
 }
 
 const presetShowsWater = () => areaFocusActive() ? focusShowsCities() : ["regions", "subregions", "cities", "settlements"].includes(activePreset);
@@ -883,8 +948,15 @@ async function loadPolishCities(dataRequest) {
     paintCityPins();
     updateSidebar();
   } catch (error) {
+    polishCitiesRequest = undefined;
     console.error(error);
   }
+}
+
+let polishCitiesRequest;
+function ensurePolishCities() {
+  if (!polishCitiesRequest && !cityMap.getSource('polish-settlements')) polishCitiesRequest = loadPolishCities(request('/miasta-polska.json'));
+  return polishCitiesRequest;
 }
 
 async function loadMajorCities(dataRequest, capitalRequest) {
@@ -902,6 +974,13 @@ async function loadMajorCities(dataRequest, capitalRequest) {
       feature.properties.capital = true;
       capitalOutlines.set(place.id, place);
       capitalOutlineNames.add(normalize(place.name + " " + place.region));
+      const legacy = capitalRecords.get(feature.properties.legacy_id);
+      if (legacy) {
+        legacy.getPosition = place.getPosition;
+        [legacy.x, legacy.y] = project(...place.getPosition());
+      }
+      if (legacy) for (const name of [legacy.name, legacy.original].filter(Boolean))
+        capitalOutlineNames.add(normalize(name + " " + legacy.region));
       if (majorCities.has(place.id) || place.id.startsWith("prg:")) continue;
       majorCities.set(place.id, place);
       extra.push({ ...feature, properties: { ...feature.properties,
@@ -1156,6 +1235,7 @@ function refreshPreset() {
   updateLayerLegend();
   positionCustomPins();
   if (!basemapReady) return;
+  syncWorldOutlines();
   syncPresetLayers();
   paintVisits();
   paintRegions();
@@ -1170,12 +1250,8 @@ function refreshPreset() {
   updateMapWater();
 }
 
-function openCityMap() {
+async function openCityMap() {
   const base = { source: "basemap" };
-  const polishData = request("/miasta-polska.json", { cache: "reload" }).catch((error) => {
-    console.error(error);
-    return { type: "FeatureCollection", features: [] };
-  });
   const majorData = request("/duze-miasta.json").catch((error) => {
     console.error(error);
     return emptyFeatures();
@@ -1185,9 +1261,13 @@ function openCityMap() {
     return emptyFeatures();
   });
   const waterLayers = (kind, type, paint) => Array.from({ length: 7 }, (_, i) => ({
-    id: kind + "-" + (i + 2), type, ...base, minzoom: worldWaterZoom + Math.floor(i / 2),
+    id: kind + "-" + (i + 2), type, source: 'local-water', minzoom: worldWaterZoom + Math.floor(i / 2),
     filter: ["all", ["==", ["get", "kind"], kind], ["==", ["get", "detail"], i + 2]], paint,
   }));
+  // HTTP validation reuses cached geography and detects coastline updates.
+  const outlineLevel = currentWorldOutlineLevel();
+  const geography = await loadWorldOutlines(outlineLevel);
+  worldOutlineApplied = outlineLevel;
   cityMap = new maplibregl.Map({
     container: cityContainer,
     center: cityPosition(view.x, view.y),
@@ -1203,12 +1283,13 @@ function openCityMap() {
     style: {
       version: 8,
       sources: {
-        basemap: { type: "geojson", data: geographyUrl, maxzoom: 10, tolerance: 0.8 },
-        continents: { type: "geojson", data: "/kontynenty-obrysy.json", maxzoom: 10, tolerance: 0.8 },
+        basemap: { type: "geojson", data: geography.countries, maxzoom: 12, tolerance: .6 },
+        'local-water': { type: 'geojson', data: emptyFeatures(), maxzoom: 12, tolerance: 0.55 },
+        continents: { type: "geojson", data: geography.continents, maxzoom: 10, tolerance: 0.8 },
       },
       layers: [
         { id: "map-background", type: "background", paint: { "background-color": "#fff" } },
-        { id: "land-mask", type: "fill", source: "continents", layout: { visibility: "none" },
+        { id: "land-mask", type: "fill", source: "basemap", filter: ["==", ["get", "kind"], "country"], layout: { visibility: "none" },
           paint: { "fill-color": "#fff", "fill-antialias": false } },
         { id: warningLayer, type: "fill", ...base,
           filter: ["in", ["get", "country_id"], ["literal",
@@ -1276,11 +1357,11 @@ function openCityMap() {
       paint: { "line-color": "#c33e4f", "line-width": 1.4 } });
     syncCapitalOutlines();
     basemapReady = true;
+    syncWorldOutlines();
     syncPresetLayers();
     paintVisits();
     paintCityPins();
     loadVisitedOutlines();
-    loadPolishCities(polishData);
     loadMajorCities(majorData, capitalData);
     cityContainer.classList.add("ready");
     canvas.hidden = true;
@@ -1322,6 +1403,7 @@ function openCityMap() {
     const { lng, lat } = cityMap.getCenter().wrap();
     [view.x, view.y] = project(lng, lat);
     view.zoom = 2 ** cityMap.getZoom();
+    syncWorldOutlines();
     cityPlaces.clear();
     collectCityView = true;
     syncPresetLayers();
@@ -1493,6 +1575,9 @@ function projectedPolygon(geometry) {
 
 function draw() {
   frame = 0;
+  // The canvas is only the WebGL fallback. Never paint the hidden world twice.
+  if (hasInteractiveMap()) return;
+  if (ready) syncWorldOutlines();
   const { w, h } = size();
   if (!w || !h) return;
   updateMapScale();
@@ -1516,7 +1601,11 @@ function draw() {
   ctx.lineJoin = "round";
   const continents = activePreset === "continents" && !areaFocusActive();
   const visited = isSavedPreset() && !areaFocusActive();
-  if (continents || visibility.seas) {
+  if (!continents && visibility.seas) {
+    ctx.fillStyle = "#fff";
+    for (const place of places.panstwo) ctx.fill(place.path, "evenodd");
+  }
+  if (continents) {
     for (const place of places.kontynent) {
       ctx.fillStyle = !markingsHidden && continents && marked.has(key(place)) ? visitColor
         : !markingsHidden && continents && planned.has(key(place)) ? planColor : "#fff";
@@ -2103,10 +2192,9 @@ function setPlaceEditorBusy(busy) {
   placeRemove.disabled = busy;
 }
 
-async function openPlace(place, { planning = false, focus = false } = {}) {
+async function openPlace(place, { planning = false, focus = false, fromJournal = false } = {}) {
   if (!ready) return;
-  if (layout.editor_auto_close === "off" && (editedPlace || editedPin)) return;
-  if (consumeFocusSelection(place)) return;
+  if (!fromJournal && consumeFocusSelection(place)) return;
   if (editedPlace && key(editedPlace.place) === key(place)) {
     if (focus) byId("place-details-title").focus({ preventScroll: true });
     return;
@@ -2260,7 +2348,6 @@ function updatePinTitle() {
 }
 
 async function openPinEditor(pin, saved) {
-  if (layout.editor_auto_close === "off" && (editedPlace || editedPin)) return;
   const requestId = ++editorRequest;
   if (!await closePlaceDetails() || (editedPin?.pin.id !== pin.id && !await closePinEditor()) || requestId !== editorRequest) return;
   setMapSidebarOpen(true);
@@ -2491,7 +2578,7 @@ for (const form of [placeForm, byId("pin-form")]) {
 function dismissEditorOutside(event) {
   if (!editedPlace && !editedPin) return;
   if (layout.editor_auto_close === "off") return;
-  if (event.target.closest?.("#map-sidebar")) return;
+  if (event.target.closest?.("#map-sidebar, #diary-place-editor")) return;
   // Let quick removal discard the selected editor instead of racing its save.
   if (event.shiftKey && event.target.closest?.("#city-map, #map-pins, #atlas")) return;
   closePlaceDetails();
@@ -2590,6 +2677,26 @@ function updateLayerLegend() {
 }
 
 const visibilityDialog = byId("visibility-settings");
+const mapSimpleInput = byId('map-simple-outlines');
+mapSimpleInput.addEventListener('change', async () => {
+  const previous = layout.map_simple || 'off';
+  layout.map_simple = mapSimpleInput.checked ? 'on' : 'off';
+  mapSimpleInput.disabled = true;
+  syncWorldOutlines();
+  visibilityMessage.textContent = '';
+  try {
+    await request('/api/ustawienia', {method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({layout:{map_simple:layout.map_simple}})});
+  } catch {
+    layout.map_simple = previous;
+    mapSimpleInput.checked = previous === 'on';
+    syncWorldOutlines();
+    visibilityMessage.textContent = tr('Nie udało się zapisać ustawienia.', 'Could not save this setting.');
+  } finally {
+    mapSimpleInput.disabled = false;
+    document.dispatchEvent(new Event('atlas-settings-sync'));
+  }
+});
 const parkLayerKeys = ["forests", "lakes", "rivers"];
 const visibilityMessage = byId("visibility-message");
 const visibilityInputs = new Map();
@@ -2825,7 +2932,7 @@ function saveOnlineSettings(updated, disableForests = false) {
 }
 let layoutQueue = Promise.resolve();
 let openToolbarPanel = null;
-const toolbarPanels = ["legend", "shortcuts", "libraries", "data-dates"];
+const toolbarPanels = ["legend", "shortcuts"];
 
 function renderDataDates() {
   byId("warning-data-date").dateTime = warningSnapshotDate;
@@ -2847,7 +2954,9 @@ function setToolbarPanel(next) {
 }
 
 for (const id of toolbarPanels) {
-  byId("toggle-" + id).addEventListener("click", () => setToolbarPanel(openToolbarPanel === id ? null : id));
+  byId("toggle-" + id).addEventListener("click", () => {
+    setToolbarPanel(openToolbarPanel === id ? null : id);
+  });
 }
 document.addEventListener("click", (event) => {
   if (openToolbarPanel && !event.target.closest("#map-view .toolbar-panel, #toggle-" + openToolbarPanel)) {
@@ -2971,6 +3080,7 @@ function syncLanguage() {
 
 function saveLayout(key, value) {
   layout[key] = value;
+  if (key === "user_name") syncJournalUser();
   layoutQueue = layoutQueue.then(async () => {
     try {
       await request("/api/ustawienia", {
@@ -3002,8 +3112,8 @@ async function start() {
   try {
     const [data, rows, settings, continents, continentShapes, pins, readings] = await Promise.all([
       request("/mapa.json"), request("/api/odwiedzone"), request("/api/ustawienia"), request("/kontynenty.json"),
-      request("/kontynenty-obrysy.json"), request("/api/pinezki"),
-      request("/odczyt-nazw.json", { cache: "reload" }).catch(() => ({ byCountry: {}, byName: {} })),
+      request("/kontynenty-lekkie.json"), request("/api/pinezki"),
+      request("/odczyt-nazw.json").catch(() => ({ byCountry: {}, byName: {} })),
     ]);
     placeReadings = readings;
     applyZoomRanges(settings);
@@ -3036,6 +3146,7 @@ async function start() {
     renderCustomPins(pins);
     ready = true;
     layout = { ...layout, ...settings.layout };
+    mapSimpleInput.checked = layout.map_simple === 'on';
     savedOnline = Object.fromEntries(Object.keys(onlineLabels).map((key) => [key, layout[key] || "on"]));
     document.dispatchEvent(new CustomEvent("atlas-settings-loaded", { detail: settings }));
     syncSidebar();
@@ -3044,7 +3155,7 @@ async function start() {
     syncLanguage();
     try {
       cityContainer.hidden = false;
-      openCityMap();
+      await openCityMap();
     } catch (error) {
       console.error(error);
       cityContainer.hidden = true;
@@ -3096,7 +3207,7 @@ function renderDeveloperTools(panel) {
   const select = document.createElement("select");
   for (const [value, pl, en] of [["all", "Wszystkie wyzwania", "All challenges"], ["parks", "Polskie Parki Narodowe", "Polish National Parks"],
     ["bliza", "Wyzwanie Bliza", "Bliza Challenge"], ["islands", "Greckie wyspy", "Greek Islands"], ["hewelion", "Hewelion", "Hewelion"],
-    ["castles", "Polskie zamki", "Polish Castles"]]) select.add(new Option(tr(pl, en), value));
+    ["castles", "Polskie zamki", "Polish Castles"], ["seas", "Morza świata", "World Seas"]]) select.add(new Option(tr(pl, en), value));
   select.value = developerProgressState.challenge;
   select.addEventListener("change", () => { developerProgressState.challenge = select.value; });
   label.append(labelText, select);
@@ -3254,25 +3365,31 @@ function renderDeveloperFill(panel) {
   });
 }
 let settingsScrollFrame;
+let settingsPage = "general";
+let userNameTimer;
+const settingsPages = {
+  user: ["Użytkownik", "User"],
+  general: ["Ustawienia główne", "General settings"],
+  transfer: ["Import i eksport", "Import and export"],
+  information: ["Informacje", "Information"],
+};
+function openSettingsPage(page = "general") {
+  settingsPage = page in settingsPages ? page : "general";
+  showSection("settings-view");
+  byId("main-settings-title").focus({ preventScroll: true });
+}
+function syncJournalUser() {
+  const name = (layout.user_name || "").trim();
+  const owner = byId("diary-user");
+  owner.hidden = !name;
+  owner.textContent = name ? tr("Autor: ", "By ") + name : "";
+}
 function updateSettingsCategory() {
   settingsScrollFrame = undefined;
   if (byId("settings-view").hidden) return;
-  const categories = [...byId("main-settings-categories").querySelectorAll(".main-settings-category")];
-  if (!categories.length) return;
-  const navigation = byId("settings-category-nav");
-  const compact = matchMedia("(max-width: 760px)").matches;
-  const boundary = compact ? navigation.getBoundingClientRect().bottom + 28 : 140;
-  let current = categories[0];
-  for (const category of categories) {
-    if (category.getBoundingClientRect().top <= boundary) current = category;
-  }
-  if (window.scrollY + innerHeight >= document.documentElement.scrollHeight - 3) current = categories.at(-1);
-  for (const button of navigation.children) {
-    const active = button.getAttribute("aria-controls") === current.id;
-    if (active && button.getAttribute("aria-current") !== "true") {
-      button.setAttribute("aria-current", "true");
-      if (compact) navigation.scrollLeft = button.offsetLeft - navigation.offsetLeft - 12;
-    } else if (!active) button.removeAttribute("aria-current");
+  for (const button of byId("settings-category-nav").children) {
+    if (button.dataset.settingsPage === settingsPage) button.setAttribute("aria-current", "page");
+    else button.removeAttribute("aria-current");
   }
 }
 function scheduleSettingsCategory() {
@@ -3281,6 +3398,10 @@ function scheduleSettingsCategory() {
 window.addEventListener("scroll", scheduleSettingsCategory, { passive: true });
 window.addEventListener("resize", scheduleSettingsCategory);
 function syncMainSettings() {
+  mapSimpleInput.checked = layout.map_simple === 'on';
+  syncJournalUser();
+  const userNameInput = byId("settings-user-name");
+  if (userNameInput) userNameInput.disabled = !ready;
   for (const [kind, input] of renderDistanceInputs) { input.value = String(renderZoom(kind)); input.disabled = !ready; }
   achievementNotificationInput.checked = achievementNotificationsEnabled();
   achievementNotificationInput.disabled = !ready;
@@ -3303,7 +3424,7 @@ function syncMainSettings() {
   if (messages.length) byId("main-settings-status").textContent = messages.join(" ");
 }
 
-const transferState = { format: "csv", file: null, content: null, busy: false, journalFormat: "pdf", journalTitle: "" };
+const transferState = { format: "csv", file: null, content: null, busy: false, journalFormat: "pdf", journalTitle: "", journalPlanned: false };
 const importDialog = byId("progress-import-dialog");
 const confirmImport = byId("confirm-progress-import");
 const cancelImport = byId("cancel-progress-import");
@@ -3359,10 +3480,6 @@ function renderProgressTransfer(section) {
   const photosHint = document.createElement("p");
   photosHint.className = "transfer-hint";
   photosHint.textContent = tr("Zdjęcia i podpisy. Kopia CSV/JSON zawiera odnośniki; folder photos z ZIP przechowuj w data/user.", "Photos and captions. CSV/JSON backups contain references; keep the ZIP’s photos folder in data/user.");
-  const journalDivider = document.createElement("hr");
-  const journalHeading = document.createElement("h4");
-  journalHeading.className = "transfer-journal-heading";
-  journalHeading.textContent = tr("Dziennik podróży", "Travel journal");
   const journalHint = document.createElement("p");
   journalHint.className = "transfer-hint";
   journalHint.textContent = tr("Pamiątkowy pamiętnik z wycieczkami, wizytami i notatkami. Pełny dziennik, od najnowszych wpisów, niezależnie od filtrów.", "A keepsake with your trips, visits and notes. Your complete journal, newest entries first, regardless of filters.");
@@ -3387,11 +3504,19 @@ function renderProgressTransfer(section) {
   journalFormat.value = transferState.journalFormat;
   journalFormat.addEventListener("change", () => { transferState.journalFormat = journalFormat.value; });
   journalFormatLabel.append(journalFormatText, journalFormat);
+  const plannedLabel = document.createElement("label");
+  plannedLabel.className = "journal-export-planned";
+  const journalPlanned = document.createElement("input");
+  journalPlanned.type = "checkbox";journalPlanned.id = "journal-export-planned";
+  journalPlanned.checked = transferState.journalPlanned;
+  journalPlanned.addEventListener("change", () => { transferState.journalPlanned = journalPlanned.checked; });
+  const plannedText = document.createElement("span");
+  plannedText.textContent = tr("Uwzględnij zaplanowane miejsca i wycieczki", "Include planned places and trips");
+  plannedLabel.append(journalPlanned, plannedText);
   const journalButton = document.createElement("button");
   journalButton.type = "button";
   journalButton.id = "export-journal";
   journalButton.textContent = tr("Pobierz dziennik", "Download journal");
-  const divider = document.createElement("hr");
   const fileLabel = document.createElement("label");
   fileLabel.className = "transfer-file";
   const fileText = document.createElement("span");
@@ -3417,7 +3542,7 @@ function renderProgressTransfer(section) {
   function sync() {
     photosButton.disabled = !ready || transferState.busy;
     format.disabled = file.disabled = exportButton.disabled = !ready || transferState.busy;
-    journalTitle.disabled = journalFormat.disabled = journalButton.disabled = !ready || transferState.busy;
+    journalPlanned.disabled = journalTitle.disabled = journalFormat.disabled = journalButton.disabled = !ready || transferState.busy;
     importButton.disabled = !ready || transferState.busy || !transferState.file;
   }
   transferState.sync = sync;
@@ -3476,7 +3601,7 @@ function renderProgressTransfer(section) {
     try {
       await visitQueue;
       const params = new URLSearchParams({ format: transferState.journalFormat, language: document.documentElement.lang,
-        title: transferState.journalTitle.trim() });
+        title: transferState.journalTitle.trim(), include_planned: transferState.journalPlanned ? "1" : "0" });
       await downloadFile("/api/eksport-dziennika?" + params, "travel-journal." + transferState.journalFormat);
       status.textContent = tr("Dziennik gotowy do pobrania.", "Your journal is ready to download.");
     } catch {
@@ -3514,10 +3639,98 @@ function renderProgressTransfer(section) {
       transferState.sync();
     }
   });
-  body.append(exportLabel, exportButton, hint, photosButton, photosHint, journalDivider, journalHeading, journalHint, titleLabel, journalFormatLabel,
-    journalButton, divider, fileLabel, filename, importButton, warning, status);
+  function card(pl, en, className, ...elements) {
+    const card = document.createElement("section");
+    card.className = "transfer-card " + className;
+    const heading = document.createElement("h4");heading.textContent = tr(pl, en);
+    card.append(heading, ...elements);body.append(card);
+  }
+  card("Kopia postępu", "Progress backup", "transfer-backup", hint, exportLabel, exportButton);
+  card("Import postępu", "Import progress", "transfer-import", warning, fileLabel, filename, importButton);
+  card("Dziennik podróży", "Travel journal", "transfer-journal", journalHint, titleLabel, journalFormatLabel, plannedLabel, journalButton);
+  card("Zdjęcia", "Photos", "transfer-photos", photosHint, photosButton);
+  body.append(status);
   section.append(body);
   sync();
+}
+
+function renderSettingsUser(section) {
+  const body = document.createElement("div");
+  body.className = "settings-user-form";
+  const label = document.createElement("label");
+  label.htmlFor = "settings-user-name";
+  label.textContent = tr("Imię lub pseudonim", "Name or nickname");
+  const input = document.createElement("input");
+  input.id = "settings-user-name";
+  input.type = "text";
+  input.maxLength = 80;
+  input.autocomplete = "nickname";
+  input.value = layout.user_name || "";
+  input.placeholder = tr("Jak Cię nazywać?", "What should we call you?");
+  input.disabled = !ready;
+  const hint = document.createElement("p");
+  hint.className = "settings-section-description";
+  hint.id = "settings-user-hint";
+  hint.textContent = tr("Pojawi się w dzienniku oraz jego eksporcie. Pole jest dobrowolne, zapis tylko na tym urządzeniu.",
+    "Shown in your journal and its exports. Optional and saved only on this device.");
+  input.setAttribute("aria-describedby", hint.id);
+  const persist = () => {
+    clearTimeout(userNameTimer);
+    byId("main-settings-status").textContent = "";
+    saveLayout("user_name", input.value.trim());
+  };
+  input.addEventListener("input", () => {
+    layout.user_name = input.value.trim();
+    syncJournalUser();
+    clearTimeout(userNameTimer);
+    userNameTimer = setTimeout(persist, 350);
+  });
+  input.addEventListener("change", persist);
+  body.append(label, input, hint);
+  section.append(body);
+}
+
+function renderSettingsInformation(section) {
+  const body = document.createElement("div");
+  body.className = "settings-information";
+  const heading = document.createElement("h4");
+  heading.textContent = "IKE Travel Tracker";
+  const copyright = document.createElement("p");
+  copyright.textContent = "© 2026 Igor Pieper";
+  const terms = document.createElement("p");
+  terms.textContent = tr("Bezpłatne używanie i udostępnianie z uznaniem Igora Piepera za autora oraz linkiem do oryginału. Modyfikacje wymagają opisania zmian. Zarabianie na aplikacji wymaga zgody autora.",
+    "Free to use and share with credit to Igor Pieper and a link to the original. Modified versions must describe their changes. Commercial use requires the author's permission.");
+  const thirdParty = document.createElement("p");
+  thirdParty.textContent = tr("Zewnętrzne biblioteki i dane zachowują własne licencje.", "Third-party libraries and data retain their own licences.");
+  const links = document.createElement("div");
+  links.className = "library-links";
+  for (const [label, url] of [[tr("Oryginalne repozytorium", "Original repository"), "https://github.com/IgorPieper/IKE-Travel-Tracker"],
+    [tr("Pełna licencja", "Full licence"), "/LICENSE.md"]]) {
+    const link = document.createElement("a");link.textContent = label;link.href = url;link.target = "_blank";link.rel = "noopener";links.append(link);
+  }
+  body.append(heading, copyright, terms, thirdParty, links);
+  const cloneContent = (selector, reveal = false) => {
+    const source = document.querySelector(selector);
+    if (!source) return;
+    const copy = source.cloneNode(true);
+    for (const node of [copy, ...copy.querySelectorAll("*")]) {
+      node.removeAttribute("id");
+      if (reveal) node.hidden = false;
+    }
+    body.append(copy);
+  };
+  for (const [label, selector] of [[tr("Biblioteki i źródła danych", "Libraries and data sources"), "#libraries-panel .library-links"],
+    [tr("Wyzwania", "Challenges"), "#challenge-sources .library-links"],
+    [tr("Daty danych", "Data dates"), "#data-dates-panel .data-dates"]]) {
+    const title = document.createElement("h4");title.textContent = label;body.append(title);
+    cloneContent(selector, selector.includes("challenge-sources"));
+  }
+  const software = document.createElement("div");software.className = "library-links";
+  for (const [name, href] of [["ReportLab", "https://www.reportlab.com/"], ["python-docx", "https://python-docx.readthedocs.io/"], ["Pillow", "https://python-pillow.org/"]]) {
+    const link = document.createElement("a");link.textContent = name;link.href = href;link.target = "_blank";link.rel = "noopener";software.append(link);
+  }
+  body.insertBefore(software, body.children[body.children.length-2]);
+  section.append(body);
 }
 
 function renderMainSettings() {
@@ -3527,6 +3740,19 @@ function renderMainSettings() {
   container.replaceChildren();
   navigation.replaceChildren();
   mainSettingsMirrors = [];
+  byId("settings-code-form").hidden = settingsPage !== "general";
+  for (const [page, labels] of Object.entries(settingsPages)) {
+    const button = document.createElement("button");
+    button.type = "button";button.dataset.settingsPage = page;
+    button.textContent = tr(...labels);
+    button.setAttribute("aria-controls", container.id);
+    if (page === settingsPage) button.setAttribute("aria-current", "page");
+    button.addEventListener("click", () => {
+      settingsPage = page;byId("main-settings-status").textContent = "";renderMainSettings();
+      byId("main-settings-title").scrollIntoView({block:"start"});byId("main-settings-title").focus({preventScroll:true});
+    });
+    navigation.append(button);
+  }
   const icons = {
     general: '<circle cx="12" cy="12" r="8"/><path d="M4 12h16M12 4c5 5 5 11 0 16-5-5-5-11 0-16Z"/>',
     layers: '<path d="m12 3 9 5-9 5-9-5 9-5Zm-9 9 9 5 9-5M3 16l9 5 9-5"/>',
@@ -3539,6 +3765,8 @@ function renderMainSettings() {
     developer: '<path d="m8 6-6 6 6 6m8-12 6 6-6 6M14 3l-4 18"/>',
     notifications: '<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/>',
     journal: '<path d="M4 4h6a3 3 0 0 1 3 3v14a3 3 0 0 0-3-3H4V4Zm9 3a3 3 0 0 1 3-3h5v14h-5a3 3 0 0 0-3 3"/>',
+    information: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7v1"/>',
+    user: '<circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/>',
   };
   function icon(id) {
     const element = document.createElement("span");
@@ -3565,18 +3793,6 @@ function renderMainSettings() {
     header.append(icon(id), title);
     section.append(header);
     container.append(section);
-    const button = document.createElement("button");
-    button.type = "button";
-    button.append(icon(id), document.createTextNode(tr(pl, en)));
-    button.setAttribute("aria-controls", section.id);
-    if (id === "general") button.setAttribute("aria-current", "true");
-    button.addEventListener("click", () => {
-      for (const item of navigation.children) item.removeAttribute("aria-current");
-      button.setAttribute("aria-current", "true");
-      section.scrollIntoView({ block: "start", behavior: "instant" });
-      heading.focus({ preventScroll: true });
-    });
-    navigation.append(button);
     return section;
   }
   function mirror(section, source, label, description = "") {
@@ -3603,8 +3819,21 @@ function renderMainSettings() {
     mainSettingsMirrors.push({ source, input, text, label });
     section.append(row);
   }
-  const general = category("general", "Język i układ", "Language and layout", "", "");
-  mirror(general, languageSelect, () => tr("Język", "Language"));
+  if (settingsPage === "transfer") {
+    renderProgressTransfer(category("transfer", ...settingsPages.transfer, "", ""));
+    syncMainSettings();return;
+  }
+  if (settingsPage === "information") {
+    renderDataDates();renderSettingsInformation(category("information", ...settingsPages.information, "", ""));
+    syncMainSettings();return;
+  }
+  if (settingsPage === "user") {
+    const user = category("user", ...settingsPages.user, "", "");
+    renderSettingsUser(user);
+    mirror(user, languageSelect, () => tr("Język", "Language"));
+    syncMainSettings();return;
+  }
+  const general = category("general", "Układ", "Layout", "", "");
   const sidebarLabel = document.createElement("label");
   const sidebarText = document.createElement("span");
   sidebarText.textContent = tr("Panel boczny mapy", "Map sidebar");
@@ -3635,7 +3864,6 @@ function renderMainSettings() {
   autoCloseLabel.append(autoCloseText, autoClose);
   general.append(autoCloseLabel);
   renderNavigationSettings(general);
-  renderProgressTransfer(category("transfer", "Import i eksport", "Import and export", "", ""));
   const internet = category("internet", "Internet", "Internet", "Wyłącz te opcje, aby korzystać offline.", "Turn these options off to use the app offline.");
   const disableOnline = document.createElement("button");
   disableOnline.type = "button";
@@ -3661,10 +3889,17 @@ function renderMainSettings() {
   }
   const rendering = category("rendering", "Odległość wyświetlania", "Render distance",
     "Niższa wartość pokazuje obrysy z większej odległości.", "Lower values show boundaries from farther away.");
+  mirror(rendering, mapSimpleInput, () => tr('Uproszczone obrysy lądów', 'Simplified land outlines'),
+    tr('Uproszczone kontury państw i kontynentów.', 'Simplified country and continent outlines.'));
   for (const [kind, pl, en] of [["regions", "Rejony", "Regions"], ["subregions", "Podregiony", "Subregions"], ["cities", "Miasta", "Cities"], ["villages", "Wsie", "Villages"]]) {
     mirror(rendering, renderDistanceInputs.get(kind), () => tr(pl, en));
   }
   const other = category("other", "Pozostałe", "Other", "", "");
+  const seasHeading = document.createElement('h4');
+  seasHeading.className = 'settings-subheading';
+  seasHeading.textContent = tr('Morza świata', 'World seas');
+  other.append(seasHeading);
+  mirror(other, byId('seas-simple'), () => tr('Uproszczone obrysy', 'Simplified outlines'));
   const islandsHeading = document.createElement("h4");
   islandsHeading.className = "settings-subheading";
   islandsHeading.textContent = tr("Greckie wyspy", "Greek islands");
@@ -3743,14 +3978,15 @@ for (const input of document.querySelectorAll("[data-online-setting], [data-visi
 for (const button of document.querySelectorAll("[data-main-settings]")) {
   button.addEventListener("click", () => {
     for (const dialog of document.querySelectorAll("dialog[open]")) dialog.close();
-    showSection("settings-view");
-    byId("main-settings-title").focus();
+    openSettingsPage(settingsPage);
   });
 }
 document.addEventListener("atlas-settings-sync", syncMainSettings);
 document.addEventListener("atlas-language-change", renderMainSettings);
+document.addEventListener("atlas-language-change", syncJournalUser);
+document.addEventListener("atlas-settings-loaded", syncJournalUser);
 const settingsObserver = new MutationObserver(syncMainSettings);
-for (const id of ["visibility-settings", "island-options", "castle-options"]) {
+for (const id of ["visibility-settings", "island-options", "castle-options", "seas-options"]) {
   settingsObserver.observe(byId(id), { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ["disabled"] });
 }
 

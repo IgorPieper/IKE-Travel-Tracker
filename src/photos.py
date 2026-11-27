@@ -8,6 +8,7 @@ import re
 import unicodedata
 import zipfile
 from pathlib import Path
+from functools import lru_cache
 from .photo_properties import read_properties, properties_exif, update_jpeg_properties, write_photo_atomic
 
 MAX_UPLOAD = 25 * 1024 * 1024
@@ -44,6 +45,19 @@ def photo_path(identifier):
     if not isinstance(identifier, str) or not PHOTO_ID.fullmatch(identifier):
         raise ValueError('Invalid photo reference')
     return photo_dir() / (identifier + '.jpg')
+
+
+@lru_cache(maxsize=128)
+def photo_thumbnail(path, modified, size):
+    """Small list previews; the original remains untouched for detail/export."""
+    from PIL import Image
+    with Image.open(path) as original:
+        original.draft('RGB', (640, 640))
+        image = original.convert('RGB')
+        image.thumbnail((640, 640), Image.Resampling.LANCZOS)
+        output = io.BytesIO()
+        image.save(output, format='JPEG', quality=76, optimize=True)
+        return output.getvalue()
 
 
 def read_metadata():

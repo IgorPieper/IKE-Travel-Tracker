@@ -161,7 +161,7 @@ def export_docx(model, illustration):
     lang.set(qn("w:val"), "pl-PL" if model["language"] == "pl" else "en-GB")
     styles["Normal"].element.get_or_add_rPr().append(lang)
     document.core_properties.title = model["title"]
-    document.core_properties.author = ""
+    document.core_properties.author = model.get("author", "")
     document.core_properties.last_modified_by = ""
     document.core_properties.created = datetime.now(timezone.utc)
     document.core_properties.modified = document.core_properties.created
@@ -189,6 +189,8 @@ def export_docx(model, illustration):
         for run in title.runs:
             run.font.size = Pt(28)
     paragraph(words(model, "subtitle"), "Subtitle", after=18)
+    if model.get("author"):
+        paragraph(model["author"], size=12, color="655E6D", after=14)
     if model["range"]:
         paragraph(model["range"], size=11, color="655E6D", after=24)
     image = document.add_paragraph()
@@ -308,9 +310,11 @@ def export_pdf(model, illustration):
     kicker.textColor = colors.HexColor("#76628D")
     output = io.BytesIO()
     document = SimpleDocTemplate(output, pagesize=A4, leftMargin=61, rightMargin=61, topMargin=61, bottomMargin=58,
-                                 title=model["title"], author="", subject=words(model, "subtitle"))
+                                 title=model["title"], author=model.get("author", ""), subject=words(model, "subtitle"))
     story = [Spacer(1, 35), Paragraph(APP_NAME, kicker), Spacer(1, 22),
              Paragraph(text(model["title"]), title), Paragraph(text(words(model, "subtitle"), "JournalMeta"), subtitle)]
+    if model.get("author"):
+        story.append(Paragraph(text(model["author"], "JournalMeta"), meta))
     if model["range"]:
         story.append(Paragraph(text(model["range"], "JournalMeta"), meta))
     story.extend([Spacer(1, 25), Image(io.BytesIO(illustration), width=473, height=230.6), Spacer(1, 25),

@@ -1,0 +1,2596 @@
+{
+  "prepared": "2026-11-26",
+  "capital_markers": 202,
+  "outlines": 202,
+  "district_collections": 66,
+  "coverage": [
+    {
+      "name": "Tokio",
+      "country": "JP",
+      "kind": "existing",
+      "districts": 23
+    },
+    {
+      "name": "Meksyk",
+      "country": "MX",
+      "kind": "existing",
+      "districts": 10
+    },
+    {
+      "name": "Kair",
+      "country": "EG",
+      "kind": "existing",
+      "districts": 40
+    },
+    {
+      "name": "Pekin",
+      "country": "CN",
+      "kind": "municipality",
+      "districts": 0
+    },
+    {
+      "name": "Moskwa",
+      "country": "RU",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Paryż",
+      "country": "FR",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Dżakarta",
+      "country": "ID",
+      "kind": "existing",
+      "districts": 5
+    },
+    {
+      "name": "Londyn",
+      "country": "GB",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Bogota",
+      "country": "CO",
+      "kind": "municipality",
+      "districts": 0
+    },
+    {
+      "name": "Santiago",
+      "country": "CL",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Singapur",
+      "country": "SG",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Rijad",
+      "country": "SA",
+      "kind": "urban-area",
+      "districts": 0
+    },
+    {
+      "name": "Waszyngton",
+      "country": "US",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Rzym",
+      "country": "IT",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Kapsztad",
+      "country": "ZA",
+      "kind": "municipality",
+      "districts": 116
+    },
+    {
+      "name": "Nairobi",
+      "country": "KE",
+      "kind": "existing",
+      "districts": 17
+    },
+    {
+      "name": "Buenos Aires",
+      "country": "AR",
+      "kind": "existing",
+      "districts": 15
+    },
+    {
+      "name": "Manila",
+      "country": "PH",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Seul",
+      "country": "KR",
+      "kind": "existing",
+      "districts": 24
+    },
+    {
+      "name": "Lima",
+      "country": "PE",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Teheran",
+      "country": "IR",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Kinszasa",
+      "country": "CD",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Tajpej",
+      "country": "TW",
+      "kind": "existing",
+      "districts": 12
+    },
+    {
+      "name": "Bangkok",
+      "country": "TH",
+      "kind": "municipality",
+      "districts": 49
+    },
+    {
+      "name": "Madryt",
+      "country": "ES",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Bagdad",
+      "country": "IQ",
+      "kind": "existing",
+      "districts": 3
+    },
+    {
+      "name": "Johannesburg",
+      "country": "ZA",
+      "kind": "municipality",
+      "districts": 135
+    },
+    {
+      "name": "Berlin",
+      "country": "DE",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Kabul",
+      "country": "AF",
+      "kind": "urban-area",
+      "districts": 5
+    },
+    {
+      "name": "Ateny",
+      "country": "GR",
+      "kind": "municipality",
+      "districts": 0
+    },
+    {
+      "name": "Addis Abeba",
+      "country": "ET",
+      "kind": "municipality",
+      "districts": 10
+    },
+    {
+      "name": "Caracas",
+      "country": "VE",
+      "kind": "existing",
+      "districts": 5
+    },
+    {
+      "name": "Kijów",
+      "country": "UA",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Dakar",
+      "country": "SN",
+      "kind": "municipality",
+      "districts": 4
+    },
+    {
+      "name": "Wiedeń",
+      "country": "AT",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Taszkent",
+      "country": "UZ",
+      "kind": "existing",
+      "districts": 6
+    },
+    {
+      "name": "Sztokholm",
+      "country": "SE",
+      "kind": "municipality",
+      "districts": 0
+    },
+    {
+      "name": "Amsterdam",
+      "country": "NL",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Nowe Delhi",
+      "country": "IN",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Dhaka",
+      "country": "BD",
+      "kind": "municipality",
+      "districts": 41
+    },
+    {
+      "name": "Luanda",
+      "country": "AO",
+      "kind": "municipality",
+      "districts": 16
+    },
+    {
+      "name": "Chartum",
+      "country": "SD",
+      "kind": "municipality",
+      "districts": 0
+    },
+    {
+      "name": "Hanoi",
+      "country": "VN",
+      "kind": "municipality",
+      "districts": 30
+    },
+    {
+      "name": "Rangun",
+      "country": "MM",
+      "kind": "municipality",
+      "districts": 2
+    },
+    {
+      "name": "Abidżan",
+      "country": "CI",
+      "kind": "municipality",
+      "districts": 0
+    },
+    {
+      "name": "Brasília",
+      "country": "BR",
+      "kind": "municipality",
+      "districts": 0
+    },
+    {
+      "name": "Ankara",
+      "country": "TR",
+      "kind": "urban-area",
+      "districts": 0
+    },
+    {
+      "name": "Algier",
+      "country": "DZ",
+      "kind": "capital-territory",
+      "districts": 57
+    },
+    {
+      "name": "Pjongjang",
+      "country": "KP",
+      "kind": "existing",
+      "districts": 5
+    },
+    {
+      "name": "Dar es Salaam",
+      "country": "TZ",
+      "kind": "municipality",
+      "districts": 3
+    },
+    {
+      "name": "Lizbona",
+      "country": "PT",
+      "kind": "municipality",
+      "districts": 24
+    },
+    {
+      "name": "Damaszek",
+      "country": "SY",
+      "kind": "municipality",
+      "districts": 0
+    },
+    {
+      "name": "Trypolis",
+      "country": "LY",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Hawana",
+      "country": "CU",
+      "kind": "municipality",
+      "districts": 15
+    },
+    {
+      "name": "Santo Domingo",
+      "country": "DO",
+      "kind": "municipality",
+      "districts": 0
+    },
+    {
+      "name": "Akra",
+      "country": "GH",
+      "kind": "existing",
+      "districts": 13
+    },
+    {
+      "name": "Kuwejt",
+      "country": "KW",
+      "kind": "urban-area",
+      "districts": 85
+    },
+    {
+      "name": "Sana",
+      "country": "YE",
+      "kind": "existing",
+      "districts": 10
+    },
+    {
+      "name": "Bukareszt",
+      "country": "RO",
+      "kind": "existing",
+      "districts": 8
+    },
+    {
+      "name": "Bruksela",
+      "country": "BE",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Warszawa",
+      "country": "PL",
+      "kind": "existing",
+      "districts": 18
+    },
+    {
+      "name": "Budapeszt",
+      "country": "HU",
+      "kind": "existing",
+      "districts": 23
+    },
+    {
+      "name": "Kuala Lumpur",
+      "country": "MY",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Praga",
+      "country": "CZ",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Helsinki",
+      "country": "FI",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Kopenhaga",
+      "country": "DK",
+      "kind": "municipality",
+      "districts": 0
+    },
+    {
+      "name": "Dublin",
+      "country": "IE",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Monrovia",
+      "country": "LR",
+      "kind": "municipality",
+      "districts": 0
+    },
+    {
+      "name": "Oslo",
+      "country": "NO",
+      "kind": "existing",
+      "districts": 2
+    },
+    {
+      "name": "Tunis",
+      "country": "TN",
+      "kind": "existing",
+      "districts": 21
+    },
+    {
+      "name": "Baku",
+      "country": "AZ",
+      "kind": "municipality",
+      "districts": 0
+    },
+    {
+      "name": "Port-au-Prince",
+      "country": "HT",
+      "kind": "urban-area",
+      "districts": 0
+    },
+    {
+      "name": "Asunción",
+      "country": "PY",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Bejrut",
+      "country": "LB",
+      "kind": "municipality",
+      "districts": 0
+    },
+    {
+      "name": "Mińsk",
+      "country": "BY",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Rabat",
+      "country": "MA",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Quito",
+      "country": "EC",
+      "kind": "municipality",
+      "districts": 0
+    },
+    {
+      "name": "Antananarywa",
+      "country": "MG",
+      "kind": "urban-area",
+      "districts": 6
+    },
+    {
+      "name": "Jaunde",
+      "country": "CM",
+      "kind": "existing",
+      "districts": 7
+    },
+    {
+      "name": "La Paz",
+      "country": "BO",
+      "kind": "municipality",
+      "districts": 0
+    },
+    {
+      "name": "Abudża",
+      "country": "NG",
+      "kind": "municipality",
+      "districts": 12
+    },
+    {
+      "name": "Harare",
+      "country": "ZW",
+      "kind": "municipality",
+      "districts": 45
+    },
+    {
+      "name": "Montevideo",
+      "country": "UY",
+      "kind": "existing",
+      "districts": 8
+    },
+    {
+      "name": "Bamako",
+      "country": "ML",
+      "kind": "municipality",
+      "districts": 6
+    },
+    {
+      "name": "Konakry",
+      "country": "GN",
+      "kind": "existing",
+      "districts": 2
+    },
+    {
+      "name": "Phnom Penh",
+      "country": "KH",
+      "kind": "existing",
+      "districts": 8
+    },
+    {
+      "name": "Lomé",
+      "country": "TG",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Maputo",
+      "country": "MZ",
+      "kind": "municipality",
+      "districts": 0
+    },
+    {
+      "name": "San Salvador",
+      "country": "SV",
+      "kind": "municipality",
+      "districts": 6
+    },
+    {
+      "name": "Kampala",
+      "country": "UG",
+      "kind": "municipality",
+      "districts": 5
+    },
+    {
+      "name": "Brazzaville",
+      "country": "CG",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Pretoria",
+      "country": "ZA",
+      "kind": "urban-area",
+      "districts": 44
+    },
+    {
+      "name": "Lusaka",
+      "country": "ZM",
+      "kind": "municipality",
+      "districts": 38
+    },
+    {
+      "name": "San José",
+      "country": "CR",
+      "kind": "municipality",
+      "districts": 0
+    },
+    {
+      "name": "Panama",
+      "country": "PA",
+      "kind": "urban-area",
+      "districts": 0
+    },
+    {
+      "name": "Sofia",
+      "country": "BG",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Wagadugu",
+      "country": "BF",
+      "kind": "municipality",
+      "districts": 0
+    },
+    {
+      "name": "Ottawa",
+      "country": "CA",
+      "kind": "municipality",
+      "districts": 0
+    },
+    {
+      "name": "Erywań",
+      "country": "AM",
+      "kind": "municipality",
+      "districts": 0
+    },
+    {
+      "name": "Mogadiszu",
+      "country": "SO",
+      "kind": "urban-area",
+      "districts": 11
+    },
+    {
+      "name": "Tbilisi",
+      "country": "GE",
+      "kind": "municipality",
+      "districts": 0
+    },
+    {
+      "name": "Belgrad",
+      "country": "RS",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Duszanbe",
+      "country": "TJ",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Amman",
+      "country": "JO",
+      "kind": "existing",
+      "districts": 6
+    },
+    {
+      "name": "Jerozolima",
+      "country": "IL",
+      "kind": "municipality",
+      "districts": 0
+    },
+    {
+      "name": "Gwatemala",
+      "country": "GT",
+      "kind": "municipality",
+      "districts": 0
+    },
+    {
+      "name": "Ndżamena",
+      "country": "TD",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Tegucigalpa",
+      "country": "HN",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Kingston",
+      "country": "JM",
+      "kind": "urban-area",
+      "districts": 0
+    },
+    {
+      "name": "Naypyidaw",
+      "country": "MM",
+      "kind": "urban-area",
+      "districts": 0
+    },
+    {
+      "name": "Managua",
+      "country": "NI",
+      "kind": "municipality",
+      "districts": 0
+    },
+    {
+      "name": "Niamey",
+      "country": "NE",
+      "kind": "existing",
+      "districts": 6
+    },
+    {
+      "name": "Tirana",
+      "country": "AL",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Katmandu",
+      "country": "NP",
+      "kind": "municipality",
+      "districts": 0
+    },
+    {
+      "name": "Ułan Bator",
+      "country": "MN",
+      "kind": "existing",
+      "districts": 2
+    },
+    {
+      "name": "Biszkek",
+      "country": "KG",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Bangi",
+      "country": "CF",
+      "kind": "existing",
+      "districts": 6
+    },
+    {
+      "name": "Freetown",
+      "country": "SL",
+      "kind": "urban-area",
+      "districts": 61
+    },
+    {
+      "name": "Islamabad",
+      "country": "PK",
+      "kind": "municipality",
+      "districts": 0
+    },
+    {
+      "name": "Kotonu",
+      "country": "BJ",
+      "kind": "municipality",
+      "districts": 0
+    },
+    {
+      "name": "Wientian",
+      "country": "LA",
+      "kind": "existing",
+      "districts": 5
+    },
+    {
+      "name": "Ryga",
+      "country": "LV",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Nawakszut",
+      "country": "MR",
+      "kind": "existing",
+      "districts": 9
+    },
+    {
+      "name": "Maskat",
+      "country": "OM",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Aszchabad",
+      "country": "TM",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Zagrzeb",
+      "country": "HR",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Sarajewo",
+      "country": "BA",
+      "kind": "existing",
+      "districts": 4
+    },
+    {
+      "name": "Kiszyniów",
+      "country": "MD",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Lilongwe",
+      "country": "MW",
+      "kind": "municipality",
+      "districts": 58
+    },
+    {
+      "name": "Asmara",
+      "country": "ER",
+      "kind": "urban-area",
+      "districts": 4
+    },
+    {
+      "name": "Abu Zabi",
+      "country": "AE",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Libreville",
+      "country": "GA",
+      "kind": "municipality",
+      "districts": 0
+    },
+    {
+      "name": "Wilno",
+      "country": "LT",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Hargejsa",
+      "country": "-99",
+      "kind": "urban-area",
+      "districts": 0
+    },
+    {
+      "name": "Bloemfontein",
+      "country": "ZA",
+      "kind": "urban-area",
+      "districts": 17
+    },
+    {
+      "name": "Bissau",
+      "country": "GW",
+      "kind": "municipality",
+      "districts": 0
+    },
+    {
+      "name": "Tallinn",
+      "country": "EE",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Wellington",
+      "country": "NZ",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Valletta",
+      "country": "MT",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Maseru",
+      "country": "LS",
+      "kind": "urban-area",
+      "districts": 0
+    },
+    {
+      "name": "Nur-Sułtan",
+      "country": "KZ",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Canberra",
+      "country": "AU",
+      "kind": "urban-area",
+      "districts": 0
+    },
+    {
+      "name": "Bandar Seri Begawan",
+      "country": "BN",
+      "kind": "municipality",
+      "districts": 0
+    },
+    {
+      "name": "Port Moresby",
+      "country": "PG",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Windhuk",
+      "country": "NA",
+      "kind": "existing",
+      "districts": 5
+    },
+    {
+      "name": "Georgetown",
+      "country": "GY",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Paramaribo",
+      "country": "SR",
+      "kind": "municipality",
+      "districts": 5
+    },
+    {
+      "name": "Dili",
+      "country": "TL",
+      "kind": "urban-area",
+      "districts": 0
+    },
+    {
+      "name": "Nassau",
+      "country": "BS",
+      "kind": "urban-area",
+      "districts": 0
+    },
+    {
+      "name": "Sucre",
+      "country": "BO",
+      "kind": "urban-area",
+      "districts": 0
+    },
+    {
+      "name": "Nikozja",
+      "country": "CY",
+      "kind": "municipality",
+      "districts": 0
+    },
+    {
+      "name": "Kolombo",
+      "country": "LK",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Gaborone",
+      "country": "BW",
+      "kind": "municipality",
+      "districts": 0
+    },
+    {
+      "name": "Jamusukro",
+      "country": "CI",
+      "kind": "municipality",
+      "districts": 0
+    },
+    {
+      "name": "Suva",
+      "country": "FJ",
+      "kind": "urban-area",
+      "districts": 0
+    },
+    {
+      "name": "Reykjavík",
+      "country": "IS",
+      "kind": "municipality",
+      "districts": 0
+    },
+    {
+      "name": "Malabo",
+      "country": "GQ",
+      "kind": "municipality",
+      "districts": 0
+    },
+    {
+      "name": "Praia",
+      "country": "CV",
+      "kind": "municipality",
+      "districts": 0
+    },
+    {
+      "name": "Male",
+      "country": "MV",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Thimphu",
+      "country": "BT",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "São Tomé",
+      "country": "ST",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Honiara",
+      "country": "SB",
+      "kind": "municipality",
+      "districts": 2
+    },
+    {
+      "name": "Apia",
+      "country": "WS",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Port Vila",
+      "country": "VU",
+      "kind": "municipality",
+      "districts": 0
+    },
+    {
+      "name": "Nukuʻalofa",
+      "country": "TO",
+      "kind": "urban-area",
+      "districts": 0
+    },
+    {
+      "name": "Victoria",
+      "country": "SC",
+      "kind": "urban-area",
+      "districts": 0
+    },
+    {
+      "name": "Belmopan",
+      "country": "BZ",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Doha",
+      "country": "QA",
+      "kind": "municipality",
+      "districts": 33
+    },
+    {
+      "name": "Dżibuti",
+      "country": "DJ",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Kigali",
+      "country": "RW",
+      "kind": "municipality",
+      "districts": 3
+    },
+    {
+      "name": "Port Louis",
+      "country": "MU",
+      "kind": "municipality",
+      "districts": 0
+    },
+    {
+      "name": "Manama",
+      "country": "BH",
+      "kind": "urban-area",
+      "districts": 0
+    },
+    {
+      "name": "Skopje",
+      "country": "MK",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Prisztina",
+      "country": "-99",
+      "kind": "municipality",
+      "districts": 0
+    },
+    {
+      "name": "Bratysława",
+      "country": "SK",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Bużumbura",
+      "country": "BI",
+      "kind": "municipality",
+      "districts": 3
+    },
+    {
+      "name": "Lublana",
+      "country": "SI",
+      "kind": "municipality",
+      "districts": 0
+    },
+    {
+      "name": "Port of Spain",
+      "country": "TT",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Berno",
+      "country": "CH",
+      "kind": "municipality",
+      "districts": 0
+    },
+    {
+      "name": "Bridgetown",
+      "country": "BB",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Podgorica",
+      "country": "ME",
+      "kind": "existing",
+      "districts": 0
+    },
+    {
+      "name": "Dżuba",
+      "country": "SS",
+      "kind": "urban-area",
+      "districts": 0
+    },
+    {
+      "name": "Mbabane",
+      "country": "SZ",
+      "kind": "municipality",
+      "districts": 0
+    },
+    {
+      "name": "Kingstown",
+      "country": "VC",
+      "kind": "urban-area",
+      "districts": 0
+    },
+    {
+      "name": "Bandżul",
+      "country": "GM",
+      "kind": "existing",
+      "districts": 6
+    },
+    {
+      "name": "Castries",
+      "country": "LC",
+      "kind": "urban-area",
+      "districts": 0
+    },
+    {
+      "name": "Saint John's",
+      "country": "AG",
+      "kind": "urban-area",
+      "districts": 0
+    },
+    {
+      "name": "Saint George's",
+      "country": "GD",
+      "kind": "urban-area",
+      "districts": 0
+    },
+    {
+      "name": "Roseau",
+      "country": "DM",
+      "kind": "urban-area",
+      "districts": 0
+    },
+    {
+      "name": "Basseterre",
+      "country": "KN",
+      "kind": "urban-area",
+      "districts": 0
+    },
+    {
+      "name": "Moroni",
+      "country": "KM",
+      "kind": "municipality",
+      "districts": 0
+    },
+    {
+      "name": "Luksemburg",
+      "country": "LU",
+      "kind": "municipality",
+      "districts": 0
+    },
+    {
+      "name": "Andora",
+      "country": "AD",
+      "kind": "municipality",
+      "districts": 0
+    },
+    {
+      "name": "Monako",
+      "country": "MC",
+      "kind": "municipality",
+      "districts": 9
+    },
+    {
+      "name": "South Tarawa",
+      "country": "KI",
+      "kind": "urban-area",
+      "districts": 0
+    },
+    {
+      "name": "Majuro",
+      "country": "MH",
+      "kind": "municipality",
+      "districts": 0
+    },
+    {
+      "name": "Melekeok",
+      "country": "PW",
+      "kind": "municipality",
+      "districts": 0
+    },
+    {
+      "name": "Funafuti",
+      "country": "TV",
+      "kind": "capital-atoll",
+      "districts": 0
+    },
+    {
+      "name": "Palikir",
+      "country": "FM",
+      "kind": "urban-area",
+      "districts": 0
+    },
+    {
+      "name": "Vaduz",
+      "country": "LI",
+      "kind": "municipality",
+      "districts": 0
+    },
+    {
+      "name": "San Marino",
+      "country": "SM",
+      "kind": "municipality",
+      "districts": 0
+    },
+    {
+      "name": "Watykan",
+      "country": "VA",
+      "kind": "existing",
+      "districts": 0
+    }
+  ],
+  "sources": [
+    {
+      "name": "BBS / OCHA HDX · Dhaka North and South City Corporations",
+      "source": "https://data.humdata.org/dataset/cod-ab-bgd",
+      "licence": "Creative Commons Attribution for Intergovernmental Organisations (CC BY-IGO)",
+      "year": "2023"
+    },
+    {
+      "name": "OpenStreetMap · Hanoi municipality",
+      "source": "https://www.openstreetmap.org/relation/1903516",
+      "licence": "ODbL",
+      "retrieved": "2026-11-26"
+    },
+    {
+      "name": "OCHA / HDX · ZMB",
+      "source": "https://data.humdata.org/dataset/cod-ab-zmb",
+      "licence": "Creative Commons Attribution for Intergovernmental Organisations (CC BY-IGO)",
+      "licence_url": "http://creativecommons.org/licenses/by/3.0/igo/legalcode"
+    },
+    {
+      "name": "OCHA / HDX · MWI",
+      "source": "https://data.humdata.org/dataset/cod-ab-mwi",
+      "licence": "Creative Commons Attribution for Intergovernmental Organisations (CC BY-IGO)",
+      "licence_url": "http://creativecommons.org/licenses/by/3.0/igo/legalcode"
+    },
+    {
+      "name": "OCHA / HDX · AGO",
+      "source": "https://data.humdata.org/dataset/cod-ab-ago",
+      "licence": "Creative Commons Attribution for Intergovernmental Organisations (CC BY-IGO)",
+      "licence_url": "http://creativecommons.org/licenses/by/3.0/igo/legalcode"
+    },
+    {
+      "name": "Natural Earth urban areas and administrative boundaries",
+      "url": "https://www.naturalearthdata.com/",
+      "licence": "Public domain",
+      "note": "Urban footprints are used only where municipal outlines are unavailable; they are not administrative city limits."
+    },
+    {
+      "name": "geoBoundaries",
+      "url": "https://www.geoboundaries.org/",
+      "datasets": [
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/AFG/ADM2/geoBoundaries-AFG-ADM2_simplified.geojson",
+          "licence": "Public Domain",
+          "year": "2014",
+          "country": "AF",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/AGO/ADM2/geoBoundaries-AGO-ADM2_simplified.geojson",
+          "licence": "Public Domain",
+          "year": "2006",
+          "country": "AO",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/ARG/ADM2/geoBoundaries-ARG-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+          "year": "2020",
+          "country": "AR",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/ARM/ADM2/geoBoundaries-ARM-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+          "year": "2020",
+          "country": "AM",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/AUS/ADM2/geoBoundaries-AUS-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "year": "2022",
+          "country": "AU",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/AUT/ADM2/geoBoundaries-AUT-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution-ShareAlike 2.0",
+          "year": "2017",
+          "country": "AT",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/BDI/ADM2/geoBoundaries-BDI-ADM2_simplified.geojson",
+          "licence": "Public Domain",
+          "year": "2007",
+          "country": "BI",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/BEN/ADM2/geoBoundaries-BEN-ADM2_simplified.geojson",
+          "licence": "Public Domain",
+          "year": "2007",
+          "country": "BJ",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/BGD/ADM2/geoBoundaries-BGD-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+          "year": "2020",
+          "country": "BD",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/BGR/ADM2/geoBoundaries-BGR-ADM2_simplified.geojson",
+          "licence": "Public Domain",
+          "year": "2019",
+          "country": "BG",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/BHS/ADM2/geoBoundaries-BHS-ADM2_simplified.geojson",
+          "licence": "Open Data Commons Open Database License 1.0",
+          "year": "2017",
+          "country": "BS",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/BLR/ADM2/geoBoundaries-BLR-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 3.0 License",
+          "year": "2005",
+          "country": "BY",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/BLZ/ADM2/geoBoundaries-BLZ-ADM2_simplified.geojson",
+          "licence": "Public Domain",
+          "year": "2008",
+          "country": "BZ",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/BOL/ADM2/geoBoundaries-BOL-ADM2_simplified.geojson",
+          "licence": "Public Domain",
+          "year": "2015",
+          "country": "BO",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/BRA/ADM2/geoBoundaries-BRA-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+          "year": "2020",
+          "country": "BR",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/BWA/ADM2/geoBoundaries-BWA-ADM2_simplified.geojson",
+          "licence": "Public Domain",
+          "year": "2015",
+          "country": "BW",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/CAF/ADM2/geoBoundaries-CAF-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 3.0 License",
+          "year": "2015",
+          "country": "CF",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/CHE/ADM2/geoBoundaries-CHE-ADM2_simplified.geojson",
+          "licence": "Federal Office of Topography swisstopo License",
+          "year": "2022",
+          "country": "CH",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/CHL/ADM2/geoBoundaries-CHL-ADM2_simplified.geojson",
+          "licence": "Open Data Commons Open Database License 1.0",
+          "year": "2017",
+          "country": "CL",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/CHN/ADM2/geoBoundaries-CHN-ADM2_simplified.geojson",
+          "licence": "Open Data Commons Public Domain Dedication and License (PDDL) v1.0",
+          "year": "2017",
+          "country": "CN",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/CIV/ADM2/geoBoundaries-CIV-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "year": "2016",
+          "country": "CI",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/CMR/ADM2/geoBoundaries-CMR-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "year": "2016",
+          "country": "CM",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/COD/ADM2/geoBoundaries-COD-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+          "year": "2019",
+          "country": "CD",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/COG/ADM2/geoBoundaries-COG-ADM2_simplified.geojson",
+          "licence": "Public Domain",
+          "year": "2007",
+          "country": "CG",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/COL/ADM2/geoBoundaries-COL-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "year": "2020",
+          "country": "CO",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/COM/ADM2/geoBoundaries-COM-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "year": "2019",
+          "country": "KM",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/CPV/ADM2/geoBoundaries-CPV-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+          "year": "2020",
+          "country": "CV",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/CRI/ADM2/geoBoundaries-CRI-ADM2_simplified.geojson",
+          "licence": "CC0 1.0 Universal (CC0 1.0) Public Domain Dedication",
+          "year": "2020",
+          "country": "CR",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/CUB/ADM2/geoBoundaries-CUB-ADM2_simplified.geojson",
+          "licence": "Open Data Commons Open Database License 1.0",
+          "year": "2017",
+          "country": "CU",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/CZE/ADM2/geoBoundaries-CZE-ADM2_simplified.geojson",
+          "licence": "Public Domain",
+          "year": "2010",
+          "country": "CZ",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/DJI/ADM2/geoBoundaries-DJI-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+          "year": "2020",
+          "country": "DJ",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/DNK/ADM2/geoBoundaries-DNK-ADM2_simplified.geojson",
+          "licence": "Public Domain",
+          "year": "2018",
+          "country": "DK",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/DOM/ADM2/geoBoundaries-DOM-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "year": "2020",
+          "country": "DO",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/ECU/ADM2/geoBoundaries-ECU-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+          "year": "2019",
+          "country": "EC",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/EGY/ADM2/geoBoundaries-EGY-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+          "year": "2020",
+          "country": "EG",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/ERI/ADM2/geoBoundaries-ERI-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+          "year": "2020",
+          "country": "ER",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/ETH/ADM2/geoBoundaries-ETH-ADM2_simplified.geojson",
+          "licence": "Open Data Commons Open Database License 1.0",
+          "year": "2016",
+          "country": "ET",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/FIN/ADM2/geoBoundaries-FIN-ADM2_simplified.geojson",
+          "licence": "Open Data Commons Open Database License 1.0",
+          "year": "2016",
+          "country": "FI",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/FJI/ADM2/geoBoundaries-FJI-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 4.0 (CC BY 4.0)",
+          "year": "2020",
+          "country": "FJ",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/GAB/ADM2/geoBoundaries-GAB-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 3.0 License",
+          "year": "2018",
+          "country": "GA",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/GEO/ADM2/geoBoundaries-GEO-ADM2_simplified.geojson",
+          "licence": "Public Domain",
+          "year": "2007",
+          "country": "GE",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/GHA/ADM2/geoBoundaries-GHA-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "year": "2019",
+          "country": "GH",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/GMB/ADM2/geoBoundaries-GMB-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 4.0 (CC BY 4.0)",
+          "year": "2020",
+          "country": "GM",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/GNB/ADM2/geoBoundaries-GNB-ADM2_simplified.geojson",
+          "licence": "Open Data Commons Open Database License 1.0",
+          "year": "2017",
+          "country": "GW",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/GNQ/ADM2/geoBoundaries-GNQ-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "year": "2013",
+          "country": "GQ",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/GTM/ADM2/geoBoundaries-GTM-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+          "year": "2021",
+          "country": "GT",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/GUM/ADM2/geoBoundaries-GUM-ADM2_simplified.geojson",
+          "licence": "Public Domain",
+          "year": "2021",
+          "country": "GU",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/GUY/ADM2/geoBoundaries-GUY-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+          "year": "2019",
+          "country": "GY",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/HND/ADM2/geoBoundaries-HND-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "year": "2019",
+          "country": "HN",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/HTI/ADM2/geoBoundaries-HTI-ADM2_simplified.geojson",
+          "licence": "Open Data Commons Open Database License 1.0",
+          "year": "2017",
+          "country": "HT",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/HUN/ADM2/geoBoundaries-HUN-ADM2_simplified.geojson",
+          "licence": "Open Data Commons Open Database License 1.0",
+          "year": "2017",
+          "country": "HU",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/IDN/ADM2/geoBoundaries-IDN-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+          "year": "2020",
+          "country": "ID",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/IND/ADM2/geoBoundaries-IND-ADM2_simplified.geojson",
+          "licence": "Open Data Commons Open Database License 1.0",
+          "year": "2021",
+          "country": "IN",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/IRN/ADM2/geoBoundaries-IRN-ADM2_simplified.geojson",
+          "licence": "Open Data Commons Open Database License 1.0",
+          "year": "2017",
+          "country": "IR",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/IRQ/ADM2/geoBoundaries-IRQ-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+          "year": "2021",
+          "country": "IQ",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/ISL/ADM2/geoBoundaries-ISL-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "year": "2016",
+          "country": "IS",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/JOR/ADM2/geoBoundaries-JOR-ADM2_simplified.geojson",
+          "licence": "Public Domain",
+          "year": "2006",
+          "country": "JO",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/JPN/ADM2/geoBoundaries-JPN-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution-ShareAlike 2.0",
+          "year": "2017",
+          "country": "JP",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/KAZ/ADM2/geoBoundaries-KAZ-ADM2_simplified.geojson",
+          "licence": "Open Data Commons Open Database License 1.0",
+          "year": "2017",
+          "country": "KZ",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/KEN/ADM2/geoBoundaries-KEN-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+          "year": "2020",
+          "country": "KE",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/KGZ/ADM2/geoBoundaries-KGZ-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution-ShareAlike 3.0 Unported",
+          "year": "2010",
+          "country": "KG",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/KHM/ADM2/geoBoundaries-KHM-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "year": "2014",
+          "country": "KH",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/KIR/ADM2/geoBoundaries-KIR-ADM2_simplified.geojson",
+          "licence": "Open Data Commons Open Database License 1.0",
+          "year": "2017",
+          "country": "KI",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/KOR/ADM2/geoBoundaries-KOR-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 3.0 License",
+          "year": "2020",
+          "country": "KR",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/KWT/ADM2/geoBoundaries-KWT-ADM2_simplified.geojson",
+          "licence": "Open Data Commons Open Database License 1.0",
+          "year": "2011",
+          "country": "KW",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/LAO/ADM2/geoBoundaries-LAO-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+          "year": "2019",
+          "country": "LA",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/LBN/ADM2/geoBoundaries-LBN-ADM2_simplified.geojson",
+          "licence": "Public Domain",
+          "year": "2021",
+          "country": "LB",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/LBR/ADM2/geoBoundaries-LBR-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+          "year": "2021",
+          "country": "LR",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/LTU/ADM2/geoBoundaries-LTU-ADM2_simplified.geojson",
+          "licence": "Open Data Commons Open Database License 1.0",
+          "year": "2017",
+          "country": "LT",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/MAR/ADM2/geoBoundaries-MAR-ADM2_simplified.geojson",
+          "licence": "Open Data Commons Open Database License 1.0",
+          "year": "2017",
+          "country": "MA",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/MDG/ADM2/geoBoundaries-MDG-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+          "year": "2020",
+          "country": "MG",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/MEX/ADM2/geoBoundaries-MEX-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 4.0 (CC BY 4.0)",
+          "year": "2012",
+          "country": "MX",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/MLI/ADM2/geoBoundaries-MLI-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "year": "2017",
+          "country": "ML",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/MMR/ADM2/geoBoundaries-MMR-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 4.0 (CC BY 4.0)",
+          "year": "2019",
+          "country": "MM",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/MNG/ADM2/geoBoundaries-MNG-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+          "year": "2021",
+          "country": "MN",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/MOZ/ADM2/geoBoundaries-MOZ-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+          "year": "2019",
+          "country": "MZ",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/MRT/ADM2/geoBoundaries-MRT-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+          "year": "2020",
+          "country": "MR",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/MYS/ADM2/geoBoundaries-MYS-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 3.0 License",
+          "year": "2020",
+          "country": "MY",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/NAM/ADM2/geoBoundaries-NAM-ADM2_simplified.geojson",
+          "licence": "Public Domain",
+          "year": "2007",
+          "country": "NA",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/NER/ADM2/geoBoundaries-NER-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 3.0 License",
+          "year": "2018",
+          "country": "NE",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/NGA/ADM2/geoBoundaries-NGA-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "year": "2022",
+          "country": "NG",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/NIC/ADM2/geoBoundaries-NIC-ADM2_simplified.geojson",
+          "licence": "Open Data Commons Open Database License 1.0",
+          "year": "2017",
+          "country": "NI",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/NLD/ADM2/geoBoundaries-NLD-ADM2_simplified.geojson",
+          "licence": "CC0 1.0 Universal (CC0 1.0) Public Domain Dedication",
+          "year": "2022",
+          "country": "NL",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/NOR/ADM2/geoBoundaries-NOR-ADM2_simplified.geojson",
+          "licence": "CC0 1.0 Universal (CC0 1.0) Public Domain Dedication",
+          "year": "2021",
+          "country": "NO",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/NPL/ADM2/geoBoundaries-NPL-ADM2_simplified.geojson",
+          "licence": "Public Domain",
+          "year": "2006",
+          "country": "NP",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/NZL/ADM2/geoBoundaries-NZL-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "year": "2021",
+          "country": "NZ",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/OMN/ADM2/geoBoundaries-OMN-ADM2_simplified.geojson",
+          "licence": "Other - Direct Permission",
+          "year": "2020",
+          "country": "OM",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/PAK/ADM2/geoBoundaries-PAK-ADM2_simplified.geojson",
+          "licence": "Public Domain",
+          "year": "2019",
+          "country": "PK",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/PAN/ADM2/geoBoundaries-PAN-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "year": "2012",
+          "country": "PA",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/PER/ADM2/geoBoundaries-PER-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+          "year": "2020",
+          "country": "PE",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/PNG/ADM2/geoBoundaries-PNG-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+          "year": "2019",
+          "country": "PG",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/PRI/ADM2/geoBoundaries-PRI-ADM2_simplified.geojson",
+          "licence": "Public Domain",
+          "year": "2021",
+          "country": "PR",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/PRK/ADM2/geoBoundaries-PRK-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+          "year": "2019",
+          "country": "KP",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/PRT/ADM2/geoBoundaries-PRT-ADM2_simplified.geojson",
+          "licence": "CC0 1.0 Universal (CC0 1.0) Public Domain Dedication",
+          "year": "2020",
+          "country": "PT",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/PRY/ADM2/geoBoundaries-PRY-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 4.0 (CC BY 4.0)",
+          "year": "2012",
+          "country": "PY",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/SSD/ADM2/geoBoundaries-SSD-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+          "year": "2020",
+          "country": null,
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/QAT/ADM2/geoBoundaries-QAT-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "year": "2015",
+          "country": "QA",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/ROU/ADM2/geoBoundaries-ROU-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "year": "2016",
+          "country": "RO",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/RUS/ADM2/geoBoundaries-RUS-ADM2_simplified.geojson",
+          "licence": "Open Data Commons Open Database License 1.0",
+          "year": "2017",
+          "country": "RU",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/RWA/ADM2/geoBoundaries-RWA-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "year": "2012",
+          "country": "RW",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/SAU/ADM2/geoBoundaries-SAU-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution-ShareAlike 2.0",
+          "year": "2021",
+          "country": "SA",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/SDN/ADM2/geoBoundaries-SDN-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+          "year": "2020",
+          "country": "SD",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/SEN/ADM2/geoBoundaries-SEN-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+          "year": "2019",
+          "country": "SN",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/SLB/ADM2/geoBoundaries-SLB-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+          "year": "2018",
+          "country": "SB",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/SLE/ADM2/geoBoundaries-SLE-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+          "year": "2017",
+          "country": "SL",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/SLV/ADM2/geoBoundaries-SLV-ADM2_simplified.geojson",
+          "licence": "Public Domain",
+          "year": "2007",
+          "country": "SV",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/SOM/ADM2/geoBoundaries-SOM-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 4.0 (CC BY 4.0)",
+          "year": "2022",
+          "country": "SO",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/SRB/ADM2/geoBoundaries-SRB-ADM2_simplified.geojson",
+          "licence": "Open Data Commons Open Database License 1.0",
+          "year": "2017",
+          "country": "RS",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/SUR/ADM2/geoBoundaries-SUR-ADM2_simplified.geojson",
+          "licence": "Public Domain",
+          "year": "2021",
+          "country": "SR",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/SVK/ADM2/geoBoundaries-SVK-ADM2_simplified.geojson",
+          "licence": "Open Data Commons Open Database License 1.0",
+          "year": "2017",
+          "country": "SK",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/SWE/ADM2/geoBoundaries-SWE-ADM2_simplified.geojson",
+          "licence": "CC0 1.0 Universal (CC0 1.0) Public Domain Dedication",
+          "year": "2017",
+          "country": "SE",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/SWZ/ADM2/geoBoundaries-SWZ-ADM2_simplified.geojson",
+          "licence": "Open Data Commons Open Database License 1.0",
+          "year": "2017",
+          "country": "SZ",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/SYR/ADM2/geoBoundaries-SYR-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+          "year": "2017",
+          "country": "SY",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/TCD/ADM2/geoBoundaries-TCD-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "year": "2024",
+          "country": "TD",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/TGO/ADM2/geoBoundaries-TGO-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution-ShareAlike 2.0",
+          "year": "2017",
+          "country": "TG",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/THA/ADM2/geoBoundaries-THA-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+          "year": "2019",
+          "country": "TH",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/TJK/ADM2/geoBoundaries-TJK-ADM2_simplified.geojson",
+          "licence": "Open Data Commons Open Database License 1.0",
+          "year": "2017",
+          "country": "TJ",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/TKM/ADM2/geoBoundaries-TKM-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution-ShareAlike 3.0 Unported",
+          "year": "2009",
+          "country": "TM",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/TON/ADM2/geoBoundaries-TON-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "year": "2020",
+          "country": "TO",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/TUN/ADM2/geoBoundaries-TUN-ADM2_simplified.geojson",
+          "licence": "Open Data Commons Open Database License 1.0",
+          "year": "2017",
+          "country": "TN",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/TUR/ADM2/geoBoundaries-TUR-ADM2_simplified.geojson",
+          "licence": "Open Data Commons Open Database License 1.0",
+          "year": "2021",
+          "country": "TR",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/TWN/ADM2/geoBoundaries-TWN-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution-ShareAlike 2.0",
+          "year": "2017",
+          "country": "TW",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/TZA/ADM2/geoBoundaries-TZA-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+          "year": "2021",
+          "country": "TZ",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/URY/ADM2/geoBoundaries-URY-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution-ShareAlike 3.0 Unported",
+          "year": "2013",
+          "country": "UY",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/USA/ADM2/geoBoundaries-USA-ADM2_simplified.geojson",
+          "licence": "Public Domain",
+          "year": "2018",
+          "country": "US",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/UZB/ADM2/geoBoundaries-UZB-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+          "year": "2020",
+          "country": "UZ",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/VEN/ADM2/geoBoundaries-VEN-ADM2_simplified.geojson",
+          "licence": "Open Data Commons Open Database License 1.0",
+          "year": "2015",
+          "country": "VE",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/VNM/ADM2/geoBoundaries-VNM-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+          "year": "2020",
+          "country": "VN",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/VUT/ADM2/geoBoundaries-VUT-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 4.0 (CC BY 4.0)",
+          "year": "2016",
+          "country": "VU",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/WSM/ADM2/geoBoundaries-WSM-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 4.0 (CC BY 4.0)",
+          "year": "2011",
+          "country": "WS",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/YEM/ADM2/geoBoundaries-YEM-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+          "year": "2021",
+          "country": "YE",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/ZAF/ADM2/geoBoundaries-ZAF-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+          "year": "2020",
+          "country": "ZA",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/ZMB/ADM2/geoBoundaries-ZMB-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 4.0 (CC BY 4.0)",
+          "year": "2020",
+          "country": "ZM",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/ZWE/ADM2/geoBoundaries-ZWE-ADM2_simplified.geojson",
+          "licence": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+          "year": "2020",
+          "country": "ZW",
+          "level": "ADM2"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/BFA/ADM3/geoBoundaries-BFA-ADM3_simplified.geojson",
+          "licence": "Public Domain",
+          "year": "2007",
+          "country": "BF",
+          "level": "ADM3"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/BIH/ADM3/geoBoundaries-BIH-ADM3_simplified.geojson",
+          "licence": "Public Domain",
+          "year": "2013",
+          "country": "BA",
+          "level": "ADM3"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/CAF/ADM3/geoBoundaries-CAF-ADM3_simplified.geojson",
+          "licence": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+          "year": "2018",
+          "country": "CF",
+          "level": "ADM3"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/CMR/ADM3/geoBoundaries-CMR-ADM3_simplified.geojson",
+          "licence": "Open Data Commons Open Database License 1.0",
+          "year": "2017",
+          "country": "CM",
+          "level": "ADM3"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/DZA/ADM3/geoBoundaries-DZA-ADM3_simplified.geojson",
+          "licence": "Creative Commons Attribution-ShareAlike 2.0",
+          "year": "2021",
+          "country": "DZ",
+          "level": "ADM3"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/ETH/ADM3/geoBoundaries-ETH-ADM3_simplified.geojson",
+          "licence": "Open Data Commons Open Database License 1.0",
+          "year": "2016",
+          "country": "ET",
+          "level": "ADM3"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/GIN/ADM3/geoBoundaries-GIN-ADM3_simplified.geojson",
+          "licence": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+          "year": "2021",
+          "country": "GN",
+          "level": "ADM3"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/GRC/ADM3/geoBoundaries-GRC-ADM3_simplified.geojson",
+          "licence": "CC0 1.0 Universal (CC0 1.0) Public Domain Dedication",
+          "year": "2010",
+          "country": "GR",
+          "level": "ADM3"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/KEN/ADM3/geoBoundaries-KEN-ADM3_simplified.geojson",
+          "licence": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "year": "2020",
+          "country": "KE",
+          "level": "ADM3"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/MDG/ADM3/geoBoundaries-MDG-ADM3_simplified.geojson",
+          "licence": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+          "year": "2020",
+          "country": "MG",
+          "level": "ADM3"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/MLI/ADM3/geoBoundaries-MLI-ADM3_simplified.geojson",
+          "licence": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "year": "2017",
+          "country": "ML",
+          "level": "ADM3"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/MOZ/ADM3/geoBoundaries-MOZ-ADM3_simplified.geojson",
+          "licence": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+          "year": "2021",
+          "country": "MZ",
+          "level": "ADM3"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/MWI/ADM3/geoBoundaries-MWI-ADM3_simplified.geojson",
+          "licence": "Open Data Commons Open Database License 1.0",
+          "year": "2019",
+          "country": "MW",
+          "level": "ADM3"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/NER/ADM3/geoBoundaries-NER-ADM3_simplified.geojson",
+          "licence": "Creative Commons Attribution 3.0 License",
+          "year": "2012",
+          "country": "NE",
+          "level": "ADM3"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/RWA/ADM3/geoBoundaries-RWA-ADM3_simplified.geojson",
+          "licence": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+          "year": "2012",
+          "country": "RW",
+          "level": "ADM3"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/SEN/ADM3/geoBoundaries-SEN-ADM3_simplified.geojson",
+          "licence": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+          "year": "2019",
+          "country": "SN",
+          "level": "ADM3"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/TUN/ADM3/geoBoundaries-TUN-ADM3_simplified.geojson",
+          "licence": "Open Data Commons Open Database License 1.0",
+          "year": "2017",
+          "country": "TN",
+          "level": "ADM3"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/TZA/ADM3/geoBoundaries-TZA-ADM3_simplified.geojson",
+          "licence": "Open Data Commons Open Database License 1.0",
+          "year": "2015",
+          "country": "TZ",
+          "level": "ADM3"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/UGA/ADM3/geoBoundaries-UGA-ADM3_simplified.geojson",
+          "licence": "CC0 1.0 Universal (CC0 1.0) Public Domain Dedication",
+          "year": "2020",
+          "country": "UG",
+          "level": "ADM3"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/ZWE/ADM3/geoBoundaries-ZWE-ADM3_simplified.geojson",
+          "licence": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+          "year": "2020",
+          "country": "ZW",
+          "level": "ADM3"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/SLE/ADM4/geoBoundaries-SLE-ADM4_simplified.geojson",
+          "licence": "Creative Commons Attribution 4.0 (CC BY 4.0)",
+          "year": "2016",
+          "country": "SL",
+          "level": "ADM4"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/UGA/ADM4/geoBoundaries-UGA-ADM4_simplified.geojson",
+          "licence": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+          "year": "2019",
+          "country": "UG",
+          "level": "ADM4"
+        },
+        {
+          "url": "https://www.geoboundaries.org/data/snapshots/1c423398df24ddf6e730b116567d2181c9782778d0459c3f3b76ca2f9f12b6bc/gbOpen/ZAF/ADM4/geoBoundaries-ZAF-ADM4_simplified.geojson",
+          "licence": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)",
+          "year": "2020",
+          "country": "ZA",
+          "level": "ADM4"
+        }
+      ]
+    },
+    {
+      "name": "GRID3 / CIESIN, Columbia University",
+      "url": "https://www.arcgis.com/home/item.html?id=45cd2ef592094d12aca43113a90a6054",
+      "licence": "CC BY-SA 4.0",
+      "note": "Operational ward boundaries for Abuja; not fully validated by government authorities."
+    },
+    {
+      "name": "OpenStreetMap",
+      "url": "https://www.openstreetmap.org/copyright",
+      "licence": "ODbL"
+    },
+    {
+      "name": "Warsaw districts · andilabs",
+      "url": "https://github.com/andilabs/warszawa-dzielnice-geojson"
+    },
+    {
+      "name": "OpenStreetMap · Algiers capital territory (wilaya)",
+      "source": "https://www.openstreetmap.org/relation/157062",
+      "licence": "ODbL",
+      "retrieved": "2026-11-26",
+      "note": "The capital territory comprises 57 communes; it is not the tiny Alger-Centre commune."
+    },
+    {
+      "name": "Câmara Municipal de Lisboa · 24 freguesias",
+      "source": "https://gisapps.cm-lisboa.pt/arcgis/rest/services/SGPI_Open/LXSGPI_Temas/MapServer/4",
+      "retrieved": "2026-11-26"
+    },
+    {
+      "name": "OpenStreetMap · Yangon",
+      "source": "https://www.openstreetmap.org/relation/6004094",
+      "licence": "ODbL",
+      "retrieved": "2026-11-26"
+    },
+    {
+      "name": "OpenStreetMap · Dar es Salaam",
+      "source": "https://www.openstreetmap.org/relation/7202037",
+      "licence": "ODbL",
+      "retrieved": "2026-11-26"
+    },
+    {
+      "name": "OpenStreetMap · Santo Domingo",
+      "source": "https://www.openstreetmap.org/relation/7407678",
+      "licence": "ODbL",
+      "retrieved": "2026-11-26"
+    },
+    {
+      "name": "OpenStreetMap · Baku",
+      "source": "https://www.openstreetmap.org/relation/2415335",
+      "licence": "ODbL",
+      "retrieved": "2026-11-26"
+    },
+    {
+      "name": "OpenStreetMap · Beirut",
+      "source": "https://www.openstreetmap.org/relation/316552",
+      "licence": "ODbL",
+      "retrieved": "2026-11-26"
+    },
+    {
+      "name": "OpenStreetMap · Quito",
+      "source": "https://www.openstreetmap.org/relation/113714",
+      "licence": "ODbL",
+      "retrieved": "2026-11-26"
+    },
+    {
+      "name": "OpenStreetMap · La Paz",
+      "source": "https://www.openstreetmap.org/relation/4499870",
+      "licence": "ODbL",
+      "retrieved": "2026-11-26"
+    },
+    {
+      "name": "OpenStreetMap · San Salvador",
+      "source": "https://www.openstreetmap.org/relation/17809340",
+      "licence": "ODbL",
+      "retrieved": "2026-11-26"
+    },
+    {
+      "name": "OpenStreetMap · San José",
+      "source": "https://www.openstreetmap.org/relation/4069041",
+      "licence": "ODbL",
+      "retrieved": "2026-11-26"
+    },
+    {
+      "name": "OpenStreetMap · Ouagadougou",
+      "source": "https://www.openstreetmap.org/relation/5675756",
+      "licence": "ODbL",
+      "retrieved": "2026-11-26"
+    },
+    {
+      "name": "OpenStreetMap · Ottawa",
+      "source": "https://www.openstreetmap.org/relation/4136816",
+      "licence": "ODbL",
+      "retrieved": "2026-11-26"
+    },
+    {
+      "name": "OpenStreetMap · Yerevan",
+      "source": "https://www.openstreetmap.org/relation/364087",
+      "licence": "ODbL",
+      "retrieved": "2026-11-26"
+    },
+    {
+      "name": "OpenStreetMap · Tbilisi",
+      "source": "https://www.openstreetmap.org/relation/1996871",
+      "licence": "ODbL",
+      "retrieved": "2026-11-26"
+    },
+    {
+      "name": "OpenStreetMap · Jerusalem",
+      "source": "https://www.openstreetmap.org/relation/1381350",
+      "licence": "ODbL",
+      "retrieved": "2026-11-26"
+    },
+    {
+      "name": "OpenStreetMap · Guatemala City",
+      "source": "https://www.openstreetmap.org/relation/67992",
+      "licence": "ODbL",
+      "retrieved": "2026-11-26"
+    },
+    {
+      "name": "OpenStreetMap · Cotonou",
+      "source": "https://www.openstreetmap.org/relation/2851879",
+      "licence": "ODbL",
+      "retrieved": "2026-11-26"
+    },
+    {
+      "name": "OpenStreetMap · Bandar Seri Begawan",
+      "source": "https://www.openstreetmap.org/relation/8748136",
+      "licence": "ODbL",
+      "retrieved": "2026-11-26"
+    },
+    {
+      "name": "OpenStreetMap · Nicosia",
+      "source": "https://www.openstreetmap.org/relation/2628521",
+      "licence": "ODbL",
+      "retrieved": "2026-11-26"
+    },
+    {
+      "name": "OpenStreetMap · Port Louis",
+      "source": "https://www.openstreetmap.org/relation/3488099",
+      "licence": "ODbL",
+      "retrieved": "2026-11-26"
+    },
+    {
+      "name": "OpenStreetMap · Pristina",
+      "source": "https://www.openstreetmap.org/relation/19425413",
+      "licence": "ODbL",
+      "retrieved": "2026-11-26"
+    },
+    {
+      "name": "OpenStreetMap · Bern",
+      "source": "https://www.openstreetmap.org/relation/1682378",
+      "licence": "ODbL",
+      "retrieved": "2026-11-26"
+    },
+    {
+      "name": "OpenStreetMap · Moroni",
+      "source": "https://www.openstreetmap.org/relation/20137070",
+      "licence": "ODbL",
+      "retrieved": "2026-11-26"
+    },
+    {
+      "name": "OpenStreetMap · Luxembourg",
+      "source": "https://www.openstreetmap.org/relation/407489",
+      "licence": "ODbL",
+      "retrieved": "2026-11-26"
+    },
+    {
+      "name": "OpenStreetMap · Majuro",
+      "source": "https://www.openstreetmap.org/relation/3825987",
+      "licence": "ODbL",
+      "retrieved": "2026-11-26"
+    },
+    {
+      "name": "OpenStreetMap · København",
+      "source": "https://www.openstreetmap.org/relation/2192363",
+      "licence": "ODbL",
+      "retrieved": "2026-11-26"
+    },
+    {
+      "name": "geoBoundaries / OpenStreetMap · Monaco land quartiers (2017)",
+      "source": "https://github.com/wmgeolab/geoBoundaries/tree/main/releaseData/gbOpen/MCO/ADM2",
+      "licence": "ODbL",
+      "retrieved": "2026-11-26"
+    }
+  ],
+  "boundary_audit": {
+    "date": "2026-11-26",
+    "urban_fallbacks_reviewed": 61,
+    "administrative_replacements": 28,
+    "remaining_urban_fallbacks": [
+      "Riyadh",
+      "Kabul",
+      "Ankara",
+      "Kuwait City",
+      "Port-au-Prince",
+      "Antananarivo",
+      "Pretoria",
+      "Panama City",
+      "Mogadishu",
+      "Kingston",
+      "Naypyidaw",
+      "Freetown",
+      "Asmara",
+      "Hargeisa",
+      "Bloemfontein",
+      "Maseru",
+      "Canberra",
+      "Dili",
+      "Nassau",
+      "Sucre",
+      "Suva",
+      "Nuku'alofa",
+      "Victoria",
+      "Manama",
+      "Juba",
+      "Kingstown",
+      "Castries",
+      "Saint John's",
+      "Saint George's",
+      "Roseau",
+      "Basseterre",
+      "Tarawa",
+      "Palikir"
+    ]
+  },
+  "coastline_alignment": {
+    "date": "2026-11-26",
+    "countries": [
+      "PT",
+      "DZ",
+      "MC"
+    ],
+    "source": "Natural Earth administrative boundaries; geoBoundaries Monaco land quartiers",
+    "note": "The ocean land mask follows country coastlines rather than simplified continent silhouettes."
+  }
+}

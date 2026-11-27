@@ -10,6 +10,7 @@ test('administrative viewport loads the active tier, preserves saved outlines an
     URLSearchParams, AbortController, console, regionViewportKey:undefined, regionViewportRequest:undefined,
     cityMap:{getSource:()=>({setData:data=>rendered.push(data)})}, activePreset:'subregions',
     areaFocusActive:()=>false, densityState:()=>({regions:true,subregions:false}),
+    isSavedPreset:()=>false, focusShowsRegions:()=>false, focusShowsSubregions:()=>false,
     savedRows:[{kategoria:'rejon',id:'saved'}], rowInSavedPreset:()=>true,
     mapBounds:()=>[10,40,30,60], compactCountries:new Set(['SM']),
     request:(url,options)=>new Promise(resolve=>requests.push({url,options,resolve})),
@@ -26,4 +27,6 @@ test('administrative viewport loads the active tier, preserves saved outlines an
   requests[1].resolve({features:[{properties:{country:'DE'}},{properties:{country:'SM'}}]}); await new Promise(setImmediate);
   assert.equal(rendered.length,1); assert.equal(rendered[0].features.length,1);
   c.syncRegionViewport(); assert.equal(requests.length,2);
+  c.activePreset='countries';c.syncRegionViewport();assert.equal(requests.length,2);
+  assert.equal(requests[1].options.signal.aborted,true);
 });

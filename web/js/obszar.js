@@ -10,6 +10,7 @@ const focusShowsSubregions = () => (areaFocus.area?.category === "panstwo" && ar
   (areaFocus.area?.category === "rejon" && areaFocus.place?.level !== "subregion" && areaFocus.subregions);
 const focusSearchCategory = () => focusShowsCountries() ? "panstwo" : focusShowsRegions() ? "rejon" : "miasto";
 const focusDetailedActive = () => Boolean(areaFocus.area && areaFocus.details && onlineEnabled("online_details"));
+const focusDistrictsVisible = () => Boolean(areaFocus.area?.is_capital && !focusDetailedActive());
 
 function areaContainsPoint(geometry, position) {
   const [lon, lat] = position;
@@ -79,6 +80,12 @@ function syncAreaFocusUi() {
       (typeof count === "number" ? count.toLocaleString(tr("pl-PL", "en-GB")) : count === null || areaFocus.area?.countsFailed ? "—" : "…") + ")";
     counter.title = count === null ? tr("Brak danych o liczbie elementów w tym obszarze.", "The number of elements in this area is unavailable.") : "";
   }
+  const districtStatus = document.getElementById("area-focus-district-status");
+  districtStatus.hidden = !focusDistrictsVisible();
+  districtStatus.textContent = areaFocus.area?.districtsLoading ? tr("Wczytywanie dzielnic…", "Loading districts…")
+    : areaFocus.area?.districts?.features?.length ? tr("Dzielnice: ", "Districts: ") + areaFocus.area.districts.features.length
+    : areaFocus.area?.districts?.unavailable === "offline" ? tr("Włącz szczegółowe mapy w ustawieniach, aby pobrać dzielnice.", "Allow detailed maps in Settings to download districts.")
+    : tr("Granice dzielnic są obecnie niedostępne.", "District boundaries are currently unavailable.");
   const divisionCounts = document.getElementById("area-focus-division-counts");
   divisionCounts.hidden = !["panstwo", "kontynent"].includes(areaFocus.area?.category);
   divisionCounts.textContent = [
@@ -154,6 +161,7 @@ async function selectFocusArea(place) {
     updateSidebar();
     scheduleDraw();
     loadFocusCounts(area);
+    loadCapitalDistricts(area);
   } catch (error) {
     if (!controller.signal.aborted) {
       areaFocus.selecting = true;
@@ -165,6 +173,19 @@ async function selectFocusArea(place) {
       syncAreaFocusUi();
     }
   }
+}
+
+function loadCapitalDistricts(area) {
+  if (!area.is_capital || area.districtsLoading || area.districts) return;
+  area.districtsLoading = true;
+  syncAreaFocusUi();
+  request("/api/stolica-dzielnice?" + new URLSearchParams({id: area.id})).then((data) => {
+    area.districts = data;
+    area.districtPaths = data.features.map((feature) => projectedPolygon(feature.geometry));
+  }).catch(() => { area.districts = {type: "FeatureCollection", features: [], unavailable: "source"}; }).finally(() => {
+    area.districtsLoading = false;
+    if (areaFocus.area === area) { syncAreaFocusUi(); if (basemapReady) syncAreaFocusLayers(); scheduleDraw(); }
+  });
 }
 
 function loadFocusCounts(area) {
@@ -301,10 +322,25 @@ function syncAreaFocusLayers() {
     cityMap.addLayer({ id: "area-focus-mask", type: "fill", source: "area-focus-mask", paint: { "fill-color": "#fff", "fill-opacity": 1, "fill-antialias": false } });
     cityMap.addLayer({ id: "area-focus-context", type: "line", source: "area-focus-context", paint: { "line-color": "#c6c1ce", "line-width": .8, "line-opacity": .65 } });
     cityMap.addLayer({ id: "area-focus-boundary", type: "line", source: "area-focus-boundary", paint: { "line-color": "#765697", "line-width": 1.5 } });
+    cityMap.addSource("capital-districts", {type: "geojson", data: emptyFeatures()});
+    cityMap.addLayer({id: "capital-district-hover", type: "fill", source: "capital-districts", paint: {"fill-opacity": 0}});
+    cityMap.addLayer({id: "capital-district-lines", type: "line", source: "capital-districts", paint: {"line-color": "#765697", "line-width": 1.4, "line-opacity": .9}});
+    cityMap.on("mousemove", "capital-district-hover", (event) => {
+      const feature = event.features?.[0];
+      if (feature && focusDistrictsVisible() && focusContains(event.lngLat.toArray()))
+        showMapTooltip(document.documentElement.lang === "en" && feature.properties.name_en || feature.properties.name, event.point.x, event.point.y);
+    });
+    cityMap.on("mouseleave", "capital-district-hover", () => { tooltip.hidden = true; });
   }
   const area = areaFocus.area;
   syncFocusDetailMap();
   for (const id of ["area-focus-mask", "area-focus-context", "area-focus-boundary"]) setLayerVisible(id, Boolean(area));
+  const districts = area?.districts;
+  if (areaFocus.renderedDistricts !== districts) {
+    cityMap.getSource("capital-districts").setData(districts || emptyFeatures());
+    areaFocus.renderedDistricts = districts;
+  }
+  for (const id of ["capital-district-hover", "capital-district-lines"]) setLayerVisible(id, focusDistrictsVisible());
   if (!area) return;
   if (areaFocus.rendered !== area) {
     const geometry = area.feature.geometry;
@@ -326,7 +362,7 @@ function syncAreaFocusLayers() {
     areaFocus.contextRows = savedRows;
   }
   // Any subsequently loaded detail layers must stay beneath the isolation mask.
-  for (const id of ["area-focus-mask", "area-focus-context", "area-focus-boundary"]) cityMap.moveLayer(id);
+  for (const id of ["capital-district-hover", "capital-district-lines", "area-focus-mask", "area-focus-context", "area-focus-boundary"]) cityMap.moveLayer(id);
 }
 
 function drawAreaFocusOverlay() {
@@ -340,6 +376,7 @@ function drawAreaFocusOverlay() {
   for (const path of areaFocus.area.contextPaths) ctx.stroke(path);
   ctx.strokeStyle = "#765697";
   ctx.stroke(areaFocus.area.path);
+  if (focusDistrictsVisible()) for (const path of areaFocus.area.districtPaths || []) ctx.stroke(path);
 }
 
 document.getElementById("focus-area").addEventListener("click", () => {
@@ -372,6 +409,9 @@ for (const kind of ["cities", "villages", "subregions"]) document.getElementById
 });
 document.addEventListener("atlas-settings-loaded", syncAreaFocusUi);
 document.addEventListener("atlas-online-change", () => {
+  if (areaFocus.area?.is_capital && onlineEnabled("online_details") && areaFocus.area.districts?.unavailable) {
+    areaFocus.area.districts = null;loadCapitalDistricts(areaFocus.area);
+  }
   syncAreaFocusUi();
   if (basemapReady) syncAreaFocusLayers();
 });
